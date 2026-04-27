@@ -1,11 +1,35 @@
 [project]
 name = "wjw"
 version = "0.1.0"
+description = "The Waldorf Jinonice Web..."
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = [
     "django",
     "jinja2",
+    "django-bootstrap5",
+    "django-phonenumber-field[phonenumbers]",
 ]
 
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "django-extensions",
+    "pytest-django",
+    "django-stubs",
+    "mypy",
+]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "wjw.settings"
+
+
+[tool.setuptools.packages.find]
+include = ["wjw*", "prispevky*"]
+exclude = ["templates*"]
