@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Contact Us</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="form">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="mt-3">
+                    {{ bootstrap_button("Submit", button_type="submit", button_class="btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

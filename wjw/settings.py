@@ -19,6 +19,7 @@ ALLOWED_HOSTS = [ ]
 
 INSTALLED_APPS = [
     'prispevky',
+    'main',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,11 +46,16 @@ ROOT_URLCONF = 'wjw.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [ BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
-            #'environment': 'core.jinja2.environment', # Odkaz na konfigurační funkci
-        },
+            'environment': 'wjw.jinja2.environment',
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+         },
     },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
