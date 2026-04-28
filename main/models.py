@@ -20,19 +20,22 @@ class ClassCollective(models.Model):
         R8 = 8, "8. ročník"
         R9 = 9, "9. ročník"
 
+    year = models.PositiveIntegerField(
+        verbose_name="Rok nástupu",
+        default=date.today().year,
+        validators=[MinValueValidator(2000), MaxValueValidator(2100)],
+    )
+
     school_class = models.IntegerField(
         choices=SchoolClassType.choices, null=True, blank=True
     )
 
-    year = models.PositiveIntegerField(
-        verbose_name="Školní rok (nástupu)",
-        default=date.today().year,
-        validators=[MinValueValidator(2000), MaxValueValidator(2100)],
-    )
     variant = models.CharField(max_length=20, null=True, blank=True)
 
     @final
     class Meta:
+        verbose_name = "Třídna"
+        verbose_name_plural = "Třídy"
         constraints = [
             models.UniqueConstraint(
                 fields=["year", "variant"], name="unique_class_collective_name"
@@ -76,9 +79,9 @@ class Student(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Jméno")
     last_name = models.CharField(max_length=100, verbose_name="Příjmení")
 
-    school_class = models.ManyToManyField(
+    school_class = models.ForeignKey(
         ClassCollective,
-        through="CollectiveRelationship",
+        on_delete=models.PROTECT,
         related_name="students",
         verbose_name="Třída",
     )
@@ -120,28 +123,3 @@ class ParentRelationship(models.Model):
     @override
     def __str__(self):
         return f"{self.parent} -> {self.student} ({self.valid_from} - {self.valid_until or 'současnost'})"
-
-
-@final
-class CollectiveRelationship(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.PROTECT)
-    school_class = models.ForeignKey(ClassCollective, on_delete=models.PROTECT)
-
-    # Naše vlastní atributy (časový interval)
-    valid_from = models.DateField(
-        null=True, blank=True, auto_now=True, verbose_name="Platnost od"
-    )
-    valid_until = models.DateField(null=True, blank=True, verbose_name="Platnost do")
-
-    @final
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["student", "school_class"],
-                name="student_trida_unique_relationship",
-            )
-        ]
-
-    @override
-    def __str__(self):
-        return f"{self.student} -> {self.school_class} ({self.valid_from} - {self.valid_until or 'současnost'})"
