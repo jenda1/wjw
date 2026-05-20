@@ -1,0 +1,113 @@
+:root {
+    --waldorf-orange: #e07a5f;
+    --waldorf-yellow: #f4f1de;
+    --waldorf-green: #81b29a;
+    --waldorf-dark: #3d405b;
+    --waldorf-brown: #f2cc8f;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    color: var(--waldorf-dark);
+    background-color: #fdfbf7;
+}
+
+h1, h2, h3, .navbar-brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 3px solid var(--waldorf-orange);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.navbar-brand {
+    color: var(--waldorf-orange) !important;
+    font-size: 1.4rem;
+}
+.nav-link {
+    color: var(--waldorf-dark);
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.nav-link:hover, .nav-link.active {
+    color: var(--waldorf-orange) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(244, 241, 222, 0.85), rgba(244, 241, 222, 0.85)), url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1920') center/cover no-repeat;
+    padding: 100px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.btn-waldorf {
+    background-color: var(--waldorf-orange);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+.btn-waldorf:hover {
+    background-color: #c96449;
+    color: white;
+}
+
+/* Cards / Aktuality */
+.card-news {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: #fff;
+    overflow: hidden;
+}
+.card-news:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+.card-news .card-body {
+    padding: 25px;
+}
+.badge-date {
+    background-color: var(--waldorf-brown);
+    color: var(--waldorf-dark);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+/* Community Section */
+.community-section {
+    background-color: var(--waldorf-yellow);
+    border-radius: 20px;
+    padding: 40px;
+}
+
+/* Footer */
+footer {
+    background-color: var(--waldorf-dark);
+    color: #f8f9fa;
+    padding: 60px 0 30px 0;
+}
+footer a {
+    color: var(--waldorf-brown);
+    text-decoration: none;
+}
+footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 40px;
+    padding-top: 20px;
+    font-size: 0.9rem;
+}
+

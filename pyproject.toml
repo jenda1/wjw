@@ -9,6 +9,7 @@ dependencies = [
     "jinja2",
     "django-bootstrap5",
     "django-phonenumber-field[phonenumbers]",
+    "django-allauth"
 ]
 
 [build-system]

@@ -121,3 +121,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# Při vývoji zůstává prázdná, ale Django ji vyžaduje mít nastavenou
+STATIC_ROOT = BASE_DIR / "staticfiles"
