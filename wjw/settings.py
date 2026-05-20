@@ -30,7 +30,6 @@ INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 INSTALLED_APPS = [
     'main',
-    'jinja2',
     'django_bootstrap5',
     'phonenumber_field',
 ] + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_DEV
@@ -48,19 +47,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'wjw.urls'
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'environment': 'wjw.jinja2.environment',
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-         },
-    },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
