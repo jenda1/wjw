@@ -17,19 +17,23 @@ ALLOWED_HOSTS = [ ]
 
 # Application definition
 
-INSTALLED_APPS = [
-    'prispevky',
-    'main',
+INSTALLED_APPS_DEFAULT = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+]
+
+INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
+
+INSTALLED_APPS = [
+    'main',
     'jinja2',
     'django_bootstrap5',
     'phonenumber_field',
-] + ['django_extensions',] if DEBUG else []
+] + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_DEV
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -122,9 +126,5 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
 # Při vývoji zůstává prázdná, ale Django ji vyžaduje mít nastavenou
-STATIC_ROOT = BASE_DIR / "staticfiles"
+#STATIC_ROOT = BASE_DIR / "staticfiles"
