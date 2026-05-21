@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+{% load django_bootstrap5 %}
+
+{% block title %}Přihlášení do systému | ZŠ waldorfská Jinonice{% endblock %}
+
+{% block content %}
+<div class="container login-container">
+    <div class="login-card text-center">
+
+        <!-- Bezpečnostní ikona -->
+        <div class="lock-badge">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+
+        <!-- Záhlaví -->
+        <h1 class="brand-title mb-2">
+            <i class="bi bi-people-fill me-2"></i> 
+            <span>Spolek waldorfská školy v Jinonicích</span>
+        </h1>
+
+        <p class="text-muted mb-4 px-2">Pro přístup do systému se bezpečně ověřte pomocí svého účtu.</p>
+
+        <!-- TLAČÍTKA SOCIÁLNÍCH SÍTÍ -->
+        <div class="d-grid gap-3 my-4">
+
+            <!-- Google -->
+            <form action="{% provider_login_url 'google' %}" method="post" class="form w-100">
+                {% csrf_token %}
+                {% with button_text='<i class="bi bi-google me-3 text-danger"></i> Pokračovat přes Google' %}
+                {% bootstrap_button button_type="submit" content=button_text|safe button_class="btn-primary" %}
+                {% endwith %}
+
+            </form>
+            {% comment %}
+            <!-- Facebook -->
+            <form action="{% provider_login_url 'facebook' %}" method="post" class="w-100">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-social btn-facebook w-100">
+                    <i class="bi bi-facebook me-3"></i> 
+                    Pokračovat přes Facebook
+                </button>
+            </form>
+            {% endcomment %}
+
+        </div>
+
+        <!-- Bezpečnostní ujištění -->
+        <div class="mt-4 pt-3 border-top border-light">
+            <p class="small text-muted mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Spolek neukládá vaše hesla ze sociálních sítí. Přihlášení probíhá šifrovaně přímo na serverech poskytovatelů.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

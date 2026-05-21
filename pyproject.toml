@@ -8,7 +8,9 @@ dependencies = [
     "django",
     "django-bootstrap5",
     "django-phonenumber-field[phonenumbers]",
-    "django-allauth"
+    "django-allauth",
+    "pyjwt",
+    "vokativ",
 ]
 
 [build-system]
@@ -31,5 +33,4 @@ django_settings_module = "wjw.settings"
 
 
 [tool.setuptools.packages.find]
-include = ["wjw*", "prispevky*"]
-exclude = ["templates*"]
+include = ["wjw*", "main*", "prispevky*"]

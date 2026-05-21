@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block menu %}
+<ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Kdo jsme</a></li>
+    <li class="nav-item"><a class="nav-link" href="#">Kontakty</a></li>
+
+    {% if user.is_authenticated %}
+    <li class="nav-item dropdown ms-lg-3">
+        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle me-1"></i>
+            {{ user.first_name|default:user.username }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form action="{% url 'account_logout' %}" method="post" class="px-3 py-1">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill">Odhlásit se</button>
+                </form>
+            </li>
+        </ul>
+    </li>
+    {% else %}
+    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+        <a href="{% url 'account_login' %}" class="btn btn-waldorf px-4 rounded-pill">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Přihlásit se
+        </a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}

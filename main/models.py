@@ -53,7 +53,7 @@ class ClassCollective(models.Model):
 
 @final
 class Parent(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
     )
@@ -72,6 +72,8 @@ class Parent(models.Model):
     @override
     def __str__(self):
         return f"{self.first_name} {self.last_name.rsplit}"
+
+
 
 
 @final

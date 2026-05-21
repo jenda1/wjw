@@ -26,13 +26,31 @@ INSTALLED_APPS_DEFAULT = [
     'django.contrib.staticfiles',
 ]
 
+INSTALLED_APPS_ALLAUTH = [
+    'django.contrib.sites',
+    'django.contrib.humanize',
+
+    # Allauth core aplikace
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    # Poskytovatelé (Providers) pro Google a Facebook
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
+]
+
 INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
-INSTALLED_APPS = [
+
+INSTALLED_APPS_MY = [
+    # Tvoje vlastní aplikace
     'main',
     'django_bootstrap5',
     'phonenumber_field',
-] + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_DEV
+]
+
+INSTALLED_APPS = INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV + INSTALLED_APPS_MY
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -42,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'wjw.urls'
@@ -49,7 +69,7 @@ ROOT_URLCONF = 'wjw.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -98,6 +118,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
+SITE_ID = 1
+
 LANGUAGE_CODE = 'cs'
 
 TIME_ZONE = 'Europe/Prague'
@@ -109,8 +131,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Při vývoji zůstává prázdná, ale Django ji vyžaduje mít nastavenou
-#STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Allauth konfigurace
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Konfigurace chování Allauth (volitelné, ale doporučené)
+ACCOUNT_LOGIN_METHODS = ['email', ]
+#ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # pro začátek 'optional', na produkci 'mandatory'
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení
+LOGOUT_REDIRECT_URL = '/'

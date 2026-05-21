@@ -1,0 +1,132 @@
+{% extends "main/base.html" %}
+{% load ceske_sklonovani %}
+
+{% block content %}
+{% comment %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Aktuality ze života školy</h2>
+        <a href="#" class="text-decoration-none text-muted">Všechny aktuality <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card card-news h-100">
+                <div class="card-body">
+                    <span class="badge-date">12. 5. 2026</span>
+                    <h4 class="card-title h5">Pozvání na eurytmická sóla 9. třídy</h4>
+                    <p class="card-text text-muted">Jako každý rok i letos bude 9. třída sdílet svá eurytmická sóla, ke kterým si žáci vytvořili vlastní autorské básně. Součástí večera bude také společné vystoupení...</p>
+                    <a href="#" class="text-decoration-none text-warning fw-bold">Číst více &raquo;</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-news h-100">
+                <div class="card-body">
+                    <span class="badge-date">13. 3. 2026</span>
+                    <h4 class="card-title h5">Oznámení o přijetí k základnímu vzdělávání</h4>
+                    <p class="card-text text-muted">Vážení rodiče, výsledky řádného termínu zápisů pro školní rok 2026/2027 najdete nyní vyvěšené v sekci dokumentů nebo přímo na vývěsce školy.</p>
+                    <a href="#" class="text-decoration-none text-warning fw-bold">Číst více &raquo;</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-news h-100">
+                <div class="card-body">
+                    <span class="badge-date">2. 3. 2026</span>
+                    <h4 class="card-title h5">Prezentace ročníkových prací 8. třídy</h4>
+                    <p class="card-text text-muted">Prezentace ročníkových prací 8. třídy proběhnou v sále Pavilonu D. Začátek bude vždy v 15:00 hodin, předpokládané ukončení do 18:30. Všichni jsou srdečně zváni.</p>
+                    <a href="#" class="text-decoration-none text-warning fw-bold">Číst více &raquo;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endcomment %}
+
+<!-- HERO SEKCE S INTRODUKCÍ A VÝZVOU K PŘIHLÁŠENÍ -->
+    <header class="hero-spolek">
+        <div class="container">
+            <div class="row align-items-center g-5">
+
+                <div class="col-lg-7 text-center text-lg-start">
+                    {# <span class="badge px-3 py-2 mb-3 rounded-pill" style="background-color: var(--waldorf-brown); color: var(--waldorf-dark);">Spolek waldorfské školy v Jinonicích</span> #}
+                    <h1 class="display-4 mb-3">Spolek waldorfské školy v Jinonicích</h1>
+                    <p class="lead mb-4">Waldorfská pedagogika staví na úzkém partnerství mezi učiteli a rodiči. Náš Spolek zaštiťuje komunitní život školy, financuje nadstandardní pomůcky a organizuje slavnosti, které tvoří srdce jinonické školy.</p>
+                    <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 text-muted small">
+                        <span><i class="bi bi-check-circle-fill text-success me-1"></i> Jarmarky a slavnosti</span>
+                        <span><i class="bi bi-check-circle-fill text-success me-1"></i> Fond solidarity</span>
+                    </div>
+                </div>
+
+                <!-- Výzva k akci (Auth Box) -->
+                <div class="col-lg-5">
+                    <div class="auth-box p-4 p-md-5 text-center">
+
+                        {% if user.is_authenticated %}
+                            <!-- Stav A: Uživatel už je v systému -->
+                            <div class="feature-icon mx-auto"><i class="bi bi-house-heart-fill"></i></div>
+                            <h3 class="h4 mb-3">Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
+                            <p class="text-muted small mb-4">Jste úspěšně ověřen/a. Nyní máte přístup k interním dokumentům spolku, zápisům z rad a hlasování.</p>
+                            <a href="#" class="btn btn-waldorf w-100 py-2.5">Vstoupit na nástěnku rodiče</a>
+                        {% else %}
+                            <div class="feature-icon mx-auto"><i class="bi bi-people-fill"></i></div>
+                            <h3 class="h4 mb-2">Jste členem spolku nebo se jím chcete stát?</h3>
+                            <p class="text-muted small mb-4">Jste rodičem studenta naší školy a chcete se stát členem spolku? Jste členem spolku a chcete  přístup k interním informacím? V tom případě se prosím přihlaste.</p>
+
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'account_login' %}" class="btn btn-waldorf py-2.5 fw-bold">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Přihlásit se / Registrovat
+                                </a>
+                            </div>
+
+                            <div class="mt-3">
+                                <span class="text-muted x-small d-block" style="font-size: 0.8rem;">
+                                    <i class="bi bi-shield-check me-1"></i> Využíváme bezpečné přihlášení přes Google nebo Facebook.
+                                </span>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+
+
+<div class="row my-5 pt-4">
+    <div class="col-12">
+        <div class="community-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3>Spolupráce rodiny a školy</h3>
+                    <p class="mb-0">Základní škola waldorfská v Praze 5 – Jinonicích je plně organizovanou školou zřizovanou Městskou částí Praha 5. Vznikla díky úzké spolupráci Městské části a iniciativy rodičů organizovaných ve Spolku. Své první prvňáčky přivítala již ve školním roce 1992/1993.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" class="btn btn-outline-dark px-4 py-2 rounded-pill fw-bold">Spolek rodičů</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% comment %}
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Contact Us</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="form">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="mt-3">
+                    {{ bootstrap_button("Submit", button_type="submit", button_class="btn-success") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endcomment %}
