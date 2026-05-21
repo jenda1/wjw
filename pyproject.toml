@@ -15,7 +15,7 @@ dependencies = [
     "django-environ",
     "vokativ",
     "django-jazzmin",
-    "django-import-export"
+    "django-import-export[all]"
 ]
 
 [build-system]

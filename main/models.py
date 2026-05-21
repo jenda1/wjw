@@ -79,8 +79,8 @@ class Parent(models.Model):
         on_delete=models.PROTECT,
     )
 
-    first_name = models.CharField(max_length=100, verbose_name="Jméno")
-    last_name = models.CharField(max_length=100, verbose_name="Příjmení")
+    first_name = models.CharField(max_length=100, blank=True, verbose_name="Jméno")
+    last_name = models.CharField(max_length=100, blank=True, verbose_name="Příjmení")
 
     phone_number = PhoneNumberField(region="CZ", blank=True, verbose_name="Telefon")
     email = models.EmailField()
@@ -92,7 +92,7 @@ class Parent(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name.rsplit}"
+        return f"{self.first_name} {self.last_name}"
 
 
 @final

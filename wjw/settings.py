@@ -54,7 +54,7 @@ INSTALLED_APPS_MY = [
     'main',
     'django_bootstrap5',
     'phonenumber_field',
-    'import-export',
+    'import_export',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV 
