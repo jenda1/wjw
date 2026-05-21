@@ -1,19 +1,25 @@
+import environ
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+
+# Read the .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m)t#l9i7x#fn6w!0g_j33=zugy&)jr3gafy2x9d*5k7a^!mxo!'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = [ ]
-
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 # Application definition
 
@@ -44,13 +50,14 @@ INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 
 INSTALLED_APPS_MY = [
-    # Tvoje vlastní aplikace
+    'jazzmin', # musi byt prvni
     'main',
     'django_bootstrap5',
     'phonenumber_field',
+    'import-export',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV + INSTALLED_APPS_MY
+INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -89,10 +96,11 @@ WSGI_APPLICATION = 'wjw.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db(),
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 }
 
 
@@ -148,3 +156,22 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'  # pro začátek 'optional', na produkci
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení
 LOGOUT_REDIRECT_URL = '/'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': env('GOOGLE_OAUTH_CLIENT_ID'),
+                'secret': env('GOOGLE_OAUTH_CLIENT_SECRET'),
+                'key': ''  # Usually left empty for Google
+            },
+        ],
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}

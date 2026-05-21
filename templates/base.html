@@ -29,19 +29,22 @@
                 </div>
             </div>
         </nav>
-{% comment %}
-<header class="hero-section">
-    <div class="container text-center text-md-start">
-        <div class="row align-items-center">
-            <div class="col-md-7">
-                <h1 class="display-4 mb-3">Navštivte waldorfskou školu v Jinonicích</h1>
-                <p class="lead mb-4">Jsme škola s komunitou, očekáváme aktivní účast rodičů na školních projektech. Kvalitní péče o dítě závisí na pozitivním vztahu a spolupráci rodičů se školou. Vycházíme z antroposofického pojetí člověka.</p>
-                <a href="#" class="btn btn-waldorf btn-lg">Více o naší filozofii</a>
+
+        {% block header %}
+        {% comment %}
+        <header class="hero-section">
+            <div class="container text-center text-md-start">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <h1 class="display-4 mb-3">Navštivte waldorfskou školu v Jinonicích</h1>
+                        <p class="lead mb-4">Jsme škola s komunitou, očekáváme aktivní účast rodičů na školních projektech. Kvalitní péče o dítě závisí na pozitivním vztahu a spolupráci rodičů se školou. Vycházíme z antroposofického pojetí člověka.</p>
+                        <a href="#" class="btn btn-waldorf btn-lg">Více o naší filozofii</a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</header>
-{% endcomment %}
+        </header>
+        {% endcomment %}
+        {% endblock %}
 
         <main class="container my-5">
             {% bootstrap_messages %}

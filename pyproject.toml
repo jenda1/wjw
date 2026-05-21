@@ -10,7 +10,12 @@ dependencies = [
     "django-phonenumber-field[phonenumbers]",
     "django-allauth",
     "pyjwt",
+    "requests",
+    "cryptography",
+    "django-environ",
     "vokativ",
+    "django-jazzmin",
+    "django-import-export"
 ]
 
 [build-system]

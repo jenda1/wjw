@@ -3,8 +3,31 @@ from typing import final, override
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+
+import hashlib
+import re
+
+
+def hash_rodne_cislo(rc_text):
+    if not rc_text:
+        return None
+        
+    ciste_rc = re.sub(r'[^0-9]', '', str(rc_text))
+    soleny_vstup = f"{ciste_rc}{settings.SECRET_KEY}"
+
+    return hashlib.sha256(soleny_vstup.encode('utf-8')).hexdigest()
+
+def validate_rodne_cislo_format(value):
+    match = re.match(r'^(\d{6})\/?(\d{3,4})$', value)
+    if not match:
+        raise ValidationError('Rodné číslo nemá správný formát.')
+    cislo_text = match.group(1) + match.group(2)
+    if len(cislo_text) == 10 and int(cislo_text) % 11 != 0:
+        if not (int(cislo_text[:-1]) % 11 == 10 and cislo_text[-1] == '0'):
+            raise ValidationError('Rodné číslo není platné.')
 
 
 @final
@@ -45,9 +68,7 @@ class ClassCollective(models.Model):
     @override
     def __str__(self):
         return (
-            f"{self.school_class} ({self.year}"
-            + (f" {self.variant}" if self.variant else "")
-            + ")"
+            f"{self.school_class}{self.variant if self.variant else ""} ({self.year})"
         )
 
 
@@ -74,12 +95,17 @@ class Parent(models.Model):
         return f"{self.first_name} {self.last_name.rsplit}"
 
 
-
-
 @final
 class Student(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Jméno")
     last_name = models.CharField(max_length=100, verbose_name="Příjmení")
+
+    rc_hash = models.CharField(
+        max_length=64, 
+        unique=True, 
+        editable=False,
+        verbose_name="Otisk rodného čísla"
+    )
 
     school_class = models.ForeignKey(
         ClassCollective,
