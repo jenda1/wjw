@@ -38,7 +38,7 @@ h1, h2, h3, .navbar-brand {
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(rgba(244, 241, 222, 0.85), rgba(244, 241, 222, 0.85)), url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1920') center/cover no-repeat;
+    background: linear-gradient(rgba(244, 241, 222, 0.85), rgba(244, 241, 222, 0.85)), url('../images/skola.jpg') center/cover no-repeat;
     padding: 100px 0;
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }

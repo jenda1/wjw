@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import admin
-from .models import ClassCollective, Parent, Student, ParentRelationship
+from .models import ClassCollective, Profile, Student, ParentRelationship
 from .models import validate_rodne_cislo_format, hash_rodne_cislo
 
 class StudentInline(admin.TabularInline):
@@ -47,7 +47,7 @@ class ClassCollectiveAdmin(admin.ModelAdmin):
     inlines = [StudentInline]
 
 
-@admin.register(Parent)
+@admin.register(Profile)
 class ParentAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "phone_number")
     inlines = [ParentRelationshipInline]

@@ -51,16 +51,18 @@ INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 INSTALLED_APPS_MY = [
     'jazzmin', # musi byt prvni
+    'users',
     'main',
     'django_bootstrap5',
     'phonenumber_field',
     'import_export',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV 
+INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -141,7 +143,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+AUTH_USER_MODEL = 'users.MyUser'
+
+# 2. Konfigurace django-allauth pro autentizaci e-mailem
 
 # Allauth konfigurace
 AUTHENTICATION_BACKENDS = [
@@ -149,9 +156,8 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# Konfigurace chování Allauth (volitelné, ale doporučené)
 ACCOUNT_LOGIN_METHODS = ['email', ]
-#ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # pro začátek 'optional', na produkci 'mandatory'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení

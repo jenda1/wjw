@@ -7,6 +7,13 @@
 pip install -e ".[dev,test]"
 ```
 
+### .env
+
+    DEBUG=False
+    SECRET_KEY=...
+    DATABASE_URL=sqlite:///db.sqlite3
+    GOOGLE_OAUTH_CLIENT_ID=...
+    GOOGLE_OAUTH_CLIENT_SECRET=...
 
 ## Schema
 

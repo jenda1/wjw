@@ -4,7 +4,7 @@ import vokativ
 register = template.Library()
 
 @register.filter(name='vokativ')
-def do_pateho_pada(jmeno):
+def do_pateho_pada(jmeno:str) -> str:
     if not jmeno:
         return ""
     # vokativ.vokativ() vrátí jméno v 5. pádě
@@ -16,7 +16,6 @@ def render_login_status(context):
     user = context.get('user')
     is_logged_in = user and user.is_authenticated
 
-    print(user)
 
     return {
         'user': user,

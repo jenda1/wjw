@@ -5,22 +5,24 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 import hashlib
 import re
 
 
-def hash_rodne_cislo(rc_text):
+def hash_rodne_cislo(rc_text: str | None):
     if not rc_text:
         return None
-        
+
     ciste_rc = re.sub(r'[^0-9]', '', str(rc_text))
     soleny_vstup = f"{ciste_rc}{settings.SECRET_KEY}"
 
     return hashlib.sha256(soleny_vstup.encode('utf-8')).hexdigest()
 
-def validate_rodne_cislo_format(value):
+
+def validate_rodne_cislo_format(value: str):
     match = re.match(r'^(\d{6})\/?(\d{3,4})$', value)
     if not match:
         raise ValidationError('Rodné číslo nemá správný formát.')
@@ -28,6 +30,14 @@ def validate_rodne_cislo_format(value):
     if len(cislo_text) == 10 and int(cislo_text) % 11 != 0:
         if not (int(cislo_text[:-1]) % 11 == 10 and cislo_text[-1] == '0'):
             raise ValidationError('Rodné číslo není platné.')
+
+
+def validuj_datum_narozeni(value):
+    """Bariéra, která nepustí datum z budoucnosti a příliš staré lidi."""
+    if value > date.today():
+        raise ValidationError("Datum narození nemůže být v budoucnosti.")
+    if value.year < 1900:
+        raise ValidationError("Neplatné datum narození (příliš hluboko v minulosti).")
 
 
 @final
@@ -72,23 +82,38 @@ class ClassCollective(models.Model):
         )
 
 
-@final
-class Parent(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-    )
 
-    first_name = models.CharField(max_length=100, blank=True, verbose_name="Jméno")
-    last_name = models.CharField(max_length=100, blank=True, verbose_name="Příjmení")
+@final
+class Profile(models.Model):
+    first_name = models.CharField(max_length=100, blank=False, verbose_name="Jméno")
+    last_name = models.CharField(max_length=100, blank=False, verbose_name="Příjmení")
+
+    date_of_birth = models.DateField(blank=True, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
+    rc_hash = models.CharField(
+        max_length=64,
+        editable=False,
+        verbose_name="Otisk rodného čísla"
+    )
 
     phone_number = PhoneNumberField(region="CZ", blank=True, verbose_name="Telefon")
     email = models.EmailField()
 
+    @property
+    def vek(self):
+        """Pomocná vlastnost (property), která automaticky spočítá aktuální věk."""
+        if not self.date_of_birth:
+            return None
+
+        dnes = date.today()
+        return dnes.year - self.date_of_birth.year - (
+            (dnes.month, dnes.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        )
+
+
     @final
     class Meta:
-        verbose_name = "Zákoný zástupce"
-        verbose_name_plural = "Zákonní zástupci"
+        verbose_name = "Člen spolku"
+        verbose_name_plural = "Členové spolku"
 
     @override
     def __str__(self):
@@ -101,8 +126,8 @@ class Student(models.Model):
     last_name = models.CharField(max_length=100, verbose_name="Příjmení")
 
     rc_hash = models.CharField(
-        max_length=64, 
-        unique=True, 
+        max_length=64,
+        unique=True,
         editable=False,
         verbose_name="Otisk rodného čísla"
     )
@@ -115,10 +140,10 @@ class Student(models.Model):
     )
 
     parents = models.ManyToManyField(
-        Parent,
+        Profile,
         through="ParentRelationship",
         related_name="children",
-        verbose_name="Rodiče",
+        verbose_name="Zákonní zástupci",
     )
 
     @final
@@ -133,11 +158,13 @@ class Student(models.Model):
 
 @final
 class ParentRelationship(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.PROTECT)
-    parent = models.ForeignKey(Parent, on_delete=models.PROTECT)
+    parent = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.PROTECT)
+    student = models.ForeignKey(Student, null=True, on_delete=models.PROTECT)
 
     valid_from = models.DateField(auto_now=True, verbose_name="Platnost od")
     valid_until = models.DateField(null=True, blank=True, verbose_name="Platnost do")
+
+    paring_info = models.CharField(max_length=200, blank=True, null=True, verbose_name="Infromace o žákovi")
 
     @final
     class Meta:

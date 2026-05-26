@@ -1,15 +1,6 @@
 {% load custom_tags %}
 
-{% if is_logged_in %}
-<!-- Stav A: Uživatel už je v systému -->
-<div class="feature-icon mx-auto"><i class="bi bi-house-heart-fill"></i></div>
-<h3 class="h4 mb-3">Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
-
-<p class="text-muted small mb-4">Jste úspěšně ověřen/a. Nyní máte přístup k interním dokumentům spolku, zápisům z rad a hlasování.</p>
-<a href="#" class="btn btn-waldorf w-100 py-2.5">Vstoupit na nástěnku rodiče</a>
-
-
-{% else %}
+{% if not is_logged_in %}
 <div class="feature-icon mx-auto"><i class="bi bi-people-fill"></i></div>
 <h3 class="h4 mb-2">Jste členem spolku nebo se jím chcete stát?</h3>
 <p class="text-muted small mb-4">Jste rodičem studenta naší školy a chcete se stát členem spolku? Jste členem spolku a chcete  přístup k interním informacím? V tom případě se prosím přihlaste.</p>
@@ -25,6 +16,16 @@
         <i class="bi bi-shield-check me-1"></i> Využíváme bezpečné přihlášení přes Google nebo Facebook.
     </span>
 </div>
+
+{% else %}
+
+<!-- Stav A: Uživatel už je v systému -->
+<div class="feature-icon mx-auto"><i class="bi bi-house-heart-fill"></i></div>
+<h3 class="h4 mb-3">Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
+
+<p class="text-muted small mb-4">Jste úspěšně ověřen/a. Nyní máte přístup k interním dokumentům spolku, zápisům z rad a hlasování.</p>
+<a href="#" class="btn btn-waldorf w-100 py-2.5">Vstoupit na nástěnku rodiče</a>
 {% endif %}
+
 
 

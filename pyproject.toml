@@ -15,7 +15,9 @@ dependencies = [
     "django-environ",
     "vokativ",
     "django-jazzmin",
-    "django-import-export[all]"
+    "django-import-export[all]",
+    "gunicorn",
+    "whitenoise",
 ]
 
 [build-system]
@@ -27,6 +29,7 @@ dev = [
     "django-extensions",
     "pytest-django",
     "django-stubs",
+    "django-types",
     "mypy",
 ]
 
