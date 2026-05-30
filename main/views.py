@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-
+from django.contrib import messages
+from .forms import ProfileForm
 
 def index(request):
     if request.session.get('new_user_redirect'):
@@ -13,5 +15,18 @@ def index(request):
     return render(request, 'main/index.html')
 
 
-def user_config(request):
-    return render(request, 'main/user_config.html')
+@login_required
+def update_profile(request):
+    user = request.user
+    profile = user.profile
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Váš profil byl úspěšně aktualizován!')
+            return redirect('update_profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'main/update_profile.html', {'form': form})

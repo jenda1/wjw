@@ -14,10 +14,12 @@ def do_pateho_pada(jmeno:str) -> str:
 @register.inclusion_tag('main/tags/login_status.html', takes_context=True)
 def render_login_status(context):
     user = context.get('user')
-    is_logged_in = user and user.is_authenticated
 
+    is_logged_in = user and user.is_authenticated
+    is_member = user and user.profile
 
     return {
         'user': user,
         'is_logged_in': is_logged_in,
+        'is_member': is_member,
     }    

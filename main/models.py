@@ -85,28 +85,42 @@ class ClassCollective(models.Model):
 
 @final
 class Profile(models.Model):
+# 1. Definice možností pomocí TextChoices
+    class Status(models.TextChoices):
+        PENDING = 'PE', 'čeká na schválení'
+        ACTIVE = 'AC', 'člen'
+        CANCELLED = 'CA', 'zrušený'
+
+    class Membership(models.TextChoices):
+        ACTIVE = 'A', 'aktivní'
+        PASSIVE = 'P', 'přispívající'
+
     first_name = models.CharField(max_length=100, blank=False, verbose_name="Jméno")
     last_name = models.CharField(max_length=100, blank=False, verbose_name="Příjmení")
 
-    date_of_birth = models.DateField(blank=True, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
-    rc_hash = models.CharField(
-        max_length=64,
-        editable=False,
-        verbose_name="Otisk rodného čísla"
-    )
+    birth_date = models.DateField(blank=True, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
 
-    phone_number = PhoneNumberField(region="CZ", blank=True, verbose_name="Telefon")
+    street_and_number = models.CharField("Ulice a číslo popisné", max_length=150)
+    city = models.CharField("Město", max_length=100)
+    zip_code = models.CharField("PSČ", max_length=20)
+
+    phone_number = PhoneNumberField(blank=True)
     email = models.EmailField()
+
+    membership = models.CharField(max_length=2, choices=Membership.choices, default=Membership.ACTIVE)
+
+    status = models.CharField(max_length=2, choices=Status.choices, default=Status.PENDING)
+    comments = models.TextField(blank=True, verbose_name="Poznámky")
 
     @property
     def vek(self):
         """Pomocná vlastnost (property), která automaticky spočítá aktuální věk."""
-        if not self.date_of_birth:
+        if not self.birth_date:
             return None
 
         dnes = date.today()
-        return dnes.year - self.date_of_birth.year - (
-            (dnes.month, dnes.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        return dnes.year - self.birth_date.year - (
+            (dnes.month, dnes.day) < (self.birth_date.month, self.birth_date.day)
         )
 
 
@@ -117,7 +131,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} ({membership})" + (" {status}" if status != Status.ACTIVE else "")
 
 
 @final
