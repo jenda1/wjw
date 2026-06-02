@@ -2,6 +2,7 @@
 {% load custom_tags %}
 
 {% block header %}
+{% if not user.profile.is_member %}
 <header class="hero-section">
     <div class="container">
         <div class="row align-items-center g-5">
@@ -18,7 +19,6 @@
 {% endcomment %}
             </div>
 
-            <!-- Výzva k akci (Auth Box) -->
             <div class="col-lg-5">
                 <div class="auth-box p-4 p-md-5 text-center">
                     {% render_login_status %}
@@ -28,6 +28,7 @@
         </div>
     </div>
 </header>
+{% endif %}
 {% endblock %}
 
 
@@ -36,6 +37,7 @@
     <div class="col-12">
         <div class="community-section">
             <div class="row align-items-center">
+                {% if not user.profile.is_member %}
                 <div class="col-md-8">
                     <h3>Spolupráce rodiny a školy</h3>
                     <p class="mb-0">Základní škola waldorfská v Praze 5 – Jinonicích je plně organizovanou školou zřizovanou Městskou částí Praha 5. Vznikla díky úzké spolupráci Městské části a iniciativy rodičů organizovaných ve Spolku. Své první prvňáčky přivítala již ve školním roce 1992/1993.</p>
@@ -43,6 +45,9 @@
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" class="btn btn-outline-dark px-4 py-2 rounded-pill fw-bold">Spolek rodičů</a>
                 </div>
+                {% else %}
+                <h3>Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
+                {% endif %}
             </div>
         </div>
     </div>

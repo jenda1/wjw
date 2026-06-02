@@ -1,5 +1,5 @@
 from datetime import date
-from typing import final, override
+from typing import final, override, cast
 
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -8,21 +8,11 @@ from django.db import models
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
-import hashlib
 import re
+import requests
 
 
-def hash_rodne_cislo(rc_text: str | None):
-    if not rc_text:
-        return None
-
-    ciste_rc = re.sub(r'[^0-9]', '', str(rc_text))
-    soleny_vstup = f"{ciste_rc}{settings.SECRET_KEY}"
-
-    return hashlib.sha256(soleny_vstup.encode('utf-8')).hexdigest()
-
-
-def validate_rodne_cislo_format(value: str):
+def rodne_cislo_validate_format(value: str):
     match = re.match(r'^(\d{6})\/?(\d{3,4})$', value)
     if not match:
         raise ValidationError('Rodné číslo nemá správný formát.')
@@ -34,10 +24,48 @@ def validate_rodne_cislo_format(value: str):
 
 def validuj_datum_narozeni(value):
     """Bariéra, která nepustí datum z budoucnosti a příliš staré lidi."""
-    if value > date.today():
+    if not value:
+        return
+
+    today = date.today()
+
+    if value > today:
         raise ValidationError("Datum narození nemůže být v budoucnosti.")
-    if value.year < 1900:
-        raise ValidationError("Neplatné datum narození (příliš hluboko v minulosti).")
+
+    age: int = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+    if age < 18:
+        raise ValidationError("Datum narození je špatně (a nebo nejste plnoletý(á)?!?).")
+
+    if age > 80:
+        raise ValidationError("Datum narození je špatně (a nebo jste otec Járy Cimrmana).")
+
+
+def validuj_adresu(street_and_number:str, city:str, zip_code:str):
+    full_address = f"{street_and_number}, {city}, {zip_code}"
+
+    # Mapy.cz Geocoding API setup
+    api_key = cast(str, settings.MAPY_CZ_API_KEY)
+    url = "https://api.mapy.cz/v1/geocode"
+    params = {"query": full_address, "apikey": api_key, "lang": "cz"}
+
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+
+        if not data.get("items"):
+            raise ValidationError({
+                'street_and_number': "Adresu se nepodařilo zkontrolovat. Zkontrolujte prosím překlepy."
+            })
+
+        best_match = data["items"][0]
+        if best_match.get("type") not in ["addr", "premise"]:
+            raise ValidationError({
+                'street_and_number': "Adresa existuje, ale číslo popisné buď chybí a nebo neexistuje."
+            })
+
+    except requests.exceptions.RequestException:
+        raise ValidationError({"network": "chyba ... zkuste to pozdeji"})
 
 
 @final
@@ -82,16 +110,14 @@ class ClassCollective(models.Model):
         )
 
 
-
 @final
 class Profile(models.Model):
-# 1. Definice možností pomocí TextChoices
-    class Status(models.TextChoices):
+    class ProfileStatus(models.TextChoices):
         PENDING = 'PE', 'čeká na schválení'
         ACTIVE = 'AC', 'člen'
         CANCELLED = 'CA', 'zrušený'
 
-    class Membership(models.TextChoices):
+    class MembershipType(models.TextChoices):
         ACTIVE = 'A', 'aktivní'
         PASSIVE = 'P', 'přispívající'
 
@@ -107,22 +133,10 @@ class Profile(models.Model):
     phone_number = PhoneNumberField(blank=True)
     email = models.EmailField()
 
-    membership = models.CharField(max_length=2, choices=Membership.choices, default=Membership.ACTIVE)
+    membership = models.CharField(max_length=2, choices=MembershipType.choices, default=MembershipType.ACTIVE)
 
-    status = models.CharField(max_length=2, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=2, choices=ProfileStatus.choices, default=ProfileStatus.PENDING)
     comments = models.TextField(blank=True, verbose_name="Poznámky")
-
-    @property
-    def vek(self):
-        """Pomocná vlastnost (property), která automaticky spočítá aktuální věk."""
-        if not self.birth_date:
-            return None
-
-        dnes = date.today()
-        return dnes.year - self.birth_date.year - (
-            (dnes.month, dnes.day) < (self.birth_date.month, self.birth_date.day)
-        )
-
 
     @final
     class Meta:
@@ -130,8 +144,15 @@ class Profile(models.Model):
         verbose_name_plural = "Členové spolku"
 
     @override
+    def clean(self):
+        super().clean()
+
+        if self.street_and_number and self.city and self.zip_code:
+            validuj_adresu(self.street_and_number, self.city, self.zip_code)
+
+    @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({membership})" + (" {status}" if status != Status.ACTIVE else "")
+        return f"{self.first_name} {self.last_name} ({self.membership})" + (" {self.status}" if self.status != self.ProfileStatus.ACTIVE else "")
 
 
 @final
@@ -192,3 +213,18 @@ class ParentRelationship(models.Model):
     @override
     def __str__(self):
         return f"{self.parent} -> {self.student} ({self.valid_from} - {self.valid_until or 'současnost'})"
+
+
+@final
+class RequestMergeUser(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profile_merge_request',
+    )
+
+    old_email = models.EmailField(verbose_name="Stávající email")
+    student_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
+    student_by_rc = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno rodným číslem)")
+
+    comments = models.TextField(blank=True, verbose_name="Poznámky")

@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib import admin
 from .models import ClassCollective, Profile, Student, ParentRelationship
-from .models import validate_rodne_cislo_format, hash_rodne_cislo
+from . import utils
+from .models import rodne_cislo_validate_format
 
 class StudentInline(admin.TabularInline):
     model = Student
@@ -19,7 +20,7 @@ class StudentAdminForm(forms.ModelForm):
         required=True,
         label="Rodné číslo",
         help_text="Zadejte ve formátu RRMMDD/XXXX. Číslo se ihned zahashuje a neuloží se v čitelné podobě.",
-        validators=[validate_rodne_cislo_format]  # Použijeme náš validátor
+        validators=[rodne_cislo_validate_format]  # Použijeme náš validátor
     )
 
     class Meta:
@@ -30,9 +31,9 @@ class StudentAdminForm(forms.ModelForm):
         # Než se model uloží, vytáhneme rodné číslo z formuláře a zahashujeme ho
         instance = super().save(commit=False)
         rc_number = self.cleaned_data.get('rc_number')
-        
+
         if rc_number:
-            instance.rc_hash = hash_rodne_cislo(rc_number)
+            instance.rc_hash = utils.rodne_cislo_hash(rc_number)
 
         if commit:
             instance.save()

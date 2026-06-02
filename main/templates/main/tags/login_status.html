@@ -18,32 +18,12 @@
 </div>
 
 {% elif not is_member %}
-<div class="feature-icon mx-auto"><i class="bi bi-people-fill"></i></div>
 <h3 class="h4 mb-2">Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
 <p class="text-muted small mb-4">Tento login (<em>{{ user.email }}</em>) není spojen s žádným členem spolku - buď jste pro přihlášení použili jiný login nebo jste ještě nepožádali o členství.</p>
-<hr/>
-<p class="text-muted small mb-4">Jsem rodičem studenta naší školy a chcete se stát členem spolku</p>
 
 <div class="d-grid gap-3">
-    <a href="{% url 'user_config' %}" class="btn btn-waldorf py-2.5 fw-bold">
-        <i class="bi bi-box-arrow-in-right me-2"></i>Chci se stát členem spolku
+    <a href="{% url 'new_user' %}" class="btn btn-waldorf py-2.5 fw-bold">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Spravovat účet
     </a>
 </div>
-
-<p class="text-muted small mb-4">Jsem členem spolku a toto je můj nový/další login.</p>
-
-<div class="d-grid gap-3">
-    <a href="{% url 'user_config' %}" class="btn btn-waldorf py-2.5 fw-bold">
-        <i class="bi bi-box-arrow-in-right me-2"></i>Přidat nový login
-    </a>
-</div>
-
-
-{% else %}
-<div class="feature-icon mx-auto"><i class="bi bi-house-heart-fill"></i></div>
-<h3 class="h4 mb-3">Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
-
 {% endif %}
-
-
-
