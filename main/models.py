@@ -130,7 +130,7 @@ class Profile(models.Model):
     city = models.CharField("Město", max_length=100)
     zip_code = models.CharField("PSČ", max_length=20)
 
-    phone_number = PhoneNumberField(blank=True)
+    phone_number = PhoneNumberField(blank=True, verbose_name="Telefonní číslo")
     email = models.EmailField()
 
     membership = models.CharField(max_length=2, choices=MembershipType.choices, default=MembershipType.ACTIVE)

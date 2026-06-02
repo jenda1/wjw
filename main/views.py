@@ -16,7 +16,7 @@ def index(request):
 
 @login_required
 def new_user(request):
-    profile_form = forms.ProfileForm()
+    profile_form = forms.ProfileForm(request.user)
     merge_form = forms.RequestMergeUserForm()
 
     if request.method == 'POST':
@@ -35,9 +35,9 @@ def new_user(request):
                 return redirect('home')
 
     return render(request, 'main/new_user.html', {
-                  'profile_form': profile_form,
-                  'merge_form': merge_form,
-                  })
+        'profile_form': profile_form,
+        'merge_form': merge_form,
+    })
 
 
 @login_required
