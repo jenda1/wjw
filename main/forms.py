@@ -2,7 +2,7 @@ from typing import final
 
 from django import forms
 
-from .models import Profile, RequestMergeUser
+from .models import Profile, ProfileMergeRequest
 from . import utils
 
 
@@ -55,7 +55,7 @@ class RequestMergeUserForm(forms.ModelForm):
 
     @final
     class Meta:
-        model = RequestMergeUser
+        model = ProfileMergeRequest
 
         fields = [ 'old_email', 'student_name', 'rodne_cislo', 'comments']
 

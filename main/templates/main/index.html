@@ -31,15 +31,17 @@
 
 
 {% block content %}
-
-{% if user.profile.status == 'PE' %}
-Evidujeme tvoji zadost o členství ve spolku. Jakmile bude zpracována, budeš informován/a e-mailem. Děkujeme za tvůj zájem a trpělivost!
-{% else %}
 <div class="row my-5 pt-4">
     <div class="col-12">
         <div class="community-section">
+            {% if user.profile.status == 'PE' %}
+            <p>Evidujeme tvoji zadost o členství ve spolku. Jakmile bude zpracována, budeš informován/a e-mailem.</p>
+            <p>Děkujeme za tvůj zájem a trpělivost!</p>
+            {% elif user.profile_merge_request %}
+            <p>Evidujeme tvoji zadost o spojení tohoto účtu s <b>{{ user.profile_merge_request.old_email }}.</b> Jakmile bude schválena, budeš informován/a e-mailem.</p>
+            <p>Děkujeme za trpělivost!</p>
+            {% else %}
             <div class="row align-items-center">
-                {% if not user.profile.is_member %}
                 <div class="col-md-8">
                     <h3>Spolupráce rodiny a školy</h3>
                     <p class="mb-0">Základní škola waldorfská v Praze 5 – Jinonicích je plně organizovanou školou zřizovanou Městskou částí Praha 5. Vznikla díky úzké spolupráci Městské části a iniciativy rodičů organizovaných ve Spolku. Své první prvňáčky přivítala již ve školním roce 1992/1993.</p>
@@ -47,28 +49,9 @@ Evidujeme tvoji zadost o členství ve spolku. Jakmile bude zpracována, budeš 
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" class="btn btn-outline-dark px-4 py-2 rounded-pill fw-bold">Spolek rodičů</a>
                 </div>
-                {% else %}
-                <h3>Vítej, {{ user.first_name|vokativ|capfirst }}!</h3>
-                {% endif %}
             </div>
-        </div>
+            {% endif %}
+         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
-
-{% comment %}
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">Contact Us</h3>
-        </div>
-        <div class="card-body">
-            <form method="post" class="form">
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                <div class="mt-3">
-                    {{ bootstrap_button("Submit", button_type="submit", button_class="btn-success") }}
-                </div>
-            </form>
-        </div>
-    </div>
-{% endcomment %}

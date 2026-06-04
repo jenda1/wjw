@@ -110,7 +110,7 @@ class ClassCollective(models.Model):
     @override
     def __str__(self):
         return (
-            f"{self.school_class}{self.variant if self.variant else ""} ({self.year})"
+            f"{self.school_class}{self.variant if self.variant else ''} ({self.year})"
         )
 
 
@@ -156,7 +156,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.status if self.status == self.ProfileStatus.PENDING else self.membership})"
+        return f"{self.first_name} {self.last_name} ({self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership})"
 
 
 @final
@@ -220,11 +220,10 @@ class ParentRelationship(models.Model):
 
 
 @final
-class RequestMergeUser(models.Model):
+class ProfileMergeRequest(models.Model):
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='profile_merge_request',
+        cast(str, settings.AUTH_USER_MODEL),
+        on_delete=models.CASCADE
     )
 
     old_email = models.EmailField(verbose_name="Stávající email")

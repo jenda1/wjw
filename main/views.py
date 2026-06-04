@@ -19,10 +19,10 @@ def index(request: HttpRequest):
 
     user = cast(MyUser, request.user) if request.user.is_authenticated else None
     is_known = user and user.profile  # or user.profile_merge_request),
-    is_member =  is_known and user.profile.status == Profile.ProfileStatus.ACTIVE
+    is_member =  is_known and user.profile.status == Profile.ProfileStatus.ACTIVE[0]
 
     if is_member:
-        return redirect(reverse('home'))
+        return redirect(reverse('actual'))
 
     return render(request, 'main/index.html', {
         'user': request.user,
@@ -32,17 +32,16 @@ def index(request: HttpRequest):
 
 @login_required
 def new_user(request: HttpRequest):
-    profile_form = forms.ProfileForm(request.user)
+    user = cast(MyUser, request.user)
+    profile_form = forms.ProfileForm(user)
     merge_form = forms.RequestMergeUserForm()
 
     if request.method == 'POST':
         if 'submit_profile' in request.POST:
             profile_form = forms.ProfileForm(request.user, request.POST)
             if profile_form.is_valid():
-                profile = profile_form.save()
-
-                request.user.profile = profile
-                request.user.save()
+                user.profile = profile_form.save()
+                user.save()
 
                 messages.success(request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.')
                 return redirect('home')
