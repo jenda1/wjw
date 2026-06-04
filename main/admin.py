@@ -1,16 +1,16 @@
 from django import forms
 from django.contrib import admin
-from .models import ClassCollective, Profile, Student, ParentRelationship
 from . import utils
-from .models import rodne_cislo_validate_format
+
+from . import models
 
 class StudentInline(admin.TabularInline):
-    model = Student
+    model = models.Student
     extra = 1
     fields = ("first_name", "last_name", "school_class")
 
-class ParentRelationshipInline(admin.TabularInline):
-    model = ParentRelationship
+class ProfileRelationshipInline(admin.TabularInline):
+    model = models.ParentRelationship
 
 
 class StudentAdminForm(forms.ModelForm):
@@ -20,11 +20,11 @@ class StudentAdminForm(forms.ModelForm):
         required=True,
         label="Rodné číslo",
         help_text="Zadejte ve formátu RRMMDD/XXXX. Číslo se ihned zahashuje a neuloží se v čitelné podobě.",
-        validators=[rodne_cislo_validate_format]  # Použijeme náš validátor
+        validators=[models.rodne_cislo_validate_format]  # Použijeme náš validátor
     )
 
     class Meta:
-        model = Student
+        model = models.Student
         fields = '__all__'  # Načte ostatní pole (např. jméno)
 
     def save(self, commit=True):
@@ -40,7 +40,7 @@ class StudentAdminForm(forms.ModelForm):
 
         return instance
 
-@admin.register(ClassCollective)
+@admin.register(models.ClassCollective)
 class ClassCollectiveAdmin(admin.ModelAdmin):
     list_display = ("school_class", "year", "variant")
     list_filter = ("school_class",)
@@ -48,16 +48,16 @@ class ClassCollectiveAdmin(admin.ModelAdmin):
     inlines = [StudentInline]
 
 
-@admin.register(Profile)
-class ParentAdmin(admin.ModelAdmin):
+@admin.register(models.Profile)
+class ProfileAdmin(admin.ModelAdmin):
     list_display = ("first_name", "last_name", "email", "phone_number")
-    inlines = [ParentRelationshipInline]
+    inlines = [ProfileRelationshipInline]
 
-@admin.register(Student)
+@admin.register(models.Student)
 class StudentAdmin(admin.ModelAdmin):
     form = StudentAdminForm
     list_display = ("first_name", "last_name", "rc_hash", "school_class")
-    inlines = [ParentRelationshipInline]
+    inlines = [ProfileRelationshipInline]
     search_fields = ("first_name",
                      "last_name", "rc_hash", "school_class")
 

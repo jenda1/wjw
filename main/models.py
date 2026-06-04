@@ -2,10 +2,9 @@ from datetime import date
 from typing import final, override, cast
 
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 import re
@@ -44,29 +43,34 @@ def validuj_adresu(street_and_number:str, city:str, zip_code:str):
     full_address = f"{street_and_number}, {city}, {zip_code}"
 
     # Mapy.cz Geocoding API setup
+    url = cast(str, settings.MAPY_CZ_API_URL)
     api_key = cast(str, settings.MAPY_CZ_API_KEY)
-    url = "https://api.mapy.cz/v1/geocode"
-    params = {"query": full_address, "apikey": api_key, "lang": "cz"}
 
+    params = {"query": full_address, "apikey": api_key, "lang": cast(str, settings.LANGUAGE_CODE), "locality": "cz"}
     try:
         response = requests.get(url, params=params, timeout=5)
-        response.raise_for_status()
-        data = response.json()
+        if not response:
+            raise ValidationError({"street_and_number": "Interní chyba při ověřování adresy: " + response.reason if response.reason else "Neznámá chyba"})
 
+        data = response.json()
         if not data.get("items"):
             raise ValidationError({
-                'street_and_number': "Adresu se nepodařilo zkontrolovat. Zkontrolujte prosím překlepy."
+                'street_and_number': "Adresu se nepodařilo zkontrolovat - zdá se, že neexistuje (podle mapy.cz). Zkontrolujte prosím překlepy."
             })
 
         best_match = data["items"][0]
-        if best_match.get("type") not in ["addr", "premise"]:
+        if best_match.get("type") not in ["regional.address"]:
             raise ValidationError({
-                'street_and_number': "Adresa existuje, ale číslo popisné buď chybí a nebo neexistuje."
+                'street_and_number': "Adresa možná existuje, ale není jednoznačná - číslo popisné buď chybí a nebo neexistuje."
             })
 
     except requests.exceptions.RequestException:
-        raise ValidationError({"network": "chyba ... zkuste to pozdeji"})
+        raise ValidationError({"street_and_number": "chyba ... zkuste to pozdeji"})
 
+psc_validator = RegexValidator(
+    regex=r'^\d{3}\s?\d{2}$',
+    message="Zadejte platné PSČ ve formátu 123 45 nebo 12345."
+)
 
 @final
 class ClassCollective(models.Model):
@@ -124,14 +128,14 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=100, blank=False, verbose_name="Jméno")
     last_name = models.CharField(max_length=100, blank=False, verbose_name="Příjmení")
 
-    birth_date = models.DateField(blank=True, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
+    birth_date = models.DateField(blank=False, null=False, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
 
-    street_and_number = models.CharField("Ulice a číslo popisné", max_length=150)
-    city = models.CharField("Město", max_length=100)
-    zip_code = models.CharField("PSČ", max_length=20)
+    street_and_number = models.CharField("Ulice a číslo popisné", blank=False, max_length=150)
+    city = models.CharField("Město", blank=False, max_length=100)
+    zip_code = models.CharField("PSČ", validators=[psc_validator], max_length=10)
 
     phone_number = PhoneNumberField(blank=True, verbose_name="Telefonní číslo")
-    email = models.EmailField()
+    email = models.EmailField(unique=True, max_length=254, verbose_name="E-mail")
 
     membership = models.CharField(max_length=2, choices=MembershipType.choices, default=MembershipType.ACTIVE)
 

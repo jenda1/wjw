@@ -7,14 +7,11 @@ from main.models import Profile
 
 @final
 class MyUser(AbstractUser):
-    email = models.EmailField(unique=True, max_length=254)
-
     profile = models.ForeignKey(
         Profile,
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        related_name="users"
     )
 
     # Řekneme Djangu, že hlavním přihlašovacím údajem je email

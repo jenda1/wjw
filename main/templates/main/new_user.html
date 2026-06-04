@@ -25,7 +25,7 @@
                 <p class="text-muted small">Jste rodičem nově nastupujícího nebo současného žáka? Přihlašte se do spolku.</p>
 
                 <div class="bg-light p-3 small rounded-3 my-4 border text-muted">
-                    <i class="bi bi-info-circle-fill me-2"></i>Budete požádáni o vyplnění vašich kontaktních údajů, třídy a rodného čísla dítěte, třídy a druhu členstí ve spolku.
+                    Prosím přečtěte si nejprve <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" class="text-decoration-none">informace o spolku</a> a jeho činnosti. Pokud máte jakékoliv dotazy, neváhejte nás kontaktovat na <a href="mailto:info@spolekzws.cz" class="text-decoration-none">info@spolekzws.cz</a>.
                 </div>
             </div>
 
@@ -73,7 +73,7 @@
                     {% bootstrap_form merge_form %}
 
                     <div class="text-end">
-                        {% bootstrap_button "Odeslat žádost" button_type="submit" button_name="submit_merge" button_class="btn-waldorf btn-sm px-4" %}
+                        {% bootstrap_button "Odeslat žádost" button_type="submit" name="submit_merge" button_class="btn-waldorf btn-sm px-4" %}
                     </div>
                 </form>
             </div>
@@ -81,7 +81,14 @@
     </div>
 </div>
 
-<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+
+
+<div class="modal fade {% if profile_form.errors %}show d-block{% endif %}" 
+     id="profileModal"
+     tabindex="-1"
+     aria-labelledby="registraceModalLabel"
+     {% if profile_form.errors %}aria-modal="true" role="dialog"{% else %}aria-hidden="true"{% endif %}
+     style="{% if profile_form.errors %}display: block; background: rgba(0,0,0,0.5);{% endif %}">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg p-3">
 
@@ -99,7 +106,7 @@
 
                     <div class="text-end">
                         <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Zrušit</button>
-                        {% bootstrap_button "Odeslat přihlášku" button_type="submit" button_name="submit_profile" button_class="btn-waldorf btn-sm px-4" %}
+                        {% bootstrap_button "Odeslat přihlášku" button_type="submit" name="submit_profile" button_class="btn-waldorf btn-sm px-4" %}
                     </div>
                 </form>
             </div>

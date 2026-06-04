@@ -1,27 +1,39 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
+from typing import cast
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
+from users.models import MyUser
+
 from . import forms
+from .models import Profile
 
-def index(request):
-    if request.session.get('new_user_redirect'):
-        del request.session['new_user_redirect']
 
-        from django.contrib import messages
-        messages.info(request, "Vítejte! Prosím, vyplňte přihlášku do spolku")
-        return redirect(reverse('update_profile'))
+def index(request: HttpRequest):
+    user = cast(MyUser, request.user) if request.user.is_authenticated else None
 
-    return render(request, 'main/index.html')
+    msgs = messages.get_messages(request)
+    if 'prvni_login' in [m.message for m in msgs]:
+        return redirect(reverse('new_user'))
+
+    return render(request, 'main/index.html', {
+        'user': request.user,
+        'is_known': user and user.profile,  # or user.profile_merge_request),
+        'is_member': user and user.profile and user.profile.status == Profile.ProfileStatus.APPROVED,
+    })
+
 
 @login_required
-def new_user(request):
+def new_user(request: HttpRequest):
     profile_form = forms.ProfileForm(request.user)
     merge_form = forms.RequestMergeUserForm()
 
     if request.method == 'POST':
         if 'submit_profile' in request.POST:
-            profile_form = forms.ProfileForm(request.POST)
+            profile_form = forms.ProfileForm(request.user, request.POST)
             if profile_form.is_valid():
                 profile_form.save()
                 messages.success(request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.')
@@ -38,37 +50,3 @@ def new_user(request):
         'profile_form': profile_form,
         'merge_form': merge_form,
     })
-
-
-@login_required
-def profile_update(request):
-    user = request.user
-    profile = user.profile
-
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Váš profil byl úspěšně aktualizován!')
-            return redirect('home')
-    else:
-        form = ProfileForm(instance=profile)
-
-    return render(request, 'main/profile_update.html', {'form': form})
-
-
-def profile_merge(request):
-    user = request.user
-    profile = user.profile
-
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Váš profil byl úspěšně aktualizován!')
-            return redirect('home')
-    else:
-        form = ProfileForm(instance=profile)
-
-    return render(request, 'main/profile_new.html', {'form': form})
-  

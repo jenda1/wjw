@@ -2,7 +2,7 @@
 {% load custom_tags %}
 
 {% block header %}
-{% if not user.profile.is_member %}
+{% if not is_known %}
 <header class="hero-section">
     <div class="container">
         <div class="row align-items-center g-5">
