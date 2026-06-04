@@ -156,7 +156,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.membership})" + (" {self.status}" if self.status != self.ProfileStatus.ACTIVE else "")
+        return f"{self.first_name} {self.last_name} ({self.status if self.status == self.ProfileStatus.PENDING else self.membership})"
 
 
 @final

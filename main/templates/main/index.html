@@ -2,12 +2,10 @@
 {% load custom_tags %}
 
 {% block header %}
-{% if not is_known %}
 <header class="hero-section">
     <div class="container">
         <div class="row align-items-center g-5">
-
-            <div class="col-lg-7 text-center text-lg-start">
+            <div class="{% if is_known %}col-lg-12{% else %}col-lg-7{% endif %} text-center text-lg-start">
                 {# <span class="badge px-3 py-2 mb-3 rounded-pill" style="background-color: var(--waldorf-brown); color: var(--waldorf-dark);">Spolek waldorfské školy v Jinonicích</span> #}
                 <h1 class="display-4 mb-3">Spolek waldorfské školy v Jinonicích</h1>
                 <p class="lead mb-4">Waldorfská pedagogika staví na úzkém partnerství mezi učiteli a rodiči. Spolek waldorfské školy v Jinonicích je dobrovolným, nevládním, neziskovým sdružením rodičů, pedagogů a přátel ZŠ waldorfské v Praze 5 – Jinonicích, jehož posláním je podpora, propagace a rozvoj školy s waldorfskou pedagogikou.</p>
@@ -19,20 +17,24 @@
 {% endcomment %}
             </div>
 
+            {% if not is_known %}
             <div class="col-lg-5">
                 <div class="auth-box p-4 p-md-5 text-center">
                     {% render_login_status %}
                 </div>
             </div>
-
+            {% endif %}
         </div>
     </div>
 </header>
-{% endif %}
 {% endblock %}
 
 
 {% block content %}
+
+{% if user.profile.status == 'PE' %}
+Evidujeme tvoji zadost o členství ve spolku. Jakmile bude zpracována, budeš informován/a e-mailem. Děkujeme za tvůj zájem a trpělivost!
+{% else %}
 <div class="row my-5 pt-4">
     <div class="col-12">
         <div class="community-section">
@@ -52,6 +54,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% comment %}

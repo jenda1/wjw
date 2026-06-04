@@ -23,7 +23,7 @@ class MyUserAdmin(UserAdmin):
 
     @admin.display(description='Profile Name')
     def get_profile_name(self, instance):
-        return instance.profile.name if instance.profile else 'No Profile Assigned'
+        return str(instance.profile) if instance.profile else 'No Profile Assigned'
 
     @admin.display(description='Phone Number')
     def get_phone_number(self, instance):
