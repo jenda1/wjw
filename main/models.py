@@ -10,17 +10,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 import re
 import requests
 
-
-def rodne_cislo_validate_format(value: str):
-    match = re.match(r'^(\d{6})\/?(\d{3,4})$', value)
-    if not match:
-        raise ValidationError('Rodné číslo nemá správný formát.')
-    cislo_text = match.group(1) + match.group(2)
-    if len(cislo_text) == 10 and int(cislo_text) % 11 != 0:
-        if not (int(cislo_text[:-1]) % 11 == 10 and cislo_text[-1] == '0'):
-            raise ValidationError('Rodné číslo není platné.')
-
-
 def validuj_datum_narozeni(value):
     """Bariéra, která nepustí datum z budoucnosti a příliš staré lidi."""
     if not value:
@@ -35,8 +24,8 @@ def validuj_datum_narozeni(value):
     if age < 18:
         raise ValidationError("Datum narození je špatně (a nebo nejste plnoletý(á)?!?).")
 
-    if age > 80:
-        raise ValidationError("Datum narození je špatně (a nebo jste otec Járy Cimrmana).")
+    if age > 90:
+        raise ValidationError("Datum narození je špatně (a nebo jste otec Járy Cimrmana?).")
 
 
 def validuj_adresu(street_and_number:str, city:str, zip_code:str):
@@ -227,6 +216,20 @@ class ProfileMergeRequest(models.Model):
     )
 
     old_email = models.EmailField(verbose_name="Stávající email")
+    student_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
+    student_by_rc = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno rodným číslem)")
+
+    comments = models.TextField(blank=True, verbose_name="Poznámky")
+
+
+@final
+class ProfileStudentRequest(models.Model):
+    class ActionType(models.TextChoices):
+        ADD = 'A', 'přidat dítě'
+
+    profile = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.CASCADE)
+    action = models.CharField(max_length=2, choices=ActionType.choices, default=ActionType.ADD)
+
     student_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
     student_by_rc = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno rodným číslem)")
 

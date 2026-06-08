@@ -2,9 +2,10 @@ from typing import final
 
 from django import forms
 
-from .models import Profile, ProfileMergeRequest
-from . import utils
+from main.fields import StudentByRodneCisloField
 
+from . import utils
+from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 
 @final
 class ProfileForm(forms.ModelForm):
@@ -42,22 +43,30 @@ class ProfileForm(forms.ModelForm):
 
 
 @final
-class RequestMergeUserForm(forms.ModelForm):
-    rodne_cislo = forms.CharField(
-        label="Rodné číslo dítěte (pro jednoznačné ověření)",
-        max_length=15,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'YYMMDD/XXXX'
-        }),
-        help_text="Rodné číslo v databázi neukládáme, slouží jen k ověření žádosti."
-    )
+class ProfileStudentRequestForm(forms.ModelForm):
+    student_by_rc = StudentByRodneCisloField()
+
+    @final
+    class Meta:
+        model = ProfileStudentRequest
+        fields = ['student_name', 'student_by_rc', 'comments']
+        widgets = {
+            'student_name': forms.TextInput(attrs={'placeholder': 'Tomáš Novák, 3. třída' }),
+            'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),
+        }
+
+ProfileStudentRequestFormSet = forms.formset_factory(ProfileStudentRequestForm, extra=1)
+
+
+@final
+class ProfileMergeRequestForm(forms.ModelForm):
+    student_by_rc = StudentByRodneCisloField()
 
     @final
     class Meta:
         model = ProfileMergeRequest
 
-        fields = [ 'old_email', 'student_name', 'rodne_cislo', 'comments']
+        fields = [ 'old_email', 'student_name', 'student_by_rc', 'comments']
 
         lables = {
             'old_email': 'E-mail, který jste používali dříve (nebo stále používáte)',
@@ -68,12 +77,3 @@ class RequestMergeUserForm(forms.ModelForm):
             'student_name': forms.TextInput(attrs={'placeholder': 'Tomáš Novák, 3. třída' }),
             'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),
         }
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-
-        rc_hash = utils.rodne_cislo_hash(self.cleaned_data['rodne_cislo'])
-
-        if commit:
-            instance.save()
-        return instance

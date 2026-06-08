@@ -1,5 +1,6 @@
 from typing import cast
 
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
@@ -18,15 +19,14 @@ def index(request: HttpRequest):
         return redirect(reverse('new_user'))
 
     user = cast(MyUser, request.user) if request.user.is_authenticated else None
-    is_known = user and user.profile  # or user.profile_merge_request),
-    is_member =  is_known and user.profile.status == Profile.ProfileStatus.ACTIVE[0]
+    profile = user and user.profile
 
-    if is_member:
+    if profile and profile.status == Profile.ProfileStatus.ACTIVE[0]:
         return redirect(reverse('actual'))
 
     return render(request, 'main/index.html', {
         'user': request.user,
-        'is_known': is_known,
+        'is_known': profile is not None,
     })
 
 
@@ -34,20 +34,27 @@ def index(request: HttpRequest):
 def new_user(request: HttpRequest):
     user = cast(MyUser, request.user)
     profile_form = forms.ProfileForm(user)
-    merge_form = forms.RequestMergeUserForm()
+    students_form = forms.ProfileStudentRequestFormSet()
+    merge_form = forms.ProfileMergeRequestForm()
 
     if request.method == 'POST':
         if 'submit_profile' in request.POST:
             profile_form = forms.ProfileForm(request.user, request.POST)
-            if profile_form.is_valid():
-                user.profile = profile_form.save()
-                user.save()
+            students_form = forms.ProfileStudentRequestFormSet(request.POST)
+            print(students_form)
+
+            if profile_form.is_valid() and students_form.is_valid():
+                with transaction.atomic():
+                    profile = profile_form.save()
+                    user.profile = profile
+                    user.save()
+                    students_form.save()
 
                 messages.success(request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.')
                 return redirect('home')
 
         elif 'submit_merge' in request.POST:
-            merge_form = forms.RequestMergeUserForm(request.POST)
+            merge_form = forms.ProfileMergeRequestForm(request.POST)
             if merge_form.is_valid():
                 merge_form.instance.user = request.user
                 merge_form.save()
@@ -57,5 +64,7 @@ def new_user(request: HttpRequest):
 
     return render(request, 'main/new_user.html', {
         'profile_form': profile_form,
+        'students_form': students_form,
         'merge_form': merge_form,
+        'profile_form_is_valid': profile_form.is_valid() and students_form.is_valid(),
     })
