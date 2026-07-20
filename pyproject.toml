@@ -52,10 +52,10 @@ line-length = 120
 [tool.pycodestyle]
 max-line-length = 120
 
-[tool.pyright]
-reportMissingTypeStubs = false
-venvPath = "."
-venv = ".venv"
+#[tool.pyright]
+#reportMissingTypeStubs = false
+#venvPath = "."
+#venv = ".venv"
 
 [tool.basedpyright]
 reportMissingTypeArgument = "none"

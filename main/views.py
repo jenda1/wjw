@@ -41,7 +41,6 @@ def new_user(request: HttpRequest):
         if 'submit_profile' in request.POST:
             profile_form = forms.ProfileForm(request.user, request.POST)
             students_form = forms.ProfileStudentRequestFormSet(request.POST)
-            print(students_form)
 
             if profile_form.is_valid() and students_form.is_valid():
                 with transaction.atomic():
