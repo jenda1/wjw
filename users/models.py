@@ -15,8 +15,8 @@ class MyUser(AbstractUser):
     )
 
     # Řekneme Djangu, že hlavním přihlašovacím údajem je email
-    #USERNAME_FIELD = 'email'
-    #REQUIRED_FIELDS = []
+    # USERNAME_FIELD = 'email'
+    # REQUIRED_FIELDS = []
 
     @override
     def __str__(self):

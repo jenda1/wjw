@@ -13,6 +13,10 @@ from . import forms
 from .models import Profile
 
 
+def is_member(profile: Profile | None) -> bool:
+    return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
+
+
 def index(request: HttpRequest):
     msgs = messages.get_messages(request)
     if 'prvni_login' in [m.message for m in msgs]:
@@ -21,13 +25,28 @@ def index(request: HttpRequest):
     user = cast(MyUser, request.user) if request.user.is_authenticated else None
     profile = user and user.profile
 
-    if profile and profile.status == Profile.ProfileStatus.ACTIVE[0]:
-        return redirect(reverse('actual'))
+    if is_member(profile):
+        return redirect(reverse('home'))
 
     return render(request, 'main/index.html', {
         'user': request.user,
         'is_known': profile is not None,
     })
+
+
+@login_required
+def home(request: HttpRequest):
+    user = cast(MyUser, request.user) if request.user.is_authenticated else None
+    profile = user and user.profile
+
+    if not is_member(profile):
+        return redirect(reverse('index'))
+
+    return render(request, 'main/home.html', {
+        'user': request.user,
+    })
+
+
 
 
 @login_required
@@ -47,10 +66,18 @@ def new_user(request: HttpRequest):
                     profile = profile_form.save()
                     user.profile = profile
                     user.save()
-                    students_form.save()
+
+                    for student_form in students_form:
+                        # Přeskočíme prázdné (nevyplněné) formuláře, např. nevyužitý extra formulář
+                        if not student_form.cleaned_data or not student_form.cleaned_data.get('student_name'):
+                            continue
+
+                        student_request = student_form.save(commit=False)
+                        student_request.profile = profile
+                        student_request.save()
 
                 messages.success(request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.')
-                return redirect('home')
+                return redirect('index')
 
         elif 'submit_merge' in request.POST:
             merge_form = forms.ProfileMergeRequestForm(request.POST)
@@ -59,7 +86,7 @@ def new_user(request: HttpRequest):
                 merge_form.save()
 
                 messages.success(request, 'Váše žádost byla zaregistrována hned jak ji zkontrolujeme vás budeme informovat emailem.')
-                return redirect('home')
+                return redirect('index')
 
     return render(request, 'main/new_user.html', {
         'profile_form': profile_form,

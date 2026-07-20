@@ -23,3 +23,14 @@ def render_login_status(context):
         'is_logged_in': is_logged_in,
         'is_member': is_member,
     }
+
+
+@register.inclusion_tag('main/tags/edit_icon.html')
+def edit_icon(url, title="Upravit"):
+    """
+    Použití v šabloně: {% edit_icon url "Popisek" %}
+    """
+    return {
+        'url': url,
+        'title': title,
+    }

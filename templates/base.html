@@ -18,7 +18,7 @@
     <body>
         <nav class="navbar navbar-expand-lg sticky-top navbar-light">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
                     <i class="bi bi-people-fill me-2"></i> 
                     <span>Spolek waldorfské školy v Jinonicích</span>
                 </a>
@@ -31,27 +31,15 @@
             </div>
         </nav>
 
-        {% block header %}
-        {% comment %}
-        <header class="hero-section">
-            <div class="container text-center text-md-start">
-                <div class="row align-items-center">
-                    <div class="col-md-7">
-                        <h1 class="display-4 mb-3">Navštivte waldorfskou školu v Jinonicích</h1>
-                        <p class="lead mb-4">Jsme škola s komunitou, očekáváme aktivní účast rodičů na školních projektech. Kvalitní péče o dítě závisí na pozitivním vztahu a spolupráci rodičů se školou. Vycházíme z antroposofického pojetí člověka.</p>
-                        <a href="#" class="btn btn-waldorf btn-lg">Více o naší filozofii</a>
-                    </div>
-                </div>
-            </div>
-        </header>
-        {% endcomment %}
-        {% endblock %}
+        <!-- Notifikace -->
+        <div class="message-container">
+            {% bootstrap_messages %}
+        </div>
+
+        {% block header %}{% endblock %}
 
         <main class="container my-5">
-            {% bootstrap_messages %}
-
-            {% block content %}
-            {% endblock %}
+            {% block content %}{% endblock %}
         </main>
 
         <footer>
@@ -94,5 +82,13 @@
 
         {% bootstrap_javascript %}
         {% block javascript %}{% endblock %}
+        <script>
+            document.querySelectorAll('.message-container .alert').forEach(function (alertEl) {
+                setTimeout(function () {
+                    const alert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                    alert.close();
+                }, 10000);
+            });
+        </script>
     </body>
 </html>

@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
-import re
 import requests
 
 def validuj_datum_narozeni(value):
@@ -146,6 +145,10 @@ class Profile(models.Model):
     @override
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership})"
+
+    def get_status_full(self):
+        return f"{self.get_status_display()} - {self.get_membership_display()}"
+
 
 
 @final

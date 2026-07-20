@@ -1,0 +1,48 @@
+{% extends "main/base.html" %}
+{% load custom_tags %}
+
+{% block content %}
+<div class="row my-4">
+  <div class="col-12 col-md-8 col-lg-6">
+    
+    <h4 class="mb-4 pb-2 fw-bold text-dark d-flex align-items-center gap-2">
+      Vítejte na stránkách spolku, {{ user.first_name|vokativ|capfirst }}
+    </h4>
+
+    <!-- Strukturovaný popisný seznam (Description List) -->
+    <dl class="row gy-3 align-items-center">
+      <!-- Typ členství (s hover editací) -->
+      <dt class="col-sm-4 text-muted fw-normal">Typ členství</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 fw-semibold">
+          {{ user.profile.get_status_full }}
+        </span>
+        {% edit_icon profile_edit %}
+      </dd>
+
+      <!-- email -->
+      <dt class="col-sm-4 text-muted fw-normal">Email</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">{{ user.profile.email }}</span>
+        {% edit_icon profile_edit %}
+      </dd>
+
+
+      <!-- Děti (s hover editací) -->
+      <dt class="col-sm-4 text-muted fw-normal">Děti</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">
+          {% if user.profile.children.all %}
+            {% for child in user.profile.children.all %}
+              {{ child.name }}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
+            {% endfor %}
+          {% else %}
+            <span class="text-muted fst-italic">Žádné děti nenalezeny</span>
+          {% endif %}
+        </span>
+        {% edit_icon profile_edit %}
+      </dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

@@ -73,6 +73,90 @@ h1, h2, h3, .navbar-brand {
     color: var(--waldorf-dark);
 }
 
+/* Notifikace (messages) */
+.message-container {
+    position: fixed;
+    top: 90px; /* pod sticky navbarem */
+    right: 20px;
+    z-index: 1080;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.message-container .alert {
+    pointer-events: auto;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 14px 18px;
+    animation: slide-in 0.3s ease-out;
+    color: #fff;
+}
+
+.message-container .alert-success {
+    background-color: var(--waldorf-green);
+    border-left: 4px solid #4f8a71;
+}
+
+.message-container .alert-danger {
+    background-color: var(--waldorf-orange);
+    border-left: 4px solid #c14f34;
+}
+
+.message-container .alert-warning {
+    background-color: #d9a441;
+    color: #3d405b;
+    border-left: 4px solid #b3822c;
+}
+
+.message-container .alert-info {
+    background-color: var(--waldorf-dark);
+    border-left: 4px solid #2a2c40;
+}
+
+.message-container .alert .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+}
+
+.message-container .alert-warning .btn-close {
+    filter: none;
+    opacity: 0.6;
+}
+
+@keyframes slide-in {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 576px) {
+    .message-container {
+        top: 75px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
+
+
+
+/* Zvýrazní ikonu při hoveru nad rodičovským prvkem .hover-trigger */
+.hover-trigger:hover .hover-icon {
+  opacity: 1 !important;
+}
+
+/* Volitelně: zjemní přechod při najetí */
+.hover-icon {
+  transition: opacity 0.2s ease-in-out;
+}
+
+
+
+
 
 /* Cards / Aktuality */
 .onboarding-card {

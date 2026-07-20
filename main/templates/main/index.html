@@ -31,27 +31,86 @@
 
 
 {% block content %}
-<div class="row my-5 pt-4">
-    <div class="col-12">
-        <div class="community-section">
-            {% if user.profile.status == 'PE' %}
-            <p>Evidujeme tvoji zadost o členství ve spolku. Jakmile bude zpracována, budeš informován/a e-mailem.</p>
-            <p>Děkujeme za tvůj zájem a trpělivost!</p>
-            {% elif user.profile_merge_request %}
-            <p>Evidujeme tvoji zadost o spojení tohoto účtu s <b>{{ user.profile_merge_request.old_email }}.</b> Jakmile bude schválena, budeš informován/a e-mailem.</p>
-            <p>Děkujeme za trpělivost!</p>
-            {% else %}
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h3>Spolupráce rodiny a školy</h3>
-                    <p class="mb-0">Základní škola waldorfská v Praze 5 – Jinonicích je plně organizovanou školou zřizovanou Městskou částí Praha 5. Vznikla díky úzké spolupráci Městské části a iniciativy rodičů organizovaných ve Spolku. Své první prvňáčky přivítala již ve školním roce 1992/1993.</p>
-                </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" class="btn btn-outline-dark px-4 py-2 rounded-pill fw-bold">Spolek rodičů</a>
-                </div>
+<div class="row my-5 pt-2">
+  <div class="col-12">
+    {% if user.profile.status == 'PE' %}
+      <!-- Stav 1: Čekající žádost o členství -->
+      <div class="card border-0 shadow-sm bg-light rounded-4 overflow-hidden">
+        <div class="card-body p-4 p-md-5 position-relative">
+          <div class="d-flex align-items-start gap-4">
+            <div class="rounded-circle bg-warning bg-opacity-10 p-3 text-warning d-none d-sm-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.123.321zM2.418 5.221a7 7 0 0 0-.445.98l-.92-.396A8 8 0 0 1 1.52 4.673zM3.88 2.39a7 7 0 0 0-.756.756l-.707-.707A8 8 0 0 1 3.173 1.68zM12.42 2.39a7 7 0 0 1 .756.756l.707-.707a8 8 0 0 0-.883-.882zM1.019 8.515a7 7 0 0 0 .299.985l-.976.219A8 8 0 0 1 0 8.5a8 8 0 0 1 .022-.589l.997.104a7 7 0 0 0-.004.5zm13.962 0a7 7 0 0 0-.004-.5l.997-.104A8 8 0 0 1 16 8.5a8 8 0 0 1-.022.589l-.976-.219a7 7 0 0 0 .299-.985zM8 5.5a.5.5 0 0 0-1 0v3.354l-1.428 1.429a.5.5 0 1 0 .708.707l1.5-1.5A.5.5 0 0 0 8 9z"/>
+              </svg>
             </div>
-            {% endif %}
-         </div>
-    </div>
+            <div>
+              <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-medium">Žádost se zpracovává</span>
+              <h4 class="fw-bold mb-2 text-dark">Evidujeme tvoji žádost o členství ve spolku</h4>
+              <p class="text-muted mb-0">Jakmile bude žádost zpracována, dáme ti ihned vědět e-mailem. Děkujeme za tvůj zájem a trpělivost!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% elif user.profile_merge_request %}
+      <!-- Stav 2: Čekající žádost o sloučení účtů -->
+      <div class="card border-0 shadow-sm bg-light rounded-4 overflow-hidden">
+        <div class="card-body p-4 p-md-5 position-relative">
+          <div class="d-flex align-items-start gap-4">
+            <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary d-none d-sm-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-person-gear" viewBox="0 0 16 16">
+                <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.516 10.68 5.829 10 8 10q.324 0 .626.022a6 6 0 0 0-.323 1 .72.72 0 0 0-.285-.02H8c-2.148 0-3.262.62-3.834 1.194C3.593 12.788 3.5 13.342 3.5 13.5z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill fw-medium">Propojení účtů</span>
+              <h4 class="fw-bold mb-2 text-dark">Žádost o spojení účtu v řešení</h4>
+              <p class="text-muted mb-0">
+                Evidujeme žádost o spojení tohoto účtu s <span class="fw-semibold text-dark">{{ user.profile_merge_request.old_email }}</span>.
+                Jakmile ji schválíme, pošleme ti potvrzení e-mailem. Zatím prosím používejte původní účet. Děkujeme za trpělivost!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% else %}
+
+      <!-- Stav 3: neznamy uzivatel -->
+      <div class="card border-0 shadow-sm bg-dark text-white rounded-4 overflow-hidden position-relative">
+        <!-- Jemné pozadí akcentu -->
+        <div class="position-absolute top-0 end-0 bottom-0 start-0 opacity-10 bg-gradient" style="background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);"></div>
+        <div class="card-body p-4 p-md-5 position-relative">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+              <div class="d-inline-flex align-items-center gap-2 mb-2 text-warning fw-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                </svg>
+                <span>Komunita & Spolek</span>
+              </div>
+              <h3 class="fw-bold text-white mb-3">Spolupráce rodiny a školy</h3>
+              <p class="text-white-50 mb-0 leading-relaxed">
+                Základní škola waldorfská v Praze 5 – Jinonicích je plně organizovanou školou zřizovanou Městskou částí Praha 5. Vznikla díky úzké spolupráci Městské části a iniciativy rodičů organizovaných ve Spolku.
+              </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+              <a href="https://www.waldorfjinonice.cz/spolek-rodicu/" target="_blank" rel="noopener" class="btn btn-light btn-lg px-4 py-3 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2 transition-all">
+                <span>Spolek rodičů</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-arrow-right-short" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
 </div>
+
+
+
+
+
 {% endblock %}
