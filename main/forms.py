@@ -13,10 +13,9 @@ class ProfileForm(forms.ModelForm):
         model = Profile
 
         fields = [
-            'first_name', 'last_name',
             'birth_date',
             'street_and_number', 'city', 'zip_code',
-            'phone_number', 'email',
+            'phone_number',
             'membership', 'comments'
         ]
 
@@ -26,20 +25,6 @@ class ProfileForm(forms.ModelForm):
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
             'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Poznánky...'}),
         }
-
-    def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = user
-
-        if user:
-            # Předvyplnění hodnot
-            self.fields['first_name'].initial = user.first_name
-            self.fields['last_name'].initial = user.last_name
-
-            if user.email:
-                self.fields['email'].initial = user.email
-                self.fields['email'].widget.attrs['readonly'] = True
-                self.fields['email'].widget.attrs['class'] = 'form-control bg-light text-muted'
 
 
 @final

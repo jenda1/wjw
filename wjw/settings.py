@@ -51,7 +51,6 @@ INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 INSTALLED_APPS_MY = [
     'jazzmin', # musi byt prvni
-    'users',
     'main',
     'django_bootstrap5',
     'phonenumber_field',
@@ -147,7 +146,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-AUTH_USER_MODEL = 'users.MyUser'
+AUTH_USER_MODEL = 'auth.User'
 
 # 2. Konfigurace django-allauth pro autentizaci e-mailem
 

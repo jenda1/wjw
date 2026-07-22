@@ -113,8 +113,12 @@ class Profile(models.Model):
         ACTIVE = 'A', 'aktivní'
         PASSIVE = 'P', 'přispívající'
 
-    first_name = models.CharField(max_length=100, blank=False, verbose_name="Jméno")
-    last_name = models.CharField(max_length=100, blank=False, verbose_name="Příjmení")
+    user = models.OneToOneField(
+        cast(str, settings.AUTH_USER_MODEL),
+        on_delete=models.PROTECT,
+        related_name='profile',
+        verbose_name="Uživatelský účet",
+    )
 
     birth_date = models.DateField(blank=False, null=False, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
 
@@ -123,7 +127,6 @@ class Profile(models.Model):
     zip_code = models.CharField("PSČ", validators=[psc_validator], max_length=10)
 
     phone_number = PhoneNumberField(blank=True, verbose_name="Telefonní číslo")
-    email = models.EmailField(unique=True, max_length=254, verbose_name="E-mail")
 
     membership = models.CharField(max_length=2, choices=MembershipType.choices, default=MembershipType.ACTIVE)
 
@@ -144,7 +147,7 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership})"
+        return f"{self.user.first_name} {self.user.last_name} ({self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership})"
 
     def get_status_full(self):
         return f"{self.get_status_display()} - {self.get_membership_display()}"

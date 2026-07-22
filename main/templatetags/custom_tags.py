@@ -16,7 +16,7 @@ def render_login_status(context):
     user = context.get('user')
 
     is_logged_in = user and user.is_authenticated
-    is_member = not user.is_anonymous and user.profile
+    is_member = not user.is_anonymous and getattr(user, 'profile', None)
 
     return {
         'user': user,

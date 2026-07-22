@@ -92,17 +92,22 @@ class ClassCollectiveAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("full_name", "email", "phone_number", "membership", "status_badge")
     list_filter = ("status", "membership", "city")
-    search_fields = ("first_name", "last_name", "email", "phone_number", "city")
-    ordering = ("last_name", "first_name")
+    search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
+    ordering = ("user__last_name", "user__first_name")
     # Použití upraveného inline s novým pojmenováním
     inlines = [StudentInlineForParent]
 
+    autocomplete_fields = ["user"]
+
     fieldsets = (
+        ("Účet", {
+            "fields": ("user",)
+        }),
         ("Osobní údaje", {
-            "fields": (("first_name", "last_name"), "birth_date")
+            "fields": ("birth_date",)
         }),
         ("Kontaktní údaje", {
-            "fields": ("email", "phone_number")
+            "fields": ("phone_number",)
         }),
         ("Adresa (Ověřuje se přes Mapy.cz)", {
             "fields": ("street_and_number", "city", "zip_code")
@@ -112,9 +117,13 @@ class ProfileAdmin(admin.ModelAdmin):
         }),
     )
 
-    @admin.display(description="Celé jméno", ordering="last_name")
+    @admin.display(description="Celé jméno", ordering="user__last_name")
     def full_name(self, obj):
-        return f"{obj.last_name} {obj.first_name}"
+        return f"{obj.user.last_name} {obj.user.first_name}"
+
+    @admin.display(description="Email")
+    def email(self, obj):
+        return obj.user.email
 
     @admin.display(description="Stav")
     def status_badge(self, obj):
@@ -150,7 +159,7 @@ class StudentAdmin(admin.ModelAdmin):
     @admin.display(description="Zákonní zástupci")
     def get_parents(self, obj):
         parents = obj.parents.all()
-        return ", ".join([f"{p.first_name} {p.last_name}" for p in parents]) or "---"
+        return ", ".join([f"{p.user.first_name} {p.user.last_name}" for p in parents]) or "---"
 
 
 @final
@@ -172,12 +181,12 @@ class ProfileMergeRequestAdmin(admin.ModelAdmin):
 class ProfileStudentRequestAdmin(admin.ModelAdmin):
     list_display = ("profile", "action", "student_name", "student_by_rc")
     list_filter = ("action",)
-    search_fields = ("profile__last_name", "student_name")
+    search_fields = ("profile__user__last_name", "student_name")
     autocomplete_fields = ["profile", "student_by_rc"]
 
 
 @admin.register(ParentRelationship)
 class ParentRelationshipAdmin(admin.ModelAdmin):
     list_display = ("parent", "student", "valid_from", "valid_until")
-    search_fields = ("parent__last_name", "student__last_name")
+    search_fields = ("parent__user__last_name", "student__last_name")
     autocomplete_fields = ["parent", "student"]

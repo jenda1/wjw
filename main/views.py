@@ -1,13 +1,9 @@
-from typing import cast
-
 from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
-
-from users.models import MyUser
 
 from . import forms
 from .models import Profile
@@ -22,8 +18,8 @@ def index(request: HttpRequest):
     if 'prvni_login' in [m.message for m in msgs]:
         return redirect(reverse('new_user'))
 
-    user = cast(MyUser, request.user) if request.user.is_authenticated else None
-    profile = user and user.profile
+    user = request.user if request.user.is_authenticated else None
+    profile = getattr(user, 'profile', None)
 
     if is_member(profile):
         return redirect(reverse('home'))
@@ -36,8 +32,8 @@ def index(request: HttpRequest):
 
 @login_required
 def home(request: HttpRequest):
-    user = cast(MyUser, request.user) if request.user.is_authenticated else None
-    profile = user and user.profile
+    user = request.user if request.user.is_authenticated else None
+    profile = getattr(user, 'profile', None)
 
     if not is_member(profile):
         return redirect(reverse('index'))
@@ -51,21 +47,21 @@ def home(request: HttpRequest):
 
 @login_required
 def new_user(request: HttpRequest):
-    user = cast(MyUser, request.user)
-    profile_form = forms.ProfileForm(user)
+    user = request.user
+    profile_form = forms.ProfileForm()
     students_form = forms.ProfileStudentRequestFormSet()
     merge_form = forms.ProfileMergeRequestForm()
 
     if request.method == 'POST':
         if 'submit_profile' in request.POST:
-            profile_form = forms.ProfileForm(request.user, request.POST)
+            profile_form = forms.ProfileForm(request.POST)
             students_form = forms.ProfileStudentRequestFormSet(request.POST)
 
             if profile_form.is_valid() and students_form.is_valid():
                 with transaction.atomic():
-                    profile = profile_form.save()
-                    user.profile = profile
-                    user.save()
+                    profile = profile_form.save(commit=False)
+                    profile.user = user
+                    profile.save()
 
                     for student_form in students_form:
                         # Přeskočíme prázdné (nevyplněné) formuláře, např. nevyužitý extra formulář
