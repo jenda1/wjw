@@ -1,0 +1,86 @@
+{% extends "main/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block header %}
+<div class="text-center mb-5 max-width-md mx-auto">
+    <div class="mb-3 text-muted">
+        <i class="bi bi-person-gear fs-2 text-muted"></i>
+    </div>
+    <h1 class="display-5 mb-3">Posouzení žádosti o sloučení</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+
+        <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4">
+            <h3 class="h5 mb-3">Údaje ze žádosti</h3>
+            <dl class="row mb-0">
+                <dt class="col-sm-4 text-muted fw-normal">Jméno dítěte</dt>
+                <dd class="col-sm-8">{{ merge_request.first_name }} {{ merge_request.last_name }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Datum narození dítěte</dt>
+                <dd class="col-sm-8">{{ merge_request.birth_date }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Dřívější e-mail</dt>
+                <dd class="col-sm-8">{{ merge_request.old_email }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Nové přihlášení</dt>
+                <dd class="col-sm-8">
+                    {% if merge_request.user %}
+                        {{ merge_request.user.first_name }} {{ merge_request.user.last_name }}
+                        ({{ merge_request.user.email }})
+                    {% else %}
+                        <span class="text-muted fst-italic">Účet žadatele již neexistuje</span>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Ověřený žák</dt>
+                <dd class="col-sm-8">
+                    {% if merge_request.student_by_name %}
+                        {{ merge_request.student_by_name }}
+                        {% with parents=merge_request.student_by_name.parents.all %}
+                            {% if parents %}
+                                <br>
+                                <span class="text-muted small">
+                                    Zákonní zástupci v systému:
+                                    {% for parent in parents %}
+                                        {{ parent.user.first_name }} {{ parent.user.last_name }}
+                                        ({{ parent.user.email }}){% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <span class="text-muted fst-italic">Jméno a datum narození se nepodařilo ověřit proti žádnému žákovi.</span>
+                    {% endif %}
+                </dd>
+
+                {% if merge_request.comments %}
+                <dt class="col-sm-4 text-muted fw-normal">Poznámky</dt>
+                <dd class="col-sm-8">{{ merge_request.comments }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4" style="border-top: 4px solid var(--waldorf-brown) !important;">
+            <h3 class="h5 mb-3">Sloučit s existujícím účtem</h3>
+            <p class="text-muted small">
+                Vyhledejte a vyberte existující účet, do kterého se má nové přihlášení sloučit.
+                Účet žadatele bude po sloučení smazán a jeho přihlášení bude fungovat pod vybraným účtem.
+            </p>
+            <form method="POST">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    {% bootstrap_button "Zamítnout žádost" button_type="submit" name="reject" button_class="btn-outline-danger" %}
+                    {% bootstrap_button "Sloučit účty" button_type="submit" button_class="btn-waldorf px-4" %}
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

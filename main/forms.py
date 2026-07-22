@@ -1,6 +1,7 @@
-from typing import final
+from typing import final, override
 
 from django import forms
+from django.contrib.auth import get_user_model
 
 from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 
@@ -103,6 +104,21 @@ class ProfileStudentRequestForm(StudentLookupMixin, forms.ModelForm):
         }
 
 ProfileStudentRequestFormSet = forms.formset_factory(ProfileStudentRequestForm, extra=1)
+
+
+class UserChoiceField(forms.ModelChoiceField):
+    @override
+    def label_from_instance(self, obj):
+        return f"{obj.first_name} {obj.last_name} ({obj.email})"
+
+
+@final
+class MergeRequestApprovalForm(forms.Form):
+    target_user = UserChoiceField(
+        queryset=get_user_model().objects.all().order_by('last_name', 'first_name'),
+        label="Sloučit s existujícím účtem",
+        help_text="Vyberte účet, ke kterému se má tato žádost připojit.",
+    )
 
 
 @final

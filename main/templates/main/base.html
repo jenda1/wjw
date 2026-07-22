@@ -12,6 +12,9 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
             <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
+            {% if user.is_staff %}
+            <li><a class="dropdown-item" href="{% url 'merge_requests' %}"><i class="bi bi-people me-2"></i>Žádosti o sloučení účtů</a></li>
+            {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form action="{% url 'account_logout' %}" method="post" class="px-3 py-1">

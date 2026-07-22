@@ -220,10 +220,21 @@ class ParentRelationship(models.Model):
 
 @final
 class ProfileMergeRequest(models.Model):
+    class RequestStatus(models.TextChoices):
+        PENDING = 'PE', 'čeká na schválení'
+        APPROVED = 'AP', 'schváleno'
+        REJECTED = 'RE', 'zamítnuto'
+
+    # SET_NULL (ne CASCADE): po schválení se uživatelský účet žadatele smaže
+    # (jeho SocialAccount se přesune na cílový účet), ale žádost zůstává jako záznam.
     user = models.OneToOneField(
         cast(str, settings.AUTH_USER_MODEL),
-        on_delete=models.CASCADE
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
+
+    status = models.CharField(max_length=2, choices=RequestStatus.choices, default=RequestStatus.PENDING)
 
     old_email = models.EmailField(verbose_name="Stávající email")
 
@@ -231,7 +242,9 @@ class ProfileMergeRequest(models.Model):
     last_name = models.CharField(max_length=100, verbose_name="Příjmení dítěte")
     birth_date = models.DateField(verbose_name="Datum narození dítěte")
 
-    student_by_name = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
+    student_by_name = models.ForeignKey(
+        Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)"
+    )
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")
 

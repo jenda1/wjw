@@ -1,12 +1,18 @@
-from django.db import transaction
+from typing import cast
+
+from allauth.socialaccount.models import SocialAccount
+
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.db import transaction
 from django.http import HttpRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from . import forms
-from .models import Profile
+from .models import Profile, ProfileMergeRequest
 
 
 def is_member(profile: Profile | None) -> bool:
@@ -115,4 +121,54 @@ def new_user(request: HttpRequest):
         'students_form': students_form,
         'merge_form': merge_form,
         'profile_form_is_valid': profile_form.is_valid() and students_form.is_valid(),
+    })
+
+
+@staff_member_required
+def merge_requests(request: HttpRequest):
+    pending_requests = ProfileMergeRequest.objects.filter(
+        status=ProfileMergeRequest.RequestStatus.PENDING
+    ).select_related('user', 'student_by_name').order_by('id')
+
+    return render(request, 'main/merge_requests.html', {
+        'merge_requests': pending_requests,
+    })
+
+
+@staff_member_required
+def merge_request_detail(request: HttpRequest, pk: int):
+    merge_request = get_object_or_404(
+        ProfileMergeRequest, pk=pk, status=ProfileMergeRequest.RequestStatus.PENDING
+    )
+
+    if request.method == 'POST':
+        if 'reject' in request.POST:
+            merge_request.status = ProfileMergeRequest.RequestStatus.REJECTED
+            merge_request.save()
+            messages.success(request, 'Žádost o sloučení účtů byla zamítnuta.')
+            return redirect('merge_requests')
+
+        form = forms.MergeRequestApprovalForm(request.POST)
+        if form.is_valid():
+            target_user = form.cleaned_data['target_user']
+            requester = cast('User | None', merge_request.user)
+
+            with transaction.atomic():
+                if requester is not None:
+                    SocialAccount.objects.filter(user=requester).update(user=target_user)
+
+                merge_request.status = ProfileMergeRequest.RequestStatus.APPROVED
+                merge_request.save()
+
+                if requester is not None:
+                    requester.delete()
+
+            messages.success(request, 'Účty byly úspěšně sloučeny.')
+            return redirect('merge_requests')
+    else:
+        form = forms.MergeRequestApprovalForm()
+
+    return render(request, 'main/merge_request_detail.html', {
+        'merge_request': merge_request,
+        'form': form,
     })
