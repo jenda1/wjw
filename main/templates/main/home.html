@@ -4,13 +4,20 @@
 {% block content %}
 <div class="row my-4">
   <div class="col-12 col-md-8 col-lg-6">
-    
+
     <h4 class="mb-4 pb-2 fw-bold text-dark d-flex align-items-center gap-2">
       Vítejte na stránkách spolku, {{ user.first_name|vokativ|capfirst }}
     </h4>
 
     <!-- Strukturovaný popisný seznam (Description List) -->
     <dl class="row gy-3 align-items-center">
+      <!-- Jméno -->
+      <dt class="col-sm-4 text-muted fw-normal">Jméno</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">{{ user.first_name }} {{ user.last_name }}</span>
+        {% edit_icon profile_edit %}
+      </dd>
+
       <!-- Typ členství (s hover editací) -->
       <dt class="col-sm-4 text-muted fw-normal">Typ členství</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
@@ -27,6 +34,32 @@
         {% edit_icon profile_edit %}
       </dd>
 
+      <!-- Telefon -->
+      <dt class="col-sm-4 text-muted fw-normal">Telefon</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">
+          {% if user.profile.phone_number %}
+            {{ user.profile.phone_number }}
+          {% else %}
+            <span class="text-muted fst-italic">Neuvedeno</span>
+          {% endif %}
+        </span>
+        {% edit_icon profile_edit %}
+      </dd>
+
+      <!-- Datum narození -->
+      <dt class="col-sm-4 text-muted fw-normal">Datum narození</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">{{ user.profile.birth_date }}</span>
+        {% edit_icon profile_edit %}
+      </dd>
+
+      <!-- Adresa -->
+      <dt class="col-sm-4 text-muted fw-normal">Adresa</dt>
+      <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
+        <span class="fw-medium text-dark">{{ user.profile.street_and_number }}, {{ user.profile.zip_code }} {{ user.profile.city }}</span>
+        {% edit_icon profile_edit %}
+      </dd>
 
       <!-- Děti (s hover editací) -->
       <dt class="col-sm-4 text-muted fw-normal">Děti</dt>
@@ -34,7 +67,7 @@
         <span class="fw-medium text-dark">
           {% if user.profile.children.all %}
             {% for child in user.profile.children.all %}
-              {{ child.name }}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
+              {{ child.first_name }} {{ child.last_name }}{% if child.school_class %} ({{ child.school_class.get_school_class_display }}{% if child.school_class.variant %}{{ child.school_class.variant }}{% endif %}){% endif %}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
             {% endfor %}
           {% else %}
             <span class="text-muted fst-italic">Žádné děti nenalezeny</span>
