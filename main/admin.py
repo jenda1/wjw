@@ -3,7 +3,14 @@ from typing import final
 from django.utils.html import format_html
 from django.contrib import admin
 
-from main.models import ClassCollective, ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+from main.models import (
+    ClassCollective,
+    ParentRelationship,
+    Profile,
+    ProfileMergeRequest,
+    ProfileStudentRequest,
+    Student,
+)
 
 
 @final
@@ -130,7 +137,8 @@ class StudentAdmin(admin.ModelAdmin):
 @final
 @admin.register(ProfileMergeRequest)
 class ProfileMergeRequestAdmin(admin.ModelAdmin):
-    list_display = ("user", "old_email", "first_name", "last_name", "student_by_name")
+    list_display = ("user", "old_email", "first_name", "last_name", "student_by_name", "status")
+    list_filter = ("status",)
     search_fields = ("user__username", "old_email", "first_name", "last_name")
     autocomplete_fields = ["student_by_name"]
 

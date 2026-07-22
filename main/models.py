@@ -38,18 +38,24 @@ def validuj_adresu(street_and_number:str, city:str, zip_code:str):
     try:
         response = requests.get(url, params=params, timeout=5)
         if not response:
-            raise ValidationError({"street_and_number": "Interní chyba při ověřování adresy: " + response.reason if response.reason else "Neznámá chyba"})
+            reason = response.reason if response.reason else "Neznámá chyba"
+            raise ValidationError({"street_and_number": "Interní chyba při ověřování adresy: " + reason})
 
         data = response.json()
         if not data.get("items"):
             raise ValidationError({
-                'street_and_number': "Adresu se nepodařilo zkontrolovat - zdá se, že neexistuje (podle mapy.cz). Zkontrolujte prosím překlepy."
+                'street_and_number': (
+                    "Adresu se nepodařilo zkontrolovat - zdá se, že neexistuje (podle mapy.cz). "
+                    "Zkontrolujte prosím překlepy."
+                )
             })
 
         best_match = data["items"][0]
         if best_match.get("type") not in ["regional.address"]:
             raise ValidationError({
-                'street_and_number': "Adresa možná existuje, ale není jednoznačná - číslo popisné buď chybí a nebo neexistuje."
+                'street_and_number': (
+                    "Adresa možná existuje, ale není jednoznačná - číslo popisné buď chybí a nebo neexistuje."
+                )
             })
 
     except requests.exceptions.RequestException:
@@ -120,7 +126,9 @@ class Profile(models.Model):
         verbose_name="Uživatelský účet",
     )
 
-    birth_date = models.DateField(blank=False, null=False, validators=[validuj_datum_narozeni], verbose_name="Datum narození")
+    birth_date = models.DateField(
+        blank=False, null=False, validators=[validuj_datum_narozeni], verbose_name="Datum narození"
+    )
 
     street_and_number = models.CharField("Ulice a číslo popisné", blank=False, max_length=150)
     city = models.CharField("Město", blank=False, max_length=100)
@@ -147,7 +155,8 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name} ({self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership})"
+        stav = self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership
+        return f"{self.user.first_name} {self.user.last_name} ({stav})"
 
     def get_status_full(self):
         return f"{self.get_status_display()} - {self.get_membership_display()}"
@@ -239,6 +248,8 @@ class ProfileStudentRequest(models.Model):
     last_name = models.CharField(max_length=100, verbose_name="Příjmení dítěte")
     birth_date = models.DateField(verbose_name="Datum narození dítěte")
 
-    student_by_name = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
+    student_by_name = models.ForeignKey(
+        Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)"
+    )
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")

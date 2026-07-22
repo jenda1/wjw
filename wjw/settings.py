@@ -14,10 +14,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env.str('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
@@ -50,7 +50,7 @@ INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 
 INSTALLED_APPS_MY = [
-    'jazzmin', # musi byt prvni
+    'jazzmin',  # musi byt prvni
     'main',
     'django_bootstrap5',
     'phonenumber_field',
@@ -148,8 +148,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 AUTH_USER_MODEL = 'auth.User'
 
-# 2. Konfigurace django-allauth pro autentizaci e-mailem
-
 # Allauth konfigurace
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -163,12 +161,15 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení
 LOGOUT_REDIRECT_URL = '/'
 
-SOCIALACCOUNT_PROVIDERS = {
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
     'google': {
         'APPS': [
             {
-                'client_id': env('GOOGLE_OAUTH_CLIENT_ID'),
-                'secret': env('GOOGLE_OAUTH_CLIENT_SECRET'),
+                'client_id': env.str('GOOGLE_OAUTH_CLIENT_ID'),
+                'secret': env.str('GOOGLE_OAUTH_CLIENT_SECRET'),
                 'key': ''  # Usually left empty for Google
             },
         ],
@@ -189,4 +190,4 @@ BOOTSTRAP5 = {
 PHONENUMBER_DEFAULT_REGION = "CZ"
 
 MAPY_CZ_API_URL = "https://api.mapy.cz/v1/geocode"
-MAPY_CZ_API_KEY = env('MAPY_CZ_API_KEY')
+MAPY_CZ_API_KEY = env.str('MAPY_CZ_API_KEY')

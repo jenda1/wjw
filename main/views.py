@@ -94,7 +94,9 @@ def new_user(request: HttpRequest):
                         student_request.profile = profile
                         student_request.save()
 
-                messages.success(request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.')
+                messages.success(
+                    request, 'Váše žádost byla zaregistrována a bude schválena na dalši Výkonné radě spolku.'
+                )
                 return redirect('index')
 
         elif 'submit_merge' in request.POST:
@@ -103,7 +105,9 @@ def new_user(request: HttpRequest):
                 merge_form.instance.user = request.user
                 merge_form.save()
 
-                messages.success(request, 'Váše žádost byla zaregistrována hned jak ji zkontrolujeme vás budeme informovat emailem.')
+                messages.success(
+                    request, 'Váše žádost byla zaregistrována hned jak ji zkontrolujeme vás budeme informovat emailem.'
+                )
                 return redirect('index')
 
     return render(request, 'main/new_user.html', {
