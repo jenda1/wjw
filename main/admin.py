@@ -1,6 +1,6 @@
 from typing import final
 
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.contrib import admin
 
 from main.models import (
@@ -11,6 +11,12 @@ from main.models import (
     ProfileStudentRequest,
     Student,
 )
+
+# Django admin (Jazzmin) bundluje Font Awesome, ne Bootstrap Icons používané na veřejných stránkách.
+SOCIAL_PROVIDER_ICONS = {
+    'google': 'fab fa-google',
+    'facebook': 'fab fa-facebook',
+}
 
 
 @final
@@ -65,7 +71,7 @@ class ClassCollectiveAdmin(admin.ModelAdmin):
 @final
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("full_name", "email", "phone_number", "membership", "status_badge")
+    list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts")
     list_filter = ("status", "membership", "city")
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
@@ -73,10 +79,11 @@ class ProfileAdmin(admin.ModelAdmin):
     inlines = [StudentInlineForParent]
 
     autocomplete_fields = ["user"]
+    readonly_fields = ("social_accounts",)
 
     fieldsets = (
         ("Účet", {
-            "fields": ("user",)
+            "fields": ("user", "social_accounts")
         }),
         ("Osobní údaje", {
             "fields": ("birth_date",)
@@ -99,6 +106,25 @@ class ProfileAdmin(admin.ModelAdmin):
     @admin.display(description="Email")
     def email(self, obj):
         return obj.user.email
+
+    @admin.display(description="Propojené účty")
+    def social_accounts(self, obj):
+        accounts = obj.user.socialaccount_set.all()
+        if not accounts:
+            return "---"
+
+        def account_row(account):
+            icon = SOCIAL_PROVIDER_ICONS.get(account.provider, 'fas fa-user-circle')
+            identifier = (
+                account.extra_data.get('email')
+                or account.extra_data.get('username')
+                or account.user.username
+            )
+            return (icon, identifier)
+
+        return format_html_join(
+            ", ", '<i class="{}"></i> {}', (account_row(account) for account in accounts)
+        )
 
     @admin.display(description="Stav")
     def status_badge(self, obj):
