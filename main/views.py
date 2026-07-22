@@ -46,6 +46,29 @@ def home(request: HttpRequest):
 
 
 @login_required
+def profile_edit(request: HttpRequest):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    if profile is None:
+        return redirect(reverse('new_user'))
+
+    if request.method == 'POST':
+        profile_form = forms.ProfileForm(user, request.POST, instance=profile)
+
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Vaše údaje byly úspěšně uloženy.')
+            return redirect('home')
+    else:
+        profile_form = forms.ProfileForm(user, instance=profile)
+
+    return render(request, 'main/profile_edit.html', {
+        'profile_form': profile_form,
+    })
+
+
+@login_required
 def new_user(request: HttpRequest):
     user = request.user
     profile_form = forms.ProfileForm(user)

@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block header %}
+<div class="text-center mb-5 max-width-md mx-auto">
+    <div class="mb-3 text-muted">
+        <i class="bi bi-gear fs-2 text-muted"></i>
+    </div>
+    <h1 class="display-5 mb-3">Nastavení účtu</h1>
+    <p class="lead text-muted">Zde můžete upravit své osobní údaje.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4" style="border-top: 4px solid var(--waldorf-brown) !important;">
+            <form method="POST">
+                {% csrf_token %}
+                {% bootstrap_form profile_form %}
+
+                <div class="text-end">
+                    {% bootstrap_button "Uložit změny" button_type="submit" button_class="btn-waldorf px-4" %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
