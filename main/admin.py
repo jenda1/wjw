@@ -1,19 +1,16 @@
-from typing import final, override
+from typing import final
 
-from django import forms
 from django.utils.html import format_html
 from django.contrib import admin
 
 from main.models import ClassCollective, ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
-from . import utils
 
 
 @final
 class StudentInline(admin.TabularInline):
     model = Student
     extra = 1
-    fields = ("first_name", "last_name", "rc_hash")
-    readonly_fields = ("rc_hash",)
+    fields = ("first_name", "last_name", "birth_date")
     verbose_name = "Žák"
     verbose_name_plural = "Žáci ve třídě"
 
@@ -36,35 +33,6 @@ class ParentInline(admin.TabularInline):
     autocomplete_fields = ["parent"]
     verbose_name = "Zákonný zástupce"
     verbose_name_plural = "Zákonní zástupci"
-
-
-@final
-class StudentAdminForm(forms.ModelForm):
-    # Přidáme do formuláře virtuální textové pole, které v modelu neexistuje
-    rc_number = forms.CharField(
-        max_length=11,
-        required=True,
-        label="Rodné číslo",
-        help_text="Zadejte ve formátu RRMMDD/XXXX. Číslo se ihned zahashuje a neuloží se v čitelné podobě.",
-        validators=[utils.rodne_cislo_validate_format]
-    )
-
-    @final
-    class Meta:
-        model = Student
-        fields = '__all__'  # Načte ostatní pole (např. jméno)
-
-    @override
-    def save(self, commit: bool = True):
-        instance = super().save(commit=False)
-        rc_number = self.cleaned_data.get('rc_number')
-
-        if rc_number:
-            instance.rc_hash = utils.rodne_cislo_hash(rc_number)
-        if commit:
-            instance.save()
-
-        return instance
 
 
 @final
@@ -143,14 +111,11 @@ class ProfileAdmin(admin.ModelAdmin):
 @final
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    form = StudentAdminForm
-
     list_display = ("full_name", "school_class", "get_parents")
     list_filter = ("school_class__year", "school_class")
     search_fields = ("first_name", "last_name")
     ordering = ("last_name", "first_name")
     inlines = [ParentInline,]
-    readonly_fields = ("rc_hash",)
 
     @admin.display(description="Celé jméno", ordering="last_name")
     def full_name(self, obj):
@@ -168,13 +133,6 @@ class ProfileMergeRequestAdmin(admin.ModelAdmin):
     list_display = ("user", "old_email", "student_name", "student_by_rc_linked")
     search_fields = ("user__username", "old_email", "student_name")
     autocomplete_fields = ["student_by_rc"]
-
-    @admin.display(description="Ověřený žák (RČ)")
-    def student_by_rc_linked(self, obj):
-        if obj.student_by_rc:
-            return obj.student_by_rc
-        return '<span style="color: gray; font-style: italic;">Neověřeno</span>'
-
 
 @final
 @admin.register(ProfileStudentRequest)
