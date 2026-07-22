@@ -48,20 +48,19 @@ def home(request: HttpRequest):
 @login_required
 def new_user(request: HttpRequest):
     user = request.user
-    profile_form = forms.ProfileForm()
+    profile_form = forms.ProfileForm(user)
     students_form = forms.ProfileStudentRequestFormSet()
     merge_form = forms.ProfileMergeRequestForm()
 
     if request.method == 'POST':
         if 'submit_profile' in request.POST:
-            profile_form = forms.ProfileForm(request.POST)
+            profile_form = forms.ProfileForm(user, request.POST)
             students_form = forms.ProfileStudentRequestFormSet(request.POST)
 
             if profile_form.is_valid() and students_form.is_valid():
                 with transaction.atomic():
-                    profile = profile_form.save(commit=False)
-                    profile.user = user
-                    profile.save()
+                    profile_form.instance.user = user
+                    profile = profile_form.save()
 
                     for student_form in students_form:
                         # Přeskočíme prázdné (nevyplněné) formuláře, např. nevyužitý extra formulář

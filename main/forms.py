@@ -6,10 +6,23 @@ from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 
 @final
 class ProfileForm(forms.ModelForm):
+    # Jméno a příjmení se ukládají do User (allauth je při registraci předvyplní,
+    # ale uživatel je zde může opravit).
+    first_name = forms.CharField(label="Jméno", required=True)
+    last_name = forms.CharField(label="Příjmení", required=True)
+
+    email = forms.EmailField(
+        label="E-mail",
+        required=False,
+        disabled=True,
+        help_text="E-mail nelze změnit, je součástí vašeho přihlašovacího účtu.",
+    )
+
     class Meta:
         model = Profile
 
         fields = [
+            'first_name', 'last_name', 'email',
             'birth_date',
             'street_and_number', 'city', 'zip_code',
             'phone_number',
@@ -22,6 +35,29 @@ class ProfileForm(forms.ModelForm):
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
             'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Poznánky...'}),
         }
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+        if user:
+            self.fields['first_name'].initial = user.first_name
+            self.fields['last_name'].initial = user.last_name
+            self.fields['email'].initial = user.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+
+        if self.user:
+            self.user.first_name = self.cleaned_data['first_name']
+            self.user.last_name = self.cleaned_data['last_name']
+            if commit:
+                self.user.save(update_fields=['first_name', 'last_name'])
+
+        if commit:
+            profile.save()
+
+        return profile
 
 
 class StudentLookupMixin:
