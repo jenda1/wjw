@@ -130,17 +130,17 @@ class StudentAdmin(admin.ModelAdmin):
 @final
 @admin.register(ProfileMergeRequest)
 class ProfileMergeRequestAdmin(admin.ModelAdmin):
-    list_display = ("user", "old_email", "student_name", "student_by_rc_linked")
+    list_display = ("user", "old_email", "student_name", "student_by_name")
     search_fields = ("user__username", "old_email", "student_name")
-    autocomplete_fields = ["student_by_rc"]
+    autocomplete_fields = ["student_by_name"]
 
 @final
 @admin.register(ProfileStudentRequest)
 class ProfileStudentRequestAdmin(admin.ModelAdmin):
-    list_display = ("profile", "action", "student_name", "student_by_rc")
+    list_display = ("profile", "action", "student_name", "student_by_name")
     list_filter = ("action",)
     search_fields = ("profile__user__last_name", "student_name")
-    autocomplete_fields = ["profile", "student_by_rc"]
+    autocomplete_fields = ["profile", "student_by_name"]
 
 
 @admin.register(ParentRelationship)

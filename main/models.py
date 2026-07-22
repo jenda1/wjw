@@ -218,7 +218,7 @@ class ProfileMergeRequest(models.Model):
 
     old_email = models.EmailField(verbose_name="Stávající email")
     student_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
-    student_by_rc = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
+    student_by_name = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")
 
@@ -232,6 +232,6 @@ class ProfileStudentRequest(models.Model):
     action = models.CharField(max_length=2, choices=ActionType.choices, default=ActionType.ADD)
 
     student_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
-    student_by_rc = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
+    student_by_name = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)")
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")

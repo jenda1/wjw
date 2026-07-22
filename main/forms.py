@@ -43,9 +43,9 @@ class StudentLookupMixin(forms.Form):
         last_name = cleaned_data.get('student_last_name')
         birth_date = cleaned_data.get('student_birth_date')
 
-        cleaned_data['student_by_rc'] = None
+        cleaned_data['student_by_name'] = None
         if first_name and last_name and birth_date:
-            cleaned_data['student_by_rc'] = Student.objects.filter(
+            cleaned_data['student_by_name'] = Student.objects.filter(
                 first_name__iexact=first_name,
                 last_name__iexact=last_name,
                 birth_date=birth_date,
@@ -55,7 +55,7 @@ class StudentLookupMixin(forms.Form):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.student_by_rc = self.cleaned_data.get('student_by_rc')
+        instance.student_by_name = self.cleaned_data.get('student_by_name')
         if commit:
             instance.save()
         return instance
