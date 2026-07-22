@@ -65,7 +65,7 @@ def new_user(request: HttpRequest):
 
                     for student_form in students_form:
                         # Přeskočíme prázdné (nevyplněné) formuláře, např. nevyužitý extra formulář
-                        if not student_form.cleaned_data or not student_form.cleaned_data.get('student_name'):
+                        if not student_form.cleaned_data or not student_form.cleaned_data.get('last_name'):
                             continue
 
                         student_request = student_form.save(commit=False)
