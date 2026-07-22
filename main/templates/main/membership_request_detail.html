@@ -1,0 +1,89 @@
+{% extends "main/base.html" %}
+{% load django_bootstrap5 %}
+
+{% block header %}
+<div class="text-center mb-5 max-width-md mx-auto">
+    <div class="mb-3 text-muted">
+        <i class="bi bi-person-badge fs-2 text-muted"></i>
+    </div>
+    <h1 class="display-5 mb-3">Posouzení žádosti o členství</h1>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+
+        <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4">
+            <h3 class="h5 mb-3">Údaje žadatele</h3>
+            <dl class="row mb-0">
+                <dt class="col-sm-4 text-muted fw-normal">Jméno</dt>
+                <dd class="col-sm-8">{{ profile.user.first_name }} {{ profile.user.last_name }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Email</dt>
+                <dd class="col-sm-8">{{ profile.user.email }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Telefon</dt>
+                <dd class="col-sm-8">
+                    {% if profile.phone_number %}
+                        {{ profile.phone_number }}
+                    {% else %}
+                        <span class="text-muted fst-italic">Neuvedeno</span>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Datum narození</dt>
+                <dd class="col-sm-8">{{ profile.birth_date }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Adresa</dt>
+                <dd class="col-sm-8">{{ profile.street_and_number }}, {{ profile.zip_code }} {{ profile.city }}</dd>
+
+                <dt class="col-sm-4 text-muted fw-normal">Typ členství</dt>
+                <dd class="col-sm-8">{{ profile.get_membership_display }}</dd>
+
+                {% if profile.comments %}
+                <dt class="col-sm-4 text-muted fw-normal">Poznámky</dt>
+                <dd class="col-sm-8">{{ profile.comments }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+
+        {% if student_requests %}
+        <div class="card border-0 shadow-sm p-4 mb-4 bg-white rounded-4">
+            <h3 class="h5 mb-3">Děti v žádosti</h3>
+            <ul class="list-unstyled mb-0">
+                {% for student_request in student_requests %}
+                <li class="mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    {{ student_request.first_name }} {{ student_request.last_name }}
+                    ({{ student_request.birth_date }})
+                    {% if student_request.student_by_name %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            Ověřeno: {{ student_request.student_by_name }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                            Neověřeno
+                        </span>
+                    {% endif %}
+                    {% if student_request.comments %}
+                        <div class="text-muted small">{{ student_request.comments }}</div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4" style="border-top: 4px solid var(--waldorf-brown) !important;">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex justify-content-end gap-2">
+                    {% bootstrap_button "Zamítnout žádost" button_type="submit" name="reject" button_class="btn-outline-danger" %}
+                    {% bootstrap_button "Schválit členství" button_type="submit" button_class="btn-waldorf px-4" %}
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

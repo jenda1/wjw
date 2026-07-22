@@ -7,12 +7,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Manager
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from . import forms
-from .models import Profile, ProfileMergeRequest
+from .models import Profile, ProfileMergeRequest, ProfileStudentRequest
 
 
 def is_member(profile: Profile | None) -> bool:
@@ -171,4 +172,39 @@ def merge_request_detail(request: HttpRequest, pk: int):
     return render(request, 'main/merge_request_detail.html', {
         'merge_request': merge_request,
         'form': form,
+    })
+
+
+@staff_member_required
+def membership_requests(request: HttpRequest):
+    pending_profiles = Profile.objects.filter(
+        status=Profile.ProfileStatus.PENDING
+    ).select_related('user').order_by('id')
+
+    return render(request, 'main/membership_requests.html', {
+        'profiles': pending_profiles,
+    })
+
+
+@staff_member_required
+def membership_request_detail(request: HttpRequest, pk: int):
+    profile: Profile = get_object_or_404(Profile, pk=pk, status=Profile.ProfileStatus.PENDING)
+    student_requests_manager = cast('Manager[ProfileStudentRequest]', profile.profilestudentrequest_set)
+    student_requests = student_requests_manager.all()
+
+    if request.method == 'POST':
+        if 'reject' in request.POST:
+            profile.status = Profile.ProfileStatus.CANCELLED
+            profile.save()
+            messages.success(request, 'Žádost o členství byla zamítnuta.')
+        else:
+            profile.status = Profile.ProfileStatus.ACTIVE
+            profile.save()
+            messages.success(request, 'Žádost o členství byla schválena.')
+
+        return redirect('membership_requests')
+
+    return render(request, 'main/membership_request_detail.html', {
+        'profile': profile,
+        'student_requests': student_requests,
     })

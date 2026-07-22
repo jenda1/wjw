@@ -9,4 +9,6 @@ urlpatterns = [
     path("profile_edit", views.profile_edit, name="profile_edit"),
     path("merge_requests", views.merge_requests, name="merge_requests"),
     path("merge_requests/<int:pk>", views.merge_request_detail, name="merge_request_detail"),
+    path("membership_requests", views.membership_requests, name="membership_requests"),
+    path("membership_requests/<int:pk>", views.membership_request_detail, name="membership_request_detail"),
 ]
