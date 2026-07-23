@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.messages import constants as message_constants
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test import RequestFactory, TestCase
@@ -132,6 +133,40 @@ class HomeViewTests(TestCase):
 
         resp = self.client.get(reverse('home'))
         self.assertNotIn('čeká na schválení', resp.content.decode())
+
+    def test_shows_plain_email_when_no_social_accounts(self):
+        user = create_user('parent1', email='petr@example.com')
+        create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        self.assertIn('petr@example.com', resp.content.decode())
+
+    def test_shows_connected_social_accounts_with_primary_highlighted(self):
+        user = create_user('parent1', email='petr.google@example.com')
+        create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        SocialAccount.objects.create(
+            user=user, provider='google', uid='g1', extra_data={'email': 'petr.google@example.com'}
+        )
+        SocialAccount.objects.create(
+            user=user, provider='facebook', uid='f1', extra_data={'email': 'petr.fb@example.com'}
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        content = resp.content.decode()
+        self.assertIn('petr.google@example.com', content)
+        self.assertIn('petr.fb@example.com', content)
+        self.assertIn('bi-google', content)
+        self.assertIn('bi-facebook', content)
+        self.assertIn('(hlavní)', content)
+
+        # only the account matching User.email is marked primary
+        google_idx = content.find('petr.google@example.com')
+        facebook_idx = content.find('petr.fb@example.com')
+        primary_idx = content.find('(hlavní)')
+        self.assertLess(abs(primary_idx - google_idx), 200)
+        self.assertGreater(abs(primary_idx - facebook_idx), 200)
 
 
 class NewUserViewTests(TestCase):

@@ -20,6 +20,27 @@ def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
 
 
+SOCIAL_PROVIDER_ICONS = {
+    'google': 'bi-google',
+    'facebook': 'bi-facebook',
+}
+
+
+def get_connected_emails(user):
+    """Vrátí e-maily propojených účtů (Google/Facebook/...) s ikonou poskytovatele
+    a příznakem, zda jde o hlavní e-mail (ten uložený v User)."""
+    accounts = []
+    for account in user.socialaccount_set.all():
+        email = account.extra_data.get('email') or account.extra_data.get('username') or user.username
+        accounts.append({
+            'provider': account.provider,
+            'icon': SOCIAL_PROVIDER_ICONS.get(account.provider, 'bi-person-circle'),
+            'email': email,
+            'is_primary': bool(email) and email.lower() == user.email.lower(),
+        })
+    return accounts
+
+
 def index(request: HttpRequest):
     msgs = messages.get_messages(request)
     if 'prvni_login' in [m.message for m in msgs]:
@@ -53,6 +74,7 @@ def home(request: HttpRequest):
     return render(request, 'main/home.html', {
         'user': request.user,
         'pending_student_requests': pending_student_requests,
+        'connected_emails': get_connected_emails(request.user),
     })
 
 

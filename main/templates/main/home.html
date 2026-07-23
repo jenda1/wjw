@@ -32,7 +32,18 @@
       <!-- email -->
       <dt class="col-sm-4 text-muted fw-normal">Email</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
-        <span class="fw-medium text-dark">{{ user.email }}</span>
+        <span class="fw-medium text-dark d-flex flex-wrap align-items-center gap-2">
+          {% if connected_emails %}
+            {% for account in connected_emails %}
+              <span class="badge {% if account.is_primary %}bg-primary{% else %}bg-secondary-subtle text-dark border{% endif %} d-inline-flex align-items-center gap-1 py-1.5 px-2.5">
+                <i class="bi {{ account.icon }}"></i> {{ account.email }}
+                {% if account.is_primary %}<span class="fw-normal">(hlavní)</span>{% endif %}
+              </span>
+            {% endfor %}
+          {% else %}
+            {{ user.email }}
+          {% endif %}
+        </span>
         {% edit_icon profile_edit_url %}
       </dd>
 
