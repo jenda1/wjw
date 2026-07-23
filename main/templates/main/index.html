@@ -52,7 +52,7 @@
         </div>
       </div>
 
-    {% elif user.profile_merge_request %}
+    {% elif user.merge_request.status == 'PE' %}
       <!-- Stav 2: Čekající žádost o sloučení účtů -->
       <div class="card border-0 shadow-sm bg-light rounded-4 overflow-hidden">
         <div class="card-body p-4 p-md-5 position-relative">
@@ -66,7 +66,7 @@
               <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill fw-medium">Propojení účtů</span>
               <h4 class="fw-bold mb-2 text-dark">Žádost o spojení účtu v řešení</h4>
               <p class="text-muted mb-0">
-                Evidujeme žádost o spojení tohoto účtu s <span class="fw-semibold text-dark">{{ user.profile_merge_request.old_email }}</span>.
+                Evidujeme žádost o spojení tohoto účtu s <span class="fw-semibold text-dark">{{ user.merge_request.old_email }}</span>.
                 Jakmile ji schválíme, pošleme ti potvrzení e-mailem. Zatím prosím používejte původní účet. Děkujeme za trpělivost!
               </p>
             </div>

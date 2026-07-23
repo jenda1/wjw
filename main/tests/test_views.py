@@ -50,6 +50,29 @@ class IndexViewTests(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, reverse('new_user'))
 
+    def test_pending_merge_request_shows_banner(self):
+        user = create_user('requester1')
+        ProfileMergeRequest.objects.create(
+            user=user, old_email='old@example.com', first_name='Kid', last_name='X', birth_date='2016-01-01',
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('index'))
+        content = resp.content.decode()
+        self.assertIn('Žádost o spojení účtu v řešení', content)
+        self.assertIn('old@example.com', content)
+
+    def test_rejected_merge_request_does_not_show_banner(self):
+        user = create_user('requester1')
+        ProfileMergeRequest.objects.create(
+            user=user, old_email='old@example.com', first_name='Kid', last_name='X', birth_date='2016-01-01',
+            status=ProfileMergeRequest.RequestStatus.REJECTED,
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('index'))
+        self.assertNotIn('Žádost o spojení účtu v řešení', resp.content.decode())
+
 
 class HomeViewTests(TestCase):
     def test_requires_login(self):
