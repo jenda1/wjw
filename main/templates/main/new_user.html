@@ -56,26 +56,9 @@
                     <i class="bi bi-box-arrow-left me-2"></i>Odhlásit se a zkusit jiný účet
                 </a>
 
-                <!-- Možnost 2: Tlačítko pro rozbalení žádosti o sloučení -->
-                <button class="btn btn-waldorf-secondary text-center" data-bs-toggle="collapse" data-bs-target="#collapseMergeForm">
-                    Chci tento e-mail přiřadit k existujícímu profilu <i class="bi bi-chevron-down ms-1"></i>
+                <button type="button" class="btn btn-waldorf-secondary text-center" data-bs-toggle="modal" data-bs-target="#mergeModal">
+                    Chci tento e-mail přiřadit k existujícímu profilu <i class="bi bi-arrow-right ms-1"></i>
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="row justify-content-center mt-5 {% if not merge_form.errors %}collapse{% endif %}" id="collapseMergeForm">
-        <div class="col-md-12 col-lg-10">
-            <div class="card border-0 shadow-sm p-4 bg-white rounded-4" style="border-top: 4px solid var(--waldorf-brown) !important;">
-                <h3 class="h5 mb-3"><i class="bi bi-envelope-paper text-muted me-2"></i>Žádost o propojení účtů</h3>
-                <form method="POST" class="form">
-                    {% csrf_token %}
-                    {% bootstrap_form merge_form %}
-
-                    <div class="text-end">
-                        {% bootstrap_button "Odeslat žádost" button_type="submit" name="submit_merge" button_class="btn-waldorf btn-sm px-4" %}
-                    </div>
-                </form>
             </div>
         </div>
     </div>
@@ -132,6 +115,30 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="mergeModal" tabindex="-1" aria-labelledby="mergeModalLabel" aria-modal="true" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg p-3">
+
+            <div class="modal-header border-0">
+                <h2 class="modal-title h3" id="mergeModalLabel"><i class="bi bi-envelope-paper text-muted me-2"></i>Žádost o propojení účtů</h2>
+                <button type="button" class="btn-close" data-bs-with-dismiss="modal" data-bs-dismiss="modal" aria-label="Zavřít"></button>
+            </div>
+
+            <div class="modal-body">
+                <form method="POST" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_form merge_form %}
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Zrušit</button>
+                        {% bootstrap_button "Odeslat žádost" button_type="submit" name="submit_merge" button_class="btn-waldorf btn-sm px-4" %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 
@@ -155,6 +162,13 @@
     document.addEventListener("DOMContentLoaded", function() {
         var myModal = new bootstrap.Modal(profileModal);
         myModal.show();
+    });
+    {% endif %}
+
+    {% if merge_form.errors %}
+    document.addEventListener("DOMContentLoaded", function() {
+        var mergeModal = new bootstrap.Modal(document.getElementById('mergeModal'));
+        mergeModal.show();
     });
     {% endif %}
 </script>
