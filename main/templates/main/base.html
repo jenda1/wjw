@@ -6,15 +6,35 @@
 
     {% if user.is_authenticated %}
     <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-circle me-1"></i>
             {{ user.first_name|default:user.username }}
+            {% if pending_requests_count %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ pending_requests_count }}
+                <span class="visually-hidden">Nevyřízené žádosti</span>
+            </span>
+            {% endif %}
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
             <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
             {% if user.is_staff %}
-            <li><a class="dropdown-item" href="{% url 'membership_requests' %}"><i class="bi bi-person-badge me-2"></i>Žádosti o členství</a></li>
-            <li><a class="dropdown-item" href="{% url 'merge_requests' %}"><i class="bi bi-people me-2"></i>Žádosti o sloučení účtů</a></li>
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'membership_requests' %}">
+                    <span><i class="bi bi-person-badge me-2"></i>Žádosti o členství</span>
+                    {% if pending_membership_requests_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_membership_requests_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'merge_requests' %}">
+                    <span><i class="bi bi-people me-2"></i>Žádosti o sloučení účtů</span>
+                    {% if pending_merge_requests_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_merge_requests_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
             {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
