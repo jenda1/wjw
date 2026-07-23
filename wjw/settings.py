@@ -21,6 +21,9 @@ DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
+# Zadejte plnou adresu včetně schématu, např. "https://spolekzws.ddns.net".
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+
 # Application definition
 
 INSTALLED_APPS_DEFAULT = [
