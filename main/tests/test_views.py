@@ -76,6 +76,40 @@ class HomeViewTests(TestCase):
         self.assertIn('Petr Novak', content)
         self.assertIn('Hlavni 10', content)
 
+    def test_shows_no_children_message_when_none_pending_or_confirmed(self):
+        user = create_user('parent1')
+        create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        self.assertIn('Žádné děti nenalezeny', resp.content.decode())
+
+    def test_shows_pending_student_request_without_no_children_message(self):
+        user = create_user('parent1')
+        profile = create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        ProfileStudentRequest.objects.create(
+            profile=profile, first_name='Anicka', last_name='Novakova', birth_date='2016-01-01',
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        content = resp.content.decode()
+        self.assertIn('Anicka Novakova', content)
+        self.assertIn('čeká na schválení', content)
+        self.assertNotIn('Žádné děti nenalezeny', content)
+
+    def test_does_not_show_approved_or_rejected_requests(self):
+        user = create_user('parent1')
+        profile = create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        ProfileStudentRequest.objects.create(
+            profile=profile, first_name='Schvaleny', last_name='Zak', birth_date='2016-01-01',
+            status=ProfileStudentRequest.RequestStatus.APPROVED,
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        self.assertNotIn('čeká na schválení', resp.content.decode())
+
 
 class NewUserViewTests(TestCase):
     def test_requires_login(self):

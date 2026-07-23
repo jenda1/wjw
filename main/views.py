@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from . import forms
-from .models import Profile, ProfileMergeRequest, ProfileStudentRequest
+from .models import ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest
 
 
 def is_member(profile: Profile | None) -> bool:
@@ -44,9 +44,15 @@ def home(request: HttpRequest):
 
     if not is_member(profile):
         return redirect(reverse('index'))
+    assert profile is not None
+
+    pending_student_requests = profile.profilestudentrequest_set.filter(
+        status=ProfileStudentRequest.RequestStatus.PENDING
+    )
 
     return render(request, 'main/home.html', {
         'user': request.user,
+        'pending_student_requests': pending_student_requests,
     })
 
 
@@ -72,6 +78,30 @@ def profile_edit(request: HttpRequest):
 
     return render(request, 'main/profile_edit.html', {
         'profile_form': profile_form,
+    })
+
+
+@login_required
+def add_student(request: HttpRequest):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    if not is_member(profile):
+        return redirect(reverse('index'))
+
+    if request.method == 'POST':
+        form = forms.ProfileStudentRequestForm(request.POST)
+        if form.is_valid():
+            student_request = form.save(commit=False)
+            student_request.profile = profile
+            student_request.save()
+            messages.success(request, 'Žádost o přidání dítěte byla zaregistrována.')
+            return redirect('home')
+    else:
+        form = forms.ProfileStudentRequestForm()
+
+    return render(request, 'main/add_student.html', {
+        'form': form,
     })
 
 
@@ -207,4 +237,50 @@ def membership_request_detail(request: HttpRequest, pk: int):
     return render(request, 'main/membership_request_detail.html', {
         'profile': profile,
         'student_requests': student_requests,
+    })
+
+
+@staff_member_required
+def student_requests(request: HttpRequest):
+    pending_requests = ProfileStudentRequest.objects.filter(
+        status=ProfileStudentRequest.RequestStatus.PENDING
+    ).select_related('profile__user', 'student_by_name').order_by('id')
+
+    return render(request, 'main/student_requests.html', {
+        'student_requests': pending_requests,
+    })
+
+
+@staff_member_required
+def student_request_detail(request: HttpRequest, pk: int):
+    student_request: ProfileStudentRequest = get_object_or_404(
+        ProfileStudentRequest, pk=pk, status=ProfileStudentRequest.RequestStatus.PENDING
+    )
+
+    if request.method == 'POST':
+        if 'reject' in request.POST:
+            student_request.status = ProfileStudentRequest.RequestStatus.REJECTED
+            student_request.save()
+            messages.success(request, 'Žádost o přidání žáka byla zamítnuta.')
+            return redirect('student_requests')
+
+        form = forms.StudentRequestApprovalForm(request.POST)
+        if form.is_valid():
+            student = form.cleaned_data['student']
+
+            with transaction.atomic():
+                ParentRelationship.objects.get_or_create(parent=student_request.profile, student=student)
+
+                student_request.student_by_name = student
+                student_request.status = ProfileStudentRequest.RequestStatus.APPROVED
+                student_request.save()
+
+            messages.success(request, 'Žák byl úspěšně přiřazen k rodiči.')
+            return redirect('student_requests')
+    else:
+        form = forms.StudentRequestApprovalForm(initial={'student': student_request.student_by_name})
+
+    return render(request, 'main/student_request_detail.html', {
+        'student_request': student_request,
+        'form': form,
     })

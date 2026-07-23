@@ -106,6 +106,15 @@ class ProfileStudentRequestForm(StudentLookupMixin, forms.ModelForm):
 ProfileStudentRequestFormSet = forms.formset_factory(ProfileStudentRequestForm, extra=1)
 
 
+@final
+class StudentRequestApprovalForm(forms.Form):
+    student = forms.ModelChoiceField(
+        queryset=Student.objects.all().order_by('last_name', 'first_name'),
+        label="Žák",
+        help_text="Žák musí být v systému už založený (administrátorem) - zde ho jen připojíte k rodiči.",
+    )
+
+
 class UserChoiceField(forms.ModelChoiceField):
     @override
     def label_from_instance(self, obj):

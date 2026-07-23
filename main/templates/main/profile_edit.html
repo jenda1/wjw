@@ -24,6 +24,20 @@
                 </div>
             </form>
         </div>
+
+        {% if profile_form.instance.status == 'AC' %}
+        <div class="card border-0 shadow-sm p-4 mt-4 bg-white rounded-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="h6 mb-1">Přidat dítě</h3>
+                    <p class="text-muted small mb-0">Požádejte o přiřazení dalšího dítěte k vašemu účtu.</p>
+                </div>
+                <a href="{% url 'add_student' %}" class="btn btn-waldorf-secondary btn-sm">
+                    <i class="bi bi-person-plus me-1"></i>Přidat dítě
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

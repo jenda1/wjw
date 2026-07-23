@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import Profile, ProfileMergeRequest
+from main.models import Profile, ProfileMergeRequest, ProfileStudentRequest
 
 from .helpers import create_profile, create_user
 
@@ -17,6 +17,13 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         ProfileMergeRequest.objects.create(
             user=requester, old_email='old@example.com',
             first_name='Kid', last_name='X', birth_date=datetime.date(2016, 1, 1),
+        )
+
+        student_requester = create_user('student_requester1')
+        student_requester_profile = create_profile(student_requester, status=Profile.ProfileStatus.ACTIVE)
+        ProfileStudentRequest.objects.create(
+            profile=student_requester_profile, first_name='Another', last_name='Kid',
+            birth_date=datetime.date(2017, 1, 1),
         )
 
     def test_anonymous_sees_no_counts(self):
@@ -41,4 +48,5 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         resp = self.client.get(reverse('index'))
         self.assertEqual(resp.context['pending_membership_requests_count'], 1)
         self.assertEqual(resp.context['pending_merge_requests_count'], 1)
-        self.assertEqual(resp.context['pending_requests_count'], 2)
+        self.assertEqual(resp.context['pending_student_requests_count'], 1)
+        self.assertEqual(resp.context['pending_requests_count'], 3)

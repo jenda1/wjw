@@ -2,6 +2,8 @@
 {% load custom_tags %}
 
 {% block content %}
+{% url 'profile_edit' as profile_edit_url %}
+{% url 'add_student' as add_student_url %}
 <div class="row my-4">
   <div class="col-12 col-md-8 col-lg-6">
 
@@ -15,7 +17,7 @@
       <dt class="col-sm-4 text-muted fw-normal">Jméno</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
         <span class="fw-medium text-dark">{{ user.first_name }} {{ user.last_name }}</span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Typ členství (s hover editací) -->
@@ -24,14 +26,14 @@
         <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 fw-semibold">
           {{ user.profile.get_status_full }}
         </span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- email -->
       <dt class="col-sm-4 text-muted fw-normal">Email</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
         <span class="fw-medium text-dark">{{ user.email }}</span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Telefon -->
@@ -44,21 +46,21 @@
             <span class="text-muted fst-italic">Neuvedeno</span>
           {% endif %}
         </span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Datum narození -->
       <dt class="col-sm-4 text-muted fw-normal">Datum narození</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
         <span class="fw-medium text-dark">{{ user.profile.birth_date }}</span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Adresa -->
       <dt class="col-sm-4 text-muted fw-normal">Adresa</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
         <span class="fw-medium text-dark">{{ user.profile.street_and_number }}, {{ user.profile.zip_code }} {{ user.profile.city }}</span>
-        {% edit_icon profile_edit %}
+        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Děti (s hover editací) -->
@@ -69,11 +71,16 @@
             {% for child in user.profile.children.all %}
               {{ child.first_name }} {{ child.last_name }}{% if child.school_class %} ({{ child.school_class.get_school_class_display }}{% if child.school_class.variant %}{{ child.school_class.variant }}{% endif %}){% endif %}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
             {% endfor %}
-          {% else %}
+          {% elif not pending_student_requests %}
             <span class="text-muted fst-italic">Žádné děti nenalezeny</span>
           {% endif %}
+          {% for student_request in pending_student_requests %}
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle ms-1">
+              {{ student_request.first_name }} {{ student_request.last_name }} - čeká na schválení
+            </span>
+          {% endfor %}
         </span>
-        {% edit_icon profile_edit %}
+        {% edit_icon add_student_url "Přidat dítě" %}
       </dd>
     </dl>
   </div>

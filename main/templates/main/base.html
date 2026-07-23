@@ -35,6 +35,14 @@
                     {% endif %}
                 </a>
             </li>
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'student_requests' %}">
+                    <span><i class="bi bi-person-plus me-2"></i>Žádosti o přidání žáka</span>
+                    {% if pending_student_requests_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_student_requests_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
             {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>

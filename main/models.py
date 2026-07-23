@@ -254,8 +254,14 @@ class ProfileStudentRequest(models.Model):
     class ActionType(models.TextChoices):
         ADD = 'A', 'přidat dítě'
 
+    class RequestStatus(models.TextChoices):
+        PENDING = 'PE', 'čeká na schválení'
+        APPROVED = 'AP', 'schváleno'
+        REJECTED = 'RE', 'zamítnuto'
+
     profile = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.CASCADE)
     action = models.CharField(max_length=2, choices=ActionType.choices, default=ActionType.ADD)
+    status = models.CharField(max_length=2, choices=RequestStatus.choices, default=RequestStatus.PENDING)
 
     first_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
     last_name = models.CharField(max_length=100, verbose_name="Příjmení dítěte")

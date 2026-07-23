@@ -171,8 +171,8 @@ class ProfileMergeRequestAdmin(admin.ModelAdmin):
 @final
 @admin.register(ProfileStudentRequest)
 class ProfileStudentRequestAdmin(admin.ModelAdmin):
-    list_display = ("profile", "action", "first_name", "last_name", "student_by_name")
-    list_filter = ("action",)
+    list_display = ("profile", "action", "first_name", "last_name", "student_by_name", "status")
+    list_filter = ("action", "status")
     search_fields = ("profile__user__last_name", "first_name", "last_name")
     autocomplete_fields = ["profile", "student_by_name"]
 
