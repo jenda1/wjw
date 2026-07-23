@@ -165,6 +165,14 @@ LOGOUT_REDIRECT_URL = '/'
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
+# Pokud přihlášení přes nového poskytovatele přinese ověřený e-mail, který už
+# patří existujícímu účtu, rovnou uživatele přihlásíme k tomuto účtu místo
+# obecného (a zde slepého, protože ACCOUNT_UNIQUE_EMAIL) formuláře allauth
+# pro dokončení registrace. Nový SocialAccount se ale automaticky nepřipojuje
+# (AUTO_CONNECT necháváme na výchozí False) - propojení účtů i nadále schvaluje
+# správce přes žádosti o sloučení účtů.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+
 SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
     'google': {
         'APPS': [
