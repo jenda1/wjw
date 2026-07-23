@@ -24,6 +24,10 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 # Zadejte plnou adresu včetně schématu, např. "https://spolekzws.ddns.net".
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
+# Zapněte (USE_PROXY_SSL_HEADER=True) pokud aplikace běží za https reverzní proxy
+if env.bool('USE_PROXY_SSL_HEADER', default=False):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Application definition
 
 INSTALLED_APPS_DEFAULT = [
