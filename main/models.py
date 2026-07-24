@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from simple_history.models import HistoricalRecords
 
 import requests
 
@@ -91,6 +92,8 @@ class ClassCollective(models.Model):
 
     variant = models.CharField(max_length=20, null=True, blank=True)
 
+    history = HistoricalRecords()
+
     @final
     class Meta:
         verbose_name = "Třídna"
@@ -141,6 +144,8 @@ class Profile(models.Model):
     status = models.CharField(max_length=2, choices=ProfileStatus.choices, default=ProfileStatus.PENDING)
     comments = models.TextField(blank=True, verbose_name="Poznámky")
 
+    history = HistoricalRecords()
+
     @final
     class Meta:
         verbose_name = "Člen spolku"
@@ -183,6 +188,8 @@ class Student(models.Model):
         related_name="children",
         verbose_name="Zákonní zástupci",
     )
+
+    history = HistoricalRecords()
 
     @final
     class Meta:

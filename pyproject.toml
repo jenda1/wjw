@@ -18,6 +18,7 @@ dependencies = [
     "django-import-export[all]",
     "gunicorn",
     "whitenoise",
+    "django-simple-history>=3.13.0",
 ]
 
 [build-system]

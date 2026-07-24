@@ -58,6 +58,7 @@ INSTALLED_APPS_MY = [
     'django_bootstrap5',
     'phonenumber_field',
     'import_export',
+    'simple_history',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
@@ -73,6 +74,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'allauth.account.middleware.AccountMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'wjw.urls'

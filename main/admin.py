@@ -2,6 +2,7 @@ from typing import final
 
 from django.utils.html import format_html, format_html_join
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 from main.models import (
     ClassCollective,
@@ -50,7 +51,7 @@ class ParentInline(admin.TabularInline):
 
 @final
 @admin.register(ClassCollective)
-class ClassCollectiveAdmin(admin.ModelAdmin):
+class ClassCollectiveAdmin(SimpleHistoryAdmin):
     list_display = ("school_class_display", "variant", "year", "student_count")
     # list_display = ("school_class", "year", "variant")
     list_filter = ("year", "school_class")
@@ -70,7 +71,7 @@ class ClassCollectiveAdmin(admin.ModelAdmin):
 
 @final
 @admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+class ProfileAdmin(SimpleHistoryAdmin):
     list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts")
     list_filter = ("status", "membership", "city")
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
@@ -143,7 +144,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @final
 @admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
+class StudentAdmin(SimpleHistoryAdmin):
     list_display = ("full_name", "school_class", "get_parents")
     list_filter = ("school_class__year", "school_class")
     search_fields = ("first_name", "last_name")
