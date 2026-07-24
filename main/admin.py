@@ -178,15 +178,18 @@ class StudentAdmin(ImportExportMixin, SimpleHistoryAdmin):
 
     def get_confirm_form_initial(self, request, import_form):
         initial = super().get_confirm_form_initial(request, import_form)
-        if import_form:
-            initial["school_class"] = import_form.cleaned_data["school_class"].pk
+        cleaned_data = getattr(import_form, "cleaned_data", None) or {}
+        if "school_class" in cleaned_data:
+            initial["school_class"] = cleaned_data["school_class"].pk
         return initial
 
     def get_import_resource_kwargs(self, request, **kwargs):
         resource_kwargs = super().get_import_resource_kwargs(request, **kwargs)
         form = kwargs.get("form")
-        if form is not None and "school_class" in form.cleaned_data:
-            resource_kwargs["school_class"] = form.cleaned_data["school_class"]
+        # Na první (nevalidovaný) render importní stránky ještě `cleaned_data` neexistuje.
+        cleaned_data = getattr(form, "cleaned_data", None) or {}
+        if "school_class" in cleaned_data:
+            resource_kwargs["school_class"] = cleaned_data["school_class"]
         return resource_kwargs
 
     @admin.display(description="Celé jméno", ordering="last_name")
