@@ -1,7 +1,10 @@
 from typing import final
 
+from django import forms
 from django.utils.html import format_html, format_html_join
 from django.contrib import admin
+from import_export.admin import ImportExportMixin
+from import_export.forms import ConfirmImportForm, ImportForm
 from simple_history.admin import SimpleHistoryAdmin
 
 from main.models import (
@@ -12,6 +15,7 @@ from main.models import (
     ProfileStudentRequest,
     Student,
 )
+from main.resources import StudentResource
 
 # Django admin (Jazzmin) bundluje Font Awesome, ne Bootstrap Icons používané na veřejných stránkách.
 SOCIAL_PROVIDER_ICONS = {
@@ -143,13 +147,47 @@ class ProfileAdmin(SimpleHistoryAdmin):
 
 
 @final
+class StudentImportForm(ImportForm):
+    school_class = forms.ModelChoiceField(
+        queryset=ClassCollective.objects.all(),
+        label="Třída",
+        help_text="Všichni žáci ze souboru budou přiřazeni do této třídy.",
+    )
+
+
+@final
+class StudentConfirmImportForm(ConfirmImportForm):
+    school_class = forms.ModelChoiceField(
+        queryset=ClassCollective.objects.all(),
+        widget=forms.HiddenInput(),
+    )
+
+
+@final
 @admin.register(Student)
-class StudentAdmin(SimpleHistoryAdmin):
+class StudentAdmin(ImportExportMixin, SimpleHistoryAdmin):
+    resource_classes = [StudentResource]
+    import_form_class = StudentImportForm
+    confirm_form_class = StudentConfirmImportForm
+
     list_display = ("full_name", "school_class", "get_parents")
     list_filter = ("school_class__year", "school_class")
     search_fields = ("first_name", "last_name")
     ordering = ("last_name", "first_name")
     inlines = [ParentInline,]
+
+    def get_confirm_form_initial(self, request, import_form):
+        initial = super().get_confirm_form_initial(request, import_form)
+        if import_form:
+            initial["school_class"] = import_form.cleaned_data["school_class"].pk
+        return initial
+
+    def get_import_resource_kwargs(self, request, **kwargs):
+        resource_kwargs = super().get_import_resource_kwargs(request, **kwargs)
+        form = kwargs.get("form")
+        if form is not None and "school_class" in form.cleaned_data:
+            resource_kwargs["school_class"] = form.cleaned_data["school_class"]
+        return resource_kwargs
 
     @admin.display(description="Celé jméno", ordering="last_name")
     def full_name(self, obj):
