@@ -63,6 +63,27 @@ class ProfileFormTests(TestCase):
 
         self.assertIsNone(profile.pk)
 
+    def test_allow_membership_change_false_disables_field_and_ignores_tampering(self):
+        from main.models import Profile
+
+        user = create_user('parent1')
+        with patch('main.models.validuj_adresu'):
+            profile = Profile.objects.create(
+                user=user, birth_date=datetime.date(1980, 1, 1),
+                street_and_number='Ulice 1', city='Praha', zip_code='11000',
+                membership=Profile.MembershipType.ACTIVE,
+            )
+
+            form = ProfileForm(
+                user, self._valid_post_data(membership='P'), instance=profile,
+                allow_membership_change=False,
+            )
+            self.assertTrue(form.fields['membership'].disabled)
+            self.assertTrue(form.is_valid(), form.errors)
+            saved = form.save()
+
+        self.assertEqual(saved.membership, Profile.MembershipType.ACTIVE)
+
 
 class StudentLookupMixinTests(TestCase):
     def setUp(self):

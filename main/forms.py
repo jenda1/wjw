@@ -2,8 +2,11 @@ from typing import final, override
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils.html import format_html
 
 from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+
+STANOVY_URL = "https://www.waldorfjinonice.cz/wp-content/uploads/2018/01/SpolekWS-stanovy-zapsano-03.03.2017.pdf"
 
 @final
 class ProfileForm(forms.ModelForm):
@@ -37,7 +40,7 @@ class ProfileForm(forms.ModelForm):
             'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Poznánky...'}),
         }
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, user, *args, allow_membership_change=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
 
@@ -45,6 +48,17 @@ class ProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
             self.fields['email'].initial = user.email
+
+        if allow_membership_change:
+            self.fields['membership'].help_text = format_html(
+                '<a href="{}" target="_blank" rel="noopener">více informací o typu členství najdete zde</a>',
+                STANOVY_URL,
+            )
+        else:
+            self.fields['membership'].disabled = True
+            self.fields['membership'].help_text = (
+                "Typ členství nelze měnit svépomocí, kontaktujte prosím výkonnou radu spolku."
+            )
 
     def save(self, commit=True):
         profile = super().save(commit=False)

@@ -89,14 +89,14 @@ def profile_edit(request: HttpRequest):
         return redirect(reverse('new_user'))
 
     if request.method == 'POST':
-        profile_form = forms.ProfileForm(user, request.POST, instance=profile)
+        profile_form = forms.ProfileForm(user, request.POST, instance=profile, allow_membership_change=False)
 
         if profile_form.is_valid():
             profile_form.save()
             messages.success(request, 'Vaše údaje byly úspěšně uloženy.')
             return redirect('home')
     else:
-        profile_form = forms.ProfileForm(user, instance=profile)
+        profile_form = forms.ProfileForm(user, instance=profile, allow_membership_change=False)
 
     return render(request, 'main/profile_edit.html', {
         'profile_form': profile_form,

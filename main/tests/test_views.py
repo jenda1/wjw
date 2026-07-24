@@ -258,3 +258,20 @@ class ProfileEditViewTests(TestCase):
 
         profile = Profile.objects.get(user=user)
         self.assertEqual(profile.street_and_number, 'Nova 5')
+
+    def test_post_cannot_change_membership_type(self):
+        user = create_user('parent1')
+        create_profile(user, membership=Profile.MembershipType.ACTIVE)
+        self.client.force_login(user)
+
+        with patch('main.models.validuj_adresu'):
+            resp = self.client.post(reverse('profile_edit'), {
+                'first_name': 'Test', 'last_name': 'User', 'email': 'ignored@evil.com',
+                'birth_date': '1980-01-01',
+                'street_and_number': 'Ulice 1', 'city': 'Praha', 'zip_code': '11000',
+                'phone_number': '', 'membership': 'P', 'comments': '',
+            }, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        profile = Profile.objects.get(user=user)
+        self.assertEqual(profile.membership, Profile.MembershipType.ACTIVE)
