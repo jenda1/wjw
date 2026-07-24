@@ -1,8 +1,9 @@
 from .models import Profile, ProfileMergeRequest, ProfileStudentRequest
+from .permissions import can_approve_requests
 
 
 def pending_requests_count(request):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not can_approve_requests(request.user):
         return {}
 
     membership_count = Profile.objects.filter(status=Profile.ProfileStatus.PENDING).count()
@@ -12,6 +13,7 @@ def pending_requests_count(request):
     ).count()
 
     return {
+        'can_approve_requests': True,
         'pending_membership_requests_count': membership_count,
         'pending_merge_requests_count': merge_count,
         'pending_student_requests_count': student_count,

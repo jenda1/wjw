@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from main.models import ParentRelationship, Profile, ProfileStudentRequest, Student
 
-from .helpers import create_profile, create_student, create_user
+from .helpers import create_approver, create_profile, create_student, create_user
 
 
 class AddStudentViewTests(TestCase):
@@ -50,7 +50,7 @@ class AddStudentViewTests(TestCase):
 
 
 class StudentRequestsListViewTests(TestCase):
-    def test_requires_staff(self):
+    def test_requires_approver_group(self):
         user = create_user('parent1')
         create_profile(user)
         self.client.force_login(user)
@@ -69,8 +69,8 @@ class StudentRequestsListViewTests(TestCase):
             status=ProfileStudentRequest.RequestStatus.APPROVED,
         )
 
-        staff = create_user('staff1', is_staff=True)
-        self.client.force_login(staff)
+        approver = create_approver()
+        self.client.force_login(approver)
 
         resp = self.client.get(reverse('student_requests'))
         content = resp.content.decode()
@@ -80,14 +80,14 @@ class StudentRequestsListViewTests(TestCase):
 
 class StudentRequestDetailViewTests(TestCase):
     def setUp(self):
-        self.staff = create_user('staff1', is_staff=True)
+        self.approver = create_approver()
         self.parent_user = create_user('parent1', first_name='Petr', last_name='Novak')
         self.profile = create_profile(self.parent_user, status=Profile.ProfileStatus.ACTIVE)
         self.request_obj = ProfileStudentRequest.objects.create(
             profile=self.profile, first_name='Anicka', last_name='Novakova', birth_date=datetime.date(2016, 1, 1),
         )
 
-    def test_requires_staff(self):
+    def test_requires_approver_group(self):
         self.client.force_login(self.parent_user)
         resp = self.client.get(reverse('student_request_detail', args=[self.request_obj.pk]))
         self.assertNotEqual(resp.status_code, 200)
@@ -96,7 +96,7 @@ class StudentRequestDetailViewTests(TestCase):
         student = create_student(
             first_name='Anicka', last_name='Novakova', birth_date=datetime.date(2016, 1, 1),
         )
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.post(
             reverse('student_request_detail', args=[self.request_obj.pk]),
@@ -114,7 +114,7 @@ class StudentRequestDetailViewTests(TestCase):
         self.assertEqual(Student.objects.filter(first_name='Anicka', last_name='Novakova').count(), 1)
 
     def test_approve_without_selecting_student_fails_validation(self):
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.post(
             reverse('student_request_detail', args=[self.request_obj.pk]), {}, follow=True
@@ -126,7 +126,7 @@ class StudentRequestDetailViewTests(TestCase):
         self.assertEqual(Student.objects.count(), 0)
 
     def test_reject_marks_rejected_without_creating_relationship(self):
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.post(
             reverse('student_request_detail', args=[self.request_obj.pk]), {'reject': '1'}, follow=True
@@ -140,7 +140,7 @@ class StudentRequestDetailViewTests(TestCase):
     def test_already_processed_request_404s(self):
         self.request_obj.status = ProfileStudentRequest.RequestStatus.APPROVED
         self.request_obj.save()
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.get(reverse('student_request_detail', args=[self.request_obj.pk]))
         self.assertEqual(resp.status_code, 404)

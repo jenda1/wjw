@@ -3,7 +3,6 @@ from typing import cast
 from allauth.socialaccount.models import SocialAccount
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -14,6 +13,7 @@ from django.urls import reverse
 
 from . import forms
 from .models import ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest
+from .permissions import approver_required
 
 
 def is_member(profile: Profile | None) -> bool:
@@ -177,7 +177,7 @@ def new_user(request: HttpRequest):
     })
 
 
-@staff_member_required
+@approver_required
 def merge_requests(request: HttpRequest):
     pending_requests = ProfileMergeRequest.objects.filter(
         status=ProfileMergeRequest.RequestStatus.PENDING
@@ -188,7 +188,7 @@ def merge_requests(request: HttpRequest):
     })
 
 
-@staff_member_required
+@approver_required
 def merge_request_detail(request: HttpRequest, pk: int):
     merge_request = get_object_or_404(
         ProfileMergeRequest, pk=pk, status=ProfileMergeRequest.RequestStatus.PENDING
@@ -227,7 +227,7 @@ def merge_request_detail(request: HttpRequest, pk: int):
     })
 
 
-@staff_member_required
+@approver_required
 def membership_requests(request: HttpRequest):
     pending_profiles = Profile.objects.filter(
         status=Profile.ProfileStatus.PENDING
@@ -238,7 +238,7 @@ def membership_requests(request: HttpRequest):
     })
 
 
-@staff_member_required
+@approver_required
 def membership_request_detail(request: HttpRequest, pk: int):
     profile: Profile = get_object_or_404(Profile, pk=pk, status=Profile.ProfileStatus.PENDING)
     student_requests_manager = cast('Manager[ProfileStudentRequest]', profile.profilestudentrequest_set)
@@ -262,7 +262,7 @@ def membership_request_detail(request: HttpRequest, pk: int):
     })
 
 
-@staff_member_required
+@approver_required
 def student_requests(request: HttpRequest):
     pending_requests = ProfileStudentRequest.objects.filter(
         status=ProfileStudentRequest.RequestStatus.PENDING
@@ -273,7 +273,7 @@ def student_requests(request: HttpRequest):
     })
 
 
-@staff_member_required
+@approver_required
 def student_request_detail(request: HttpRequest, pk: int):
     student_request: ProfileStudentRequest = get_object_or_404(
         ProfileStudentRequest, pk=pk, status=ProfileStudentRequest.RequestStatus.PENDING

@@ -7,13 +7,13 @@ from django.urls import reverse
 
 from main.models import ProfileMergeRequest
 
-from .helpers import create_user
+from .helpers import create_approver, create_user
 
 User = get_user_model()
 
 
 class MergeRequestsListViewTests(TestCase):
-    def test_requires_staff(self):
+    def test_requires_approver_group(self):
         user = create_user('member1')
         self.client.force_login(user)
 
@@ -34,8 +34,8 @@ class MergeRequestsListViewTests(TestCase):
             status=ProfileMergeRequest.RequestStatus.APPROVED,
         )
 
-        staff = create_user('staff1', is_staff=True)
-        self.client.force_login(staff)
+        approver = create_approver()
+        self.client.force_login(approver)
 
         resp = self.client.get(reverse('merge_requests'))
         self.assertEqual(resp.status_code, 200)
@@ -47,7 +47,7 @@ class MergeRequestsListViewTests(TestCase):
 
 class MergeRequestDetailViewTests(TestCase):
     def setUp(self):
-        self.staff = create_user('staff1', is_staff=True)
+        self.approver = create_approver()
         self.target = create_user('target1', first_name='Petr', last_name='Novak')
         self.requester = create_user('requester1', first_name='Petr', last_name='Novak')
         self.merge_request = ProfileMergeRequest.objects.create(
@@ -55,7 +55,7 @@ class MergeRequestDetailViewTests(TestCase):
             first_name='Anicka', last_name='Novakova', birth_date=datetime.date(2016, 1, 1),
         )
 
-    def test_requires_staff(self):
+    def test_requires_approver_group(self):
         self.client.force_login(self.requester)
         resp = self.client.get(reverse('merge_request_detail', args=[self.merge_request.pk]))
         self.assertNotEqual(resp.status_code, 200)
@@ -63,7 +63,7 @@ class MergeRequestDetailViewTests(TestCase):
     def test_approve_moves_social_accounts_and_deletes_requester(self):
         SocialAccount.objects.create(user=self.target, provider='google', uid='g1')
         SocialAccount.objects.create(user=self.requester, provider='facebook', uid='f1')
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.post(
             reverse('merge_request_detail', args=[self.merge_request.pk]),
@@ -85,7 +85,7 @@ class MergeRequestDetailViewTests(TestCase):
         self.assertEqual(target_providers, {'google', 'facebook'})
 
     def test_reject_keeps_requester_and_marks_rejected(self):
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.post(
             reverse('merge_request_detail', args=[self.merge_request.pk]),
@@ -101,7 +101,7 @@ class MergeRequestDetailViewTests(TestCase):
     def test_already_processed_request_404s(self):
         self.merge_request.status = ProfileMergeRequest.RequestStatus.APPROVED
         self.merge_request.save()
-        self.client.force_login(self.staff)
+        self.client.force_login(self.approver)
 
         resp = self.client.get(reverse('merge_request_detail', args=[self.merge_request.pk]))
         self.assertEqual(resp.status_code, 404)

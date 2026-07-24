@@ -2,8 +2,10 @@ import datetime
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 
 from main.models import ClassCollective, Profile, Student
+from main.permissions import WELCOMING_TEAM_GROUP_NAME
 
 User = get_user_model()
 
@@ -13,6 +15,14 @@ def create_user(username, email='', first_name='Test', last_name='User', **kwarg
         username=username, email=email or f'{username}@example.com',
         first_name=first_name, last_name=last_name, password='x', **kwargs
     )
+
+
+def create_approver(username='approver1', **kwargs):
+    """Vytvoří uživatele ve skupině WelcomingTeam (může schvalovat žádosti)."""
+    user = create_user(username, **kwargs)
+    group, _ = Group.objects.get_or_create(name=WELCOMING_TEAM_GROUP_NAME)
+    user.groups.add(group)
+    return user
 
 
 def create_profile(user, status=Profile.ProfileStatus.ACTIVE, **kwargs):

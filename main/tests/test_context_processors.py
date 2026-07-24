@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from main.models import Profile, ProfileMergeRequest, ProfileStudentRequest
 
-from .helpers import create_profile, create_user
+from .helpers import create_approver, create_profile, create_user
 
 
 class PendingRequestsCountContextProcessorTests(TestCase):
@@ -31,7 +31,7 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         resp = self.client.get(reverse('index'))
         self.assertNotIn('pending_requests_count', resp.context)
 
-    def test_non_staff_sees_no_counts(self):
+    def test_non_approver_sees_no_counts(self):
         self._create_pending_requests()
         member = create_user('member1')
         create_profile(member, status=Profile.ProfileStatus.PENDING)
@@ -40,10 +40,10 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         resp = self.client.get(reverse('index'))
         self.assertNotIn('pending_requests_count', resp.context)
 
-    def test_staff_sees_correct_counts(self):
+    def test_approver_sees_correct_counts(self):
         self._create_pending_requests()
-        staff = create_user('staff1', is_staff=True)
-        self.client.force_login(staff)
+        approver = create_approver()
+        self.client.force_login(approver)
 
         resp = self.client.get(reverse('index'))
         self.assertEqual(resp.context['pending_membership_requests_count'], 1)
