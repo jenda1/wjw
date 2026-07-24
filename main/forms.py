@@ -36,7 +36,7 @@ class ProfileForm(forms.ModelForm):
         # Můžeš přidat i hezké HTML widgety (např. kalendář pro datum)
         widgets = {
             'phone_number': forms.TextInput(attrs={'placeholder': '+420 123 456 789'}),
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Poznánky...'}),
         }
 
@@ -51,7 +51,7 @@ class ProfileForm(forms.ModelForm):
 
         if allow_membership_change:
             self.fields['membership'].help_text = format_html(
-                '<a href="{}" target="_blank" rel="noopener">více informací o typu členství najdete zde</a>',
+                'více informací o typu členství najdete ve <a href="{}" target="_blank" rel="noopener">stanovách spolku</a>',
                 STANOVY_URL,
             )
         else:
@@ -110,7 +110,7 @@ class ProfileStudentRequestForm(StudentLookupMixin, forms.ModelForm):
         model = ProfileStudentRequest
         fields = ['first_name', 'last_name', 'birth_date', 'comments']
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),
         }
         help_texts = {
@@ -157,7 +157,7 @@ class ProfileMergeRequestForm(StudentLookupMixin, forms.ModelForm):
         }
         # Můžeš přidat i hezké HTML widgety (např. kalendář pro datum)
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),
         }
         help_texts = {
