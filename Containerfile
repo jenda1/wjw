@@ -15,13 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 COPY pyproject.toml uv.lock* ./
 
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 RUN uv venv /opt/venv && uv sync --no-dev --no-install-project
 
 # Zkopírování zdrojového kódu aplikace
 COPY wjw/ /app/wjw/
 COPY templates /app/templates/
 COPY main/ /app/main/
-COPY users/ /app/users/
 COPY manage.py pyproject.toml /app/
 
 RUN uv pip install --no-deps .
