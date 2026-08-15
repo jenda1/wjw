@@ -1,0 +1,46 @@
+{% extends "main/base.html" %}
+
+{% block header %}
+<div class="text-center mb-5 max-width-md mx-auto">
+    <div class="mb-3 text-muted">
+        <i class="bi bi-person-x fs-2 text-muted"></i>
+    </div>
+    <h1 class="display-5 mb-3">Žáci bez rodiče</h1>
+    <p class="lead text-muted">Žáci, kteří nemají přiřazeného žádného zákonného zástupce.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Jméno</th>
+                            <th>Datum narození</th>
+                            <th>Třída</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.first_name }} {{ student.last_name }}</td>
+                            <td>{{ student.birth_date }}</td>
+                            <td>{{ student.school_class }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted fst-italic py-4">
+                                Žádní žáci bez rodiče.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

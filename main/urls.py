@@ -14,4 +14,5 @@ urlpatterns = [
     path("membership_requests/<int:pk>", views.membership_request_detail, name="membership_request_detail"),
     path("student_requests", views.student_requests, name="student_requests"),
     path("student_requests/<int:pk>", views.student_request_detail, name="student_request_detail"),
+    path("orphan_students", views.orphan_students, name="orphan_students"),
 ]

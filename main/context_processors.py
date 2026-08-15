@@ -1,4 +1,4 @@
-from .models import Profile, ProfileMergeRequest, ProfileStudentRequest
+from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 from .permissions import can_approve_requests
 
 
@@ -11,11 +11,13 @@ def pending_requests_count(request):
     student_count = ProfileStudentRequest.objects.filter(
         status=ProfileStudentRequest.RequestStatus.PENDING
     ).count()
+    orphan_students_count = Student.objects.filter(parents__isnull=True).count()
 
     return {
         'can_approve_requests': True,
         'pending_membership_requests_count': membership_count,
         'pending_merge_requests_count': merge_count,
         'pending_student_requests_count': student_count,
+        'orphan_students_count': orphan_students_count,
         'pending_requests_count': membership_count + merge_count + student_count,
     }

@@ -12,9 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from . import forms
-from .models import ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest
-from .permissions import approver_required
-
+from .models import ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+from .permissions import approver_required, view_others_required
 
 def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
@@ -305,4 +304,15 @@ def student_request_detail(request: HttpRequest, pk: int):
     return render(request, 'main/student_request_detail.html', {
         'student_request': student_request,
         'form': form,
+    })
+
+
+@view_others_required
+def orphan_students(request: HttpRequest):
+    students = Student.objects.filter(parents__isnull=True).select_related('school_class').order_by(
+        'last_name', 'first_name'
+    )
+
+    return render(request, 'main/orphan_students.html', {
+        'students': students,
     })
