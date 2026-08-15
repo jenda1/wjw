@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load socialaccount %}
 {% load django_bootstrap5 %}
 
@@ -8,15 +9,9 @@
 <div class="container login-container">
     <div class="login-card text-center">
 
-        <!-- Bezpečnostní ikona -->
-        <div class="lock-badge">
-            <i class="bi bi-shield-lock-fill"></i>
-        </div>
-
         <!-- Záhlaví -->
         <h1 class="brand-title mb-2">
-            <i class="bi bi-people-fill me-2"></i> 
-            <span>Spolek waldorfská školy v Jinonicích</span>
+            <img src="{% static 'main/images/logo.svg' %}" alt="Spolek waldorfské školy v Jinonicích" height="112">
         </h1>
 
         <p class="text-muted mb-4 px-2">Pro přístup do systému se bezpečně ověřte pomocí svého účtu.</p>

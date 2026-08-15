@@ -22,10 +22,15 @@ h1, h2, h3, .navbar-brand {
     background-color: #ffffff;
     border-bottom: 3px solid var(--waldorf-orange);
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
 }
 .navbar-brand {
     color: var(--waldorf-orange) !important;
     font-size: 1.4rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 0.5rem;
 }
 .nav-link {
     color: var(--waldorf-dark);
