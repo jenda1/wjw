@@ -47,6 +47,8 @@ INSTALLED_APPS_ALLAUTH = [
     # Poskytovatelé (Providers) pro Google a Facebook
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.openid_connect',  # MojeID (viz SOCIALACCOUNT_PROVIDERS)
+    'seznam_provider',  # vlastní OAuth2 provider pro Seznam.cz
 ]
 
 INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
@@ -194,7 +196,41 @@ SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         }
-    }
+    },
+    'facebook': {
+        'APPS': [
+            {
+                'client_id': env.str('FACEBOOK_OAUTH_CLIENT_ID', default=''),
+                'secret': env.str('FACEBOOK_OAUTH_CLIENT_SECRET', default=''),
+                'key': ''
+            },
+        ],
+        'SCOPE': ['email'],
+        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name'],
+    },
+    'seznam': {
+        'APPS': [
+            {
+                'client_id': env.str('SEZNAM_OAUTH_CLIENT_ID', default=''),
+                'secret': env.str('SEZNAM_OAUTH_CLIENT_SECRET', default=''),
+                'key': ''
+            },
+        ],
+    },
+    'openid_connect': {
+        'APPS': [
+            {
+                'provider_id': 'mojeid',
+                'name': 'MojeID',
+                'client_id': env.str('MOJEID_OAUTH_CLIENT_ID', default=''),
+                'secret': env.str('MOJEID_OAUTH_CLIENT_SECRET', default=''),
+                'settings': {
+                    # doplní si '/.well-known/openid-configuration'
+                    'server_url': 'https://mojeid.cz',
+                },
+            },
+        ],
+    },
 }
 
 BOOTSTRAP5 = {
