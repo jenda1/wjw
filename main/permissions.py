@@ -37,7 +37,7 @@ def can_view_others(user) -> bool:
 def view_others_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not can_view_other_members(request.user):
+        if not can_view_others(request.user):
             raise PermissionDenied("Nemáte oprávnění prohlizet data ostatnich.")
         return view_func(request, *args, **kwargs)
 

@@ -184,8 +184,8 @@ SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
     'google': {
         'APPS': [
             {
-                'client_id': env.str('GOOGLE_OAUTH_CLIENT_ID'),
-                'secret': env.str('GOOGLE_OAUTH_CLIENT_SECRET'),
+                'client_id': env.str('GOOGLE_OAUTH_CLIENT_ID', default=''),
+                'secret': env.str('GOOGLE_OAUTH_CLIENT_SECRET', default=''),
                 'key': ''  # Usually left empty for Google
             },
         ],
@@ -240,4 +240,4 @@ BOOTSTRAP5 = {
 PHONENUMBER_DEFAULT_REGION = "CZ"
 
 MAPY_CZ_API_URL = "https://api.mapy.cz/v1/geocode"
-MAPY_CZ_API_KEY = env.str('MAPY_CZ_API_KEY')
+MAPY_CZ_API_KEY = env.str('MAPY_CZ_API_KEY', default='')

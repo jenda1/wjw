@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
 from main.models import ClassCollective, Profile, Student
-from main.permissions import WELCOMING_TEAM_GROUP_NAME
+from main.permissions import VR_MEMBER_GROUP_NAME, WELCOMING_TEAM_GROUP_NAME
 
 User = get_user_model()
 
@@ -21,6 +21,14 @@ def create_approver(username='approver1', **kwargs):
     """Vytvoří uživatele ve skupině WelcomingTeam (může schvalovat žádosti)."""
     user = create_user(username, **kwargs)
     group, _ = Group.objects.get_or_create(name=WELCOMING_TEAM_GROUP_NAME)
+    user.groups.add(group)
+    return user
+
+
+def create_vr_member(username='vrmember1', **kwargs):
+    """Vytvoří uživatele ve skupině VRmember (může prohlížet data ostatních)."""
+    user = create_user(username, **kwargs)
+    group, _ = Group.objects.get_or_create(name=VR_MEMBER_GROUP_NAME)
     user.groups.add(group)
     return user
 

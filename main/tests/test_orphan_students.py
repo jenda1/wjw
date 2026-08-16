@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from main.models import ParentRelationship
 
-from .helpers import create_approver, create_profile, create_student, create_user
+from .helpers import create_profile, create_student, create_user, create_vr_member
 
 
 class OrphanStudentsViewTests(TestCase):
@@ -25,8 +25,8 @@ class OrphanStudentsViewTests(TestCase):
         parent_profile = create_profile(parent_user)
         ParentRelationship.objects.create(parent=parent_profile, student=parented)
 
-        approver = create_approver()
-        self.client.force_login(approver)
+        vr_member = create_vr_member()
+        self.client.force_login(vr_member)
 
         resp = self.client.get(reverse('orphan_students'))
         content = resp.content.decode()

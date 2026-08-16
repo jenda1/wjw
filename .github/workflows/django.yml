@@ -33,7 +33,5 @@ jobs:
         DEBUG: False
         SECRET_KEY: 12345
         DATABASE_URL: "sqlite:///:memory:"
-        GOOGLE_OAUTH_CLIENT_ID: 12345.apps.googleusercontent.com
-        GOOGLE_OAUTH_CLIENT_SECRET: ABCD-123
       run: |
         python manage.py test
