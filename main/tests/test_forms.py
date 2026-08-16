@@ -102,6 +102,18 @@ class StudentLookupMixinTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data['student_by_name'], self.student)
 
+    def test_matches_ignoring_diacritics(self):
+        klass = create_class_collective()
+        accented_student = create_student(
+            first_name='Tomáš', last_name='Novák', birth_date=datetime.date(2016, 3, 20), school_class=klass,
+        )
+
+        form = ProfileStudentRequestForm(
+            {'first_name': 'tomas', 'last_name': 'novak', 'birth_date': '2016-03-20', 'comments': ''}
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data['student_by_name'], accented_student)
+
     def test_no_match_on_wrong_birth_date(self):
         form = ProfileStudentRequestForm(self._form_data(birth_date='1999-01-01'))
         self.assertTrue(form.is_valid())

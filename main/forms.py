@@ -1,3 +1,4 @@
+import unicodedata
 from typing import final, override
 
 from django import forms
@@ -7,6 +8,12 @@ from django.utils.html import format_html
 from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 
 STANOVY_URL = "https://www.waldorfjinonice.cz/wp-content/uploads/2018/01/SpolekWS-stanovy-zapsano-03.03.2017.pdf"
+
+
+def fold_name(value: str) -> str:
+    """Sjednotí jméno pro porovnání bez ohledu na velikost písmen a diakritiku."""
+    decomposed = unicodedata.normalize('NFKD', value)
+    return ''.join(c for c in decomposed if not unicodedata.combining(c)).casefold()
 
 @final
 class ProfileForm(forms.ModelForm):
@@ -87,11 +94,12 @@ class StudentLookupMixin:
 
         cleaned_data['student_by_name'] = None
         if first_name and last_name and birth_date:
-            cleaned_data['student_by_name'] = Student.objects.filter(
-                first_name__iexact=first_name,
-                last_name__iexact=last_name,
-                birth_date=birth_date,
-            ).first()
+            folded_first_name = fold_name(first_name)
+            folded_last_name = fold_name(last_name)
+            for student in Student.objects.filter(birth_date=birth_date):
+                if fold_name(student.first_name) == folded_first_name and fold_name(student.last_name) == folded_last_name:
+                    cleaned_data['student_by_name'] = student
+                    break
 
         return cleaned_data
 
