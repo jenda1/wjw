@@ -1,8 +1,10 @@
 from typing import final
 
+from allauth.socialaccount.models import SocialAccount
 from django import forms
-from django.utils.html import format_html, format_html_join
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.utils.html import format_html, format_html_join
 from import_export.admin import ImportExportMixin
 from import_export.forms import ConfirmImportForm, ImportForm
 from simple_history.admin import SimpleHistoryAdmin
@@ -53,6 +55,39 @@ class ParentInline(admin.TabularInline):
     verbose_name_plural = "Zákonní zástupci"
 
 
+class SocialAccountInlineChecks(admin.checks.InlineModelAdminChecks):
+    """SocialAccount nemá FK na Profile (jen na auth.User), takže standardní kontrolu
+    vztahu vypínáme - vazbu řeší SocialAccountInline.get_formset."""
+    def _check_relation(self, obj, parent_model):
+        return []
+
+
+@final
+class SocialAccountInline(admin.TabularInline):
+    """SocialAccount má FK na auth.User, ne na Profile - formset proto při vytváření
+    přesměruje `instance` z Profile na jeho `.user`, aby šlo účty editovat přímo tady."""
+    model = SocialAccount
+    extra = 0
+    fields = ("provider", "uid")
+    verbose_name = "Propojený účet"
+    verbose_name_plural = "Propojené účty"
+    checks_class = SocialAccountInlineChecks
+
+    def get_formset(self, request, obj=None, **kwargs):
+        base_formset = forms.inlineformset_factory(
+            get_user_model(), SocialAccount,
+            fields=self.fields, extra=self.extra, can_delete=self.can_delete,
+        )
+
+        class ProfileAwareFormSet(base_formset):
+            def __init__(inner_self, *args, instance=None, **inner_kwargs):
+                if isinstance(instance, Profile):
+                    instance = instance.user
+                super().__init__(*args, instance=instance, **inner_kwargs)
+
+        return ProfileAwareFormSet
+
+
 @final
 @admin.register(ClassCollective)
 class ClassCollectiveAdmin(SimpleHistoryAdmin):
@@ -81,14 +116,13 @@ class ProfileAdmin(SimpleHistoryAdmin):
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
     # Použití upraveného inline s novým pojmenováním
-    inlines = [StudentInlineForParent]
+    inlines = [StudentInlineForParent, SocialAccountInline]
 
     autocomplete_fields = ["user"]
-    readonly_fields = ("social_accounts",)
 
     fieldsets = (
         ("Účet", {
-            "fields": ("user", "social_accounts")
+            "fields": ("user",)
         }),
         ("Osobní údaje", {
             "fields": ("birth_date",)
@@ -217,10 +251,3 @@ class ProfileStudentRequestAdmin(admin.ModelAdmin):
     list_filter = ("action", "status")
     search_fields = ("profile__user__last_name", "first_name", "last_name")
     autocomplete_fields = ["profile", "student_by_name"]
-
-
-@admin.register(ParentRelationship)
-class ParentRelationshipAdmin(admin.ModelAdmin):
-    list_display = ("parent", "student", "valid_from", "valid_until")
-    search_fields = ("parent__user__last_name", "student__last_name")
-    autocomplete_fields = ["parent", "student"]

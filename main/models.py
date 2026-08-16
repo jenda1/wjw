@@ -219,6 +219,8 @@ class ParentRelationship(models.Model):
                 fields=["student", "parent"], name="student_parent_unique"
             )
         ]
+        verbose_name = "Vztah rodič-žák"
+        verbose_name_plural = "Vztahy rodič-žák"
 
     @override
     def __str__(self):
@@ -255,6 +257,11 @@ class ProfileMergeRequest(models.Model):
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")
 
+    @final
+    class Meta:
+        verbose_name = "Žádost o sloučení účtů"
+        verbose_name_plural = "Žádosti o sloučení účtů"
+
 
 @final
 class ProfileStudentRequest(models.Model):
@@ -279,3 +286,8 @@ class ProfileStudentRequest(models.Model):
     )
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")
+
+    @final
+    class Meta:
+        verbose_name = "Žádost o přidání žáka"
+        verbose_name_plural = "Žádosti o přidání žáka"
