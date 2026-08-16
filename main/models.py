@@ -144,6 +144,8 @@ class Profile(models.Model):
     status = models.CharField(max_length=2, choices=ProfileStatus.choices, default=ProfileStatus.PENDING)
     comments = models.TextField(blank=True, verbose_name="Poznámky")
 
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Datum podání žádosti")
+
     history = HistoricalRecords()
 
     @final
@@ -245,6 +247,7 @@ class ProfileMergeRequest(models.Model):
     )
 
     status = models.CharField(max_length=2, choices=RequestStatus.choices, default=RequestStatus.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Datum podání")
 
     old_email = models.EmailField(verbose_name="Stávající email")
 
@@ -276,6 +279,7 @@ class ProfileStudentRequest(models.Model):
     profile = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.CASCADE)
     action = models.CharField(max_length=2, choices=ActionType.choices, default=ActionType.ADD)
     status = models.CharField(max_length=2, choices=RequestStatus.choices, default=RequestStatus.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Datum podání")
 
     first_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
     last_name = models.CharField(max_length=100, verbose_name="Příjmení dítěte")

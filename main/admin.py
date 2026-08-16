@@ -111,7 +111,7 @@ class ClassCollectiveAdmin(SimpleHistoryAdmin):
 @final
 @admin.register(Profile)
 class ProfileAdmin(SimpleHistoryAdmin):
-    list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts")
+    list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts", "created_at")
     list_filter = ("status", "membership", "city")
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
@@ -119,10 +119,11 @@ class ProfileAdmin(SimpleHistoryAdmin):
     inlines = [StudentInlineForParent, SocialAccountInline]
 
     autocomplete_fields = ["user"]
+    readonly_fields = ("created_at",)
 
     fieldsets = (
         ("Účet", {
-            "fields": ("user",)
+            "fields": ("user", "created_at")
         }),
         ("Osobní údaje", {
             "fields": ("birth_date",)
@@ -239,7 +240,7 @@ class StudentAdmin(ImportExportMixin, SimpleHistoryAdmin):
 @final
 @admin.register(ProfileMergeRequest)
 class ProfileMergeRequestAdmin(admin.ModelAdmin):
-    list_display = ("user", "old_email", "first_name", "last_name", "student_by_name", "status")
+    list_display = ("user", "old_email", "first_name", "last_name", "student_by_name", "status", "created_at")
     list_filter = ("status",)
     search_fields = ("user__username", "old_email", "first_name", "last_name")
     autocomplete_fields = ["student_by_name"]
@@ -247,7 +248,7 @@ class ProfileMergeRequestAdmin(admin.ModelAdmin):
 @final
 @admin.register(ProfileStudentRequest)
 class ProfileStudentRequestAdmin(admin.ModelAdmin):
-    list_display = ("profile", "action", "first_name", "last_name", "student_by_name", "status")
+    list_display = ("profile", "action", "first_name", "last_name", "student_by_name", "status", "created_at")
     list_filter = ("action", "status")
     search_fields = ("profile__user__last_name", "first_name", "last_name")
     autocomplete_fields = ["profile", "student_by_name"]

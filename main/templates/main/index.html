@@ -48,6 +48,17 @@
               <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-medium">Žádost se zpracovává</span>
               <h4 class="fw-bold mb-2 text-dark">Evidujeme tvoji žádost o členství ve spolku</h4>
               <p class="text-muted mb-0">Jakmile bude žádost zpracována, dáme ti ihned vědět e-mailem. Děkujeme za tvůj zájem a trpělivost!</p>
+              {% if pending_student_requests %}
+              <p class="text-muted mb-0 mt-2">
+                <span class="fw-semibold text-dark">Děti v žádosti:</span>
+                {% for student_request in pending_student_requests %}
+                  {{ student_request.first_name }} {{ student_request.last_name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </p>
+              {% endif %}
+              <p class="text-muted mb-0 mt-1">
+                <span class="fw-semibold text-dark">Podáno:</span> {{ user.profile.created_at|date }}
+              </p>
             </div>
           </div>
         </div>
@@ -67,8 +78,12 @@
               <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill fw-medium">Propojení účtů</span>
               <h4 class="fw-bold mb-2 text-dark">Žádost o spojení účtu v řešení</h4>
               <p class="text-muted mb-0">
-                Evidujeme žádost o spojení tohoto účtu s <span class="fw-semibold text-dark">{{ user.merge_request.old_email }}</span>.
+                Evidujeme žádost o spojení tohoto účtu s <span class="fw-semibold text-dark">{{ user.merge_request.old_email }}</span>
+                (dítě: {{ user.merge_request.first_name }} {{ user.merge_request.last_name }}).
                 Jakmile ji schválíme, pošleme ti potvrzení e-mailem. Zatím prosím používejte původní účet. Děkujeme za trpělivost!
+              </p>
+              <p class="text-muted mb-0 mt-2">
+                <span class="fw-semibold text-dark">Podáno:</span> {{ user.merge_request.created_at|date }}
               </p>
             </div>
           </div>

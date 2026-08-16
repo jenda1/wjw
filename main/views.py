@@ -59,9 +59,14 @@ def index(request: HttpRequest):
     if is_member(profile):
         return redirect(reverse('home'))
 
+    pending_student_requests = profile.profilestudentrequest_set.filter(
+        status=ProfileStudentRequest.RequestStatus.PENDING
+    ) if profile is not None else ProfileStudentRequest.objects.none()
+
     return render(request, 'main/index.html', {
         'user': request.user,
         'is_known': profile is not None,
+        'pending_student_requests': pending_student_requests,
     })
 
 
