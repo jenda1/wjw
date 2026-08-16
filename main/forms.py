@@ -47,7 +47,7 @@ class ProfileForm(forms.ModelForm):
             'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Poznánky...'}),
         }
 
-    def __init__(self, user, *args, allow_membership_change=True, **kwargs):
+    def __init__(self, user, *args, allow_membership_change=True, allow_email_change=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
 
@@ -55,6 +55,11 @@ class ProfileForm(forms.ModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
             self.fields['email'].initial = user.email
+
+        if allow_email_change:
+            self.fields['email'].disabled = False
+            self.fields['email'].required = True
+            self.fields['email'].help_text = "Používá se pro přihlášení do systému."
 
         if allow_membership_change:
             self.fields['membership'].help_text = format_html(
@@ -67,14 +72,26 @@ class ProfileForm(forms.ModelForm):
                 "Typ členství nelze měnit svépomocí, kontaktujte prosím výkonnou radu spolku."
             )
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+
+        others = get_user_model().objects.filter(email__iexact=email)
+        if self.user:
+            others = others.exclude(pk=self.user.pk)
+        if others.exists():
+            raise forms.ValidationError("Tento e-mail už používá jiný účet.")
+
+        return email
+
     def save(self, commit=True):
         profile = super().save(commit=False)
 
         if self.user:
             self.user.first_name = self.cleaned_data['first_name']
             self.user.last_name = self.cleaned_data['last_name']
+            self.user.email = self.cleaned_data['email']
             if commit:
-                self.user.save(update_fields=['first_name', 'last_name'])
+                self.user.save(update_fields=['first_name', 'last_name', 'email'])
 
         if commit:
             profile.save()

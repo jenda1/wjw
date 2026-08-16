@@ -84,6 +84,31 @@ class ProfileFormTests(TestCase):
 
         self.assertEqual(saved.membership, Profile.MembershipType.ACTIVE)
 
+    def test_allow_email_change_true_updates_email(self):
+        user = create_user('parent1', email='petr@example.com')
+
+        with patch('main.models.validuj_adresu'):
+            form = ProfileForm(
+                user, self._valid_post_data(email='novy@example.com'), allow_email_change=True,
+            )
+            self.assertFalse(form.fields['email'].disabled)
+            self.assertTrue(form.is_valid(), form.errors)
+            form.instance.user = user
+            form.save()
+
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'novy@example.com')
+
+    def test_allow_email_change_true_rejects_email_used_by_another_user(self):
+        create_user('other', email='obsazeny@example.com')
+        user = create_user('parent1', email='petr@example.com')
+
+        form = ProfileForm(
+            user, self._valid_post_data(email='obsazeny@example.com'), allow_email_change=True,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+
 
 class StudentLookupMixinTests(TestCase):
     def setUp(self):

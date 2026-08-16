@@ -94,21 +94,41 @@ def home(request: HttpRequest):
 
 @login_required
 def profile_edit(request: HttpRequest):
-    user = request.user
+    user = cast(User, request.user)
     profile = getattr(user, 'profile', None)
 
     if profile is None:
         return redirect(reverse('new_user'))
 
     if request.method == 'POST':
-        profile_form = forms.ProfileForm(user, request.POST, instance=profile, allow_membership_change=False)
+        old_email = user.email
+        profile_form = forms.ProfileForm(
+            user, request.POST, instance=profile, allow_membership_change=False, allow_email_change=True
+        )
 
         if profile_form.is_valid():
+            new_email = profile_form.cleaned_data['email']
+            social_emails = {
+                account['email'].lower()
+                for account in get_connected_social_accounts(user)
+                if account['email']
+            }
+
             profile_form.save()
+
+            if new_email != old_email and social_emails and new_email.lower() not in social_emails:
+                messages.warning(
+                    request,
+                    'Nový e-mail neodpovídá žádnému z propojených účtů (Google/Facebook/...). '
+                    'Zkontrolujte jej prosím, že je opravdu správný!'
+                )
+
             messages.success(request, 'Vaše údaje byly úspěšně uloženy.')
             return redirect('home')
     else:
-        profile_form = forms.ProfileForm(user, instance=profile, allow_membership_change=False)
+        profile_form = forms.ProfileForm(
+            user, instance=profile, allow_membership_change=False, allow_email_change=True
+        )
 
     return render(request, 'main/profile_edit.html', {
         'profile_form': profile_form,

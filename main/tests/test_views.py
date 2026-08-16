@@ -246,7 +246,7 @@ class ProfileEditViewTests(TestCase):
 
         with patch('main.models.validuj_adresu'):
             resp = self.client.post(reverse('profile_edit'), {
-                'first_name': 'Petr Updated', 'last_name': 'Novak Updated', 'email': 'hacked@evil.com',
+                'first_name': 'Petr Updated', 'last_name': 'Novak Updated', 'email': 'petr@example.com',
                 'birth_date': '1980-01-01',
                 'street_and_number': 'Nova 5', 'city': 'Brno', 'zip_code': '60200',
                 'phone_number': '', 'membership': 'A', 'comments': '',
@@ -256,6 +256,83 @@ class ProfileEditViewTests(TestCase):
         user.refresh_from_db()
         self.assertEqual(user.first_name, 'Petr Updated')
         self.assertEqual(user.email, 'petr@example.com')
+
+    def test_post_can_change_email(self):
+        user = create_user('parent1', email='stary@example.com')
+        create_profile(user, street_and_number='Stara 1')
+        self.client.force_login(user)
+
+        with patch('main.models.validuj_adresu'):
+            resp = self.client.post(reverse('profile_edit'), {
+                'first_name': 'Petr', 'last_name': 'Novak', 'email': 'novy@example.com',
+                'birth_date': '1980-01-01',
+                'street_and_number': 'Nova 5', 'city': 'Brno', 'zip_code': '60200',
+                'phone_number': '', 'membership': 'A', 'comments': '',
+            }, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'novy@example.com')
+
+    def test_post_rejects_email_used_by_another_user(self):
+        create_user('other', email='obsazeny@example.com')
+        user = create_user('parent1', email='stary@example.com')
+        create_profile(user, street_and_number='Stara 1')
+        self.client.force_login(user)
+
+        with patch('main.models.validuj_adresu'):
+            resp = self.client.post(reverse('profile_edit'), {
+                'first_name': 'Petr', 'last_name': 'Novak', 'email': 'obsazeny@example.com',
+                'birth_date': '1980-01-01',
+                'street_and_number': 'Nova 5', 'city': 'Brno', 'zip_code': '60200',
+                'phone_number': '', 'membership': 'A', 'comments': '',
+            })
+
+        self.assertEqual(resp.status_code, 200)
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'stary@example.com')
+
+    def test_post_email_mismatching_social_accounts_shows_warning(self):
+        user = create_user('parent1', email='stary@example.com')
+        create_profile(user, street_and_number='Stara 1')
+        SocialAccount.objects.create(
+            user=user, provider='google', uid='g1', extra_data={'email': 'stary@example.com'}
+        )
+        self.client.force_login(user)
+
+        with patch('main.models.validuj_adresu'):
+            resp = self.client.post(reverse('profile_edit'), {
+                'first_name': 'Petr', 'last_name': 'Novak', 'email': 'jiny@example.com',
+                'birth_date': '1980-01-01',
+                'street_and_number': 'Nova 5', 'city': 'Brno', 'zip_code': '60200',
+                'phone_number': '', 'membership': 'A', 'comments': '',
+            }, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('neodpovídá žádnému z propojených účtů', content)
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'jiny@example.com')
+
+    def test_post_email_matching_social_account_shows_no_warning(self):
+        user = create_user('parent1', email='stary@example.com')
+        create_profile(user, street_and_number='Stara 1')
+        SocialAccount.objects.create(
+            user=user, provider='google', uid='g1', extra_data={'email': 'novy@example.com'}
+        )
+        self.client.force_login(user)
+
+        with patch('main.models.validuj_adresu'):
+            resp = self.client.post(reverse('profile_edit'), {
+                'first_name': 'Petr', 'last_name': 'Novak', 'email': 'novy@example.com',
+                'birth_date': '1980-01-01',
+                'street_and_number': 'Nova 5', 'city': 'Brno', 'zip_code': '60200',
+                'phone_number': '', 'membership': 'A', 'comments': '',
+            }, follow=True)
+
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertNotIn('neodpovídá žádnému z propojených účtů', content)
 
         profile = Profile.objects.get(user=user)
         self.assertEqual(profile.street_and_number, 'Nova 5')
