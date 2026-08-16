@@ -7,9 +7,9 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from main import views
-from main.models import Profile, ProfileMergeRequest, ProfileStudentRequest
+from main.models import ClassRepresentative, Profile, ProfileMergeRequest, ProfileStudentRequest
 
-from .helpers import create_profile, create_user
+from .helpers import create_class_collective, create_profile, create_user
 
 
 class IndexViewTests(TestCase):
@@ -160,6 +160,29 @@ class HomeViewTests(TestCase):
         self.assertIn('petr.fb@example.com', content)
         self.assertIn('bi-google', content)
         self.assertIn('bi-facebook', content)
+
+    def test_shows_represented_class_when_representative(self):
+        user = create_user('parent1', email='petr@example.com')
+        profile = create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        class_collective = create_class_collective(school_class=3)
+        ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        )
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        content = resp.content.decode()
+        self.assertIn('Zástupce třídy', content)
+        self.assertIn('3. ročník', content)
+
+    def test_no_represented_class_row_when_not_representative(self):
+        user = create_user('parent1', email='petr@example.com')
+        create_profile(user, status=Profile.ProfileStatus.ACTIVE)
+        self.client.force_login(user)
+
+        resp = self.client.get(reverse('home'))
+        self.assertNotIn('Zástupce třídy', resp.content.decode())
 
     def test_shows_no_connected_accounts_message_when_none(self):
         user = create_user('parent1', email='petr@example.com')

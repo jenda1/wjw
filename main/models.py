@@ -92,6 +92,13 @@ class ClassCollective(models.Model):
 
     variant = models.CharField(max_length=20, null=True, blank=True)
 
+    representatives = models.ManyToManyField(
+        'Profile',
+        through="ClassRepresentative",
+        related_name="represented_classes",
+        verbose_name="Zástupci třídy",
+    )
+
     history = HistoricalRecords()
 
     @final
@@ -227,6 +234,43 @@ class ParentRelationship(models.Model):
     @override
     def __str__(self):
         return f"{self.parent} -> {self.student} ({self.valid_from} - {self.valid_until or 'současnost'})"
+
+
+@final
+class ClassRepresentative(models.Model):
+    class RepresentantType(models.TextChoices):
+        VR = 'VR', "zástupce ve VR"
+        TREASURER = 'P', "pokladník"
+
+    school_class = models.ForeignKey(ClassCollective, blank=False, null=False, on_delete=models.PROTECT)
+    representative = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.PROTECT)
+
+    representant_type = models.CharField(
+        max_length=20, choices=RepresentantType.choices, verbose_name="Typ zástupce"
+    )
+
+    valid_from = models.DateField(auto_now=True, verbose_name="Platnost od")
+    valid_until = models.DateField(null=True, blank=True, verbose_name="Platnost do")
+
+    @final
+    class Meta:
+        # Zabráníme duplicitnímu vztahu mezi stejným zástupcem, třídou a typem zastoupení
+        # (stejná osoba ale může být pro jednu třídu zástupcem VR i pokladníkem zároveň)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["school_class", "representative", "representant_type"],
+                name="class_representative_unique",
+            )
+        ]
+        verbose_name = "Zástupce třídy"
+        verbose_name_plural = "Zástupci tříd"
+
+    @override
+    def __str__(self):
+        return (
+            f"{self.representative} -> {self.school_class} "
+            f"({self.valid_from} - {self.valid_until or 'současnost'})"
+        )
 
 
 @final

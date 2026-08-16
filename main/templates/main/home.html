@@ -104,6 +104,19 @@
         </span>
         {% edit_icon add_student_url "Přidat dítě" %}
       </dd>
+
+      {% if user.profile.represented_classes.all %}
+      <dt class="col-sm-4 text-muted fw-normal">Zástupce třídy</dt>
+      <dd class="col-sm-8 mb-0">
+        <span class="d-flex flex-wrap align-items-center gap-2">
+          {% for class_collective in user.profile.represented_classes.all %}
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+              {{ class_collective }}
+            </span>
+          {% endfor %}
+        </span>
+      </dd>
+      {% endif %}
     </dl>
   </div>
 </div>
