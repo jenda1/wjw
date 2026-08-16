@@ -19,23 +19,31 @@ def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
 
 
+# Bootstrap Icons pro poskytovatele, kteří v nich mají oficiální ikonu (viz přihlašovací stránka).
 SOCIAL_PROVIDER_ICONS = {
     'google': 'bi-google',
     'facebook': 'bi-facebook',
 }
 
+# Ostatní poskytovatelé nemají ikonu v Bootstrap Icons - použije se stejný obrázek
+# jako na přihlašovací stránce (templates/account/login.html).
+SOCIAL_PROVIDER_ICON_IMAGES = {
+    'seznam': 'main/images/seznam-icon.png',
+    'mojeid': 'main/images/mojeid-icon.png',
+}
 
-def get_connected_emails(user):
-    """Vrátí e-maily propojených účtů (Google/Facebook/...) s ikonou poskytovatele
-    a příznakem, zda jde o hlavní e-mail (ten uložený v User)."""
+
+def get_connected_social_accounts(user):
+    """Vrátí propojené účty (Google/Facebook/Seznam/MojeID/...) s ikonou poskytovatele a e-mailem."""
     accounts = []
     for account in user.socialaccount_set.all():
         email = account.extra_data.get('email') or account.extra_data.get('username') or user.username
+        icon_image = SOCIAL_PROVIDER_ICON_IMAGES.get(account.provider)
         accounts.append({
             'provider': account.provider,
-            'icon': SOCIAL_PROVIDER_ICONS.get(account.provider, 'bi-person-circle'),
+            'icon': None if icon_image else SOCIAL_PROVIDER_ICONS.get(account.provider, 'bi-person-circle'),
+            'icon_image': icon_image,
             'email': email,
-            'is_primary': bool(email) and email.lower() == user.email.lower(),
         })
     return accounts
 
@@ -73,7 +81,7 @@ def home(request: HttpRequest):
     return render(request, 'main/home.html', {
         'user': request.user,
         'pending_student_requests': pending_student_requests,
-        'connected_emails': get_connected_emails(request.user),
+        'connected_social_accounts': get_connected_social_accounts(request.user),
     })
 
 

@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load custom_tags %}
+{% load static %}
 
 {% block content %}
 {% url 'profile_edit' as profile_edit_url %}
@@ -32,19 +33,29 @@
       <!-- email -->
       <dt class="col-sm-4 text-muted fw-normal">Email</dt>
       <dd class="col-sm-8 mb-0 d-flex align-items-center gap-2 hover-trigger">
-        <span class="fw-medium text-dark d-flex flex-wrap align-items-center gap-2">
-          {% if connected_emails %}
-            {% for account in connected_emails %}
-              <span class="badge {% if account.is_primary %}bg-primary{% else %}bg-secondary-subtle text-dark border{% endif %} d-inline-flex align-items-center gap-1 py-1.5 px-2.5">
-                <i class="bi {{ account.icon }}"></i> {{ account.email }}
-                {% if account.is_primary %}<span class="fw-normal">(hlavní)</span>{% endif %}
+        <span class="fw-medium text-dark">{{ user.email }}</span>
+        {% edit_icon profile_edit_url %}
+      </dd>
+
+      <!-- propojené účty -->
+      <dt class="col-sm-4 text-muted fw-normal">Propojené účty</dt>
+      <dd class="col-sm-8 mb-0">
+        <span class="d-flex flex-wrap align-items-center gap-2">
+          {% if connected_social_accounts %}
+            {% for account in connected_social_accounts %}
+              <span class="badge bg-secondary-subtle text-dark border d-inline-flex align-items-center gap-1 py-1.5 px-2.5">
+                {% if account.icon_image %}
+                  <img src="{% static account.icon_image %}" alt="" height="14" class="align-text-bottom">
+                {% else %}
+                  <i class="bi {{ account.icon }}"></i>
+                {% endif %}
+                {{ account.email }}
               </span>
             {% endfor %}
           {% else %}
-            {{ user.email }}
+            <span class="text-muted fst-italic">Žádné propojené účty</span>
           {% endif %}
         </span>
-        {% edit_icon profile_edit_url %}
       </dd>
 
       <!-- Telefon -->
