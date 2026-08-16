@@ -1,4 +1,4 @@
-# Waldorf Jinonice Web
+# Web Spoleku rodičů základní školy Waldorf Jinonice
 
 
 ## Install
