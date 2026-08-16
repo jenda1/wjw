@@ -15,4 +15,5 @@ urlpatterns = [
     path("student_requests", views.student_requests, name="student_requests"),
     path("student_requests/<int:pk>", views.student_request_detail, name="student_request_detail"),
     path("orphan_students", views.orphan_students, name="orphan_students"),
+    path("profiles_without_students", views.profiles_without_students, name="profiles_without_students"),
 ]

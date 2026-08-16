@@ -365,3 +365,14 @@ def orphan_students(request: HttpRequest):
     return render(request, 'main/orphan_students.html', {
         'students': students,
     })
+
+
+@view_others_required
+def profiles_without_students(request: HttpRequest):
+    profiles = Profile.objects.filter(
+        status=Profile.ProfileStatus.ACTIVE, children__isnull=True
+    ).select_related('user').order_by('user__last_name', 'user__first_name')
+
+    return render(request, 'main/profiles_without_students.html', {
+        'profiles': profiles,
+    })

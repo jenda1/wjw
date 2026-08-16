@@ -21,9 +21,16 @@ def pending_requests_count(request):
         })
 
     if can_view_others(request.user):
+        orphan_students_count = Student.objects.filter(parents__isnull=True).count()
+        profiles_without_students_count = Profile.objects.filter(
+            status=Profile.ProfileStatus.ACTIVE, children__isnull=True
+        ).count()
+
         context.update({
             'can_view_others': True,
-            'orphan_students_count': Student.objects.filter(parents__isnull=True).count(),
+            'orphan_students_count': orphan_students_count,
+            'profiles_without_students_count': profiles_without_students_count,
+            'issues_count': orphan_students_count + profiles_without_students_count,
         })
 
     return context
