@@ -156,16 +156,11 @@ class ProfileMergeRequestForm(StudentLookupMixin, forms.ModelForm):
     class Meta:
         model = ProfileMergeRequest
 
-        fields = [ 'old_email', 'first_name', 'last_name', 'birth_date', 'comments']
+        fields = [ 'old_email', 'first_name', 'last_name', 'comments']
 
         lables = {
             'old_email': 'E-mail, který jste používali dříve (nebo stále používáte)',
         }
-        # Můžeš přidat i hezké HTML widgety (např. kalendář pro datum)
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),
-        }
-        help_texts = {
-            'birth_date': "Slouží jen k ověření žádosti.",
         }

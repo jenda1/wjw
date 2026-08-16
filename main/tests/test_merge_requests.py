@@ -1,5 +1,3 @@
-import datetime
-
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -24,13 +22,13 @@ class MergeRequestsListViewTests(TestCase):
         requester = create_user('requester1')
         ProfileMergeRequest.objects.create(
             user=requester, old_email='old@example.com',
-            first_name='Anicka', last_name='Novakova', birth_date=datetime.date(2016, 1, 1),
+            first_name='Anicka', last_name='Novakova',
         )
 
         other_requester = create_user('requester2')
         approved = ProfileMergeRequest.objects.create(
             user=other_requester, old_email='approved@example.com',
-            first_name='Jiny', last_name='Zak', birth_date=datetime.date(2016, 1, 1),
+            first_name='Jiny', last_name='Zak',
             status=ProfileMergeRequest.RequestStatus.APPROVED,
         )
 
@@ -52,7 +50,7 @@ class MergeRequestDetailViewTests(TestCase):
         self.requester = create_user('requester1', first_name='Petr', last_name='Novak')
         self.merge_request = ProfileMergeRequest.objects.create(
             user=self.requester, old_email='old@example.com',
-            first_name='Anicka', last_name='Novakova', birth_date=datetime.date(2016, 1, 1),
+            first_name='Anicka', last_name='Novakova',
         )
 
     def test_requires_approver_group(self):

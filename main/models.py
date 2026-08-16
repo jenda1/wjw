@@ -248,10 +248,9 @@ class ProfileMergeRequest(models.Model):
 
     first_name = models.CharField(max_length=100, verbose_name="Jméno dítěte")
     last_name = models.CharField(max_length=100, verbose_name="Příjmení dítěte")
-    birth_date = models.DateField(verbose_name="Datum narození dítěte")
 
     student_by_name = models.ForeignKey(
-        Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Žák (ověřeno jménem a datem narození)"
+        Student, null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Přiřazený žák"
     )
 
     comments = models.TextField(blank=True, verbose_name="Poznámky")

@@ -21,8 +21,7 @@
                             <th>Dřívější e-mail</th>
                             <th>Nové přihlášení</th>
                             <th>Jméno dítěte</th>
-                            <th>Datum narození</th>
-                            <th>Ověřený žák</th>
+                            <th>Přiřazený žák</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -39,7 +38,6 @@
                                 {% endif %}
                             </td>
                             <td>{{ merge_request.first_name }} {{ merge_request.last_name }}</td>
-                            <td>{{ merge_request.birth_date }}</td>
                             <td>
                                 {% if merge_request.student_by_name %}
                                     <span class="badge bg-success-subtle text-success border border-success-subtle">
@@ -47,7 +45,7 @@
                                     </span>
                                 {% else %}
                                     <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
-                                        Neověřeno
+                                        Nepřiřazeno
                                     </span>
                                 {% endif %}
                             </td>
@@ -59,7 +57,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted fst-italic py-4">
+                            <td colspan="5" class="text-center text-muted fst-italic py-4">
                                 Žádné čekající žádosti o sloučení účtů.
                             </td>
                         </tr>

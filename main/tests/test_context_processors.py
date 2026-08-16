@@ -16,7 +16,7 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         requester = create_user('requester1')
         ProfileMergeRequest.objects.create(
             user=requester, old_email='old@example.com',
-            first_name='Kid', last_name='X', birth_date=datetime.date(2016, 1, 1),
+            first_name='Kid', last_name='X',
         )
 
         student_requester = create_user('student_requester1')

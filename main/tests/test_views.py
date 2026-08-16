@@ -54,7 +54,7 @@ class IndexViewTests(TestCase):
     def test_pending_merge_request_shows_banner(self):
         user = create_user('requester1')
         ProfileMergeRequest.objects.create(
-            user=user, old_email='old@example.com', first_name='Kid', last_name='X', birth_date='2016-01-01',
+            user=user, old_email='old@example.com', first_name='Kid', last_name='X',
         )
         self.client.force_login(user)
 
@@ -66,7 +66,7 @@ class IndexViewTests(TestCase):
     def test_rejected_merge_request_does_not_show_banner(self):
         user = create_user('requester1')
         ProfileMergeRequest.objects.create(
-            user=user, old_email='old@example.com', first_name='Kid', last_name='X', birth_date='2016-01-01',
+            user=user, old_email='old@example.com', first_name='Kid', last_name='X',
             status=ProfileMergeRequest.RequestStatus.REJECTED,
         )
         self.client.force_login(user)
@@ -206,7 +206,7 @@ class NewUserViewTests(TestCase):
         resp = self.client.post(reverse('new_user'), {
             'submit_merge': '1',
             'old_email': 'old@example.com',
-            'first_name': 'Kid', 'last_name': 'X', 'birth_date': '2016-01-01', 'comments': '',
+            'first_name': 'Kid', 'last_name': 'X', 'comments': '',
         }, follow=True)
 
         self.assertEqual(resp.status_code, 200)

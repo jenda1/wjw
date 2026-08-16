@@ -50,7 +50,7 @@ class ProfileMergeRequestModelTests(TestCase):
         user = create_user('requester')
         mr = ProfileMergeRequest.objects.create(
             user=user, old_email='old@example.com',
-            first_name='Kid', last_name='X', birth_date=datetime.date(2016, 1, 1),
+            first_name='Kid', last_name='X',
         )
         self.assertEqual(mr.status, ProfileMergeRequest.RequestStatus.PENDING)
 
@@ -58,7 +58,7 @@ class ProfileMergeRequestModelTests(TestCase):
         user = create_user('requester')
         mr = ProfileMergeRequest.objects.create(
             user=user, old_email='old@example.com',
-            first_name='Kid', last_name='X', birth_date=datetime.date(2016, 1, 1),
+            first_name='Kid', last_name='X',
         )
         user.delete()
 

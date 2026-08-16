@@ -20,9 +20,6 @@
                 <dt class="col-sm-4 text-muted fw-normal">Jméno dítěte</dt>
                 <dd class="col-sm-8">{{ merge_request.first_name }} {{ merge_request.last_name }}</dd>
 
-                <dt class="col-sm-4 text-muted fw-normal">Datum narození dítěte</dt>
-                <dd class="col-sm-8">{{ merge_request.birth_date }}</dd>
-
                 <dt class="col-sm-4 text-muted fw-normal">Dřívější e-mail</dt>
                 <dd class="col-sm-8">{{ merge_request.old_email }}</dd>
 
@@ -36,12 +33,12 @@
                     {% endif %}
                 </dd>
 
-                <dt class="col-sm-4 text-muted fw-normal">Ověřený žák</dt>
+                <dt class="col-sm-4 text-muted fw-normal">Přiřazený žák</dt>
                 <dd class="col-sm-8">
                     {% if merge_request.student_by_name %}
                         {{ merge_request.student_by_name }}
                     {% else %}
-                        <span class="text-muted fst-italic">Jméno a datum narození se nepodařilo ověřit proti žádnému žákovi.</span>
+                        <span class="text-muted fst-italic">Žák nebyl přiřazen.</span>
                     {% endif %}
                 </dd>
 
