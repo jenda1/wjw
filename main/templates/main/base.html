@@ -39,12 +39,23 @@
                     {% endif %}
                 </a>
             </li>
+        </ul>
+    </li>
+    {% endif %}
+    {% if can_view_others and orphan_students_count %}
+    <li class="nav-item dropdown ms-lg-3">
+        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="issuesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Chyby
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ orphan_students_count }}
+                <span class="visually-hidden">Nalezené nesrovnalosti</span>
+            </span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="issuesDropdown">
             <li>
                 <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphan_students' %}">
                     <span><i class="bi bi-person-x me-2"></i>Žáci bez rodiče</span>
-                    {% if orphan_students_count %}
                     <span class="badge bg-danger rounded-pill ms-2">{{ orphan_students_count }}</span>
-                    {% endif %}
                 </a>
             </li>
         </ul>
