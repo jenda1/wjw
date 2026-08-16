@@ -143,6 +143,12 @@ class MergeRequestApprovalForm(forms.Form):
         help_text="Vyberte účet, ke kterému se má tato žádost připojit.",
     )
 
+    def __init__(self, *args, candidate_users=(), **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if candidate_users and not self.is_bound:
+            self.fields['target_user'].initial = candidate_users[0].pk
+
 
 @final
 class ProfileMergeRequestForm(StudentLookupMixin, forms.ModelForm):

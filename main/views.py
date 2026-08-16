@@ -193,6 +193,21 @@ def merge_request_detail(request: HttpRequest, pk: int):
         ProfileMergeRequest, pk=pk, status=ProfileMergeRequest.RequestStatus.PENDING
     )
 
+    # Hlavní signál pro nalezení účtu ke sloučení je dřívější e-mail (unikátní díky
+    # ACCOUNT_UNIQUE_EMAIL) - ověřený žák podle jména slouží jen jako doplňkový tip.
+    candidate_users: list[User] = []
+
+    email_match = User.objects.filter(email__iexact=merge_request.old_email).first()
+    if email_match:
+        candidate_users.append(email_match)
+
+    matched_student = cast('Student | None', merge_request.student_by_name)
+    if matched_student:
+        for profile in matched_student.parents.select_related('user').all():
+            parent_user = cast(User, profile.user)
+            if parent_user not in candidate_users:
+                candidate_users.append(parent_user)
+
     if request.method == 'POST':
         if 'reject' in request.POST:
             merge_request.status = ProfileMergeRequest.RequestStatus.REJECTED
@@ -200,7 +215,7 @@ def merge_request_detail(request: HttpRequest, pk: int):
             messages.success(request, 'Žádost o sloučení účtů byla zamítnuta.')
             return redirect('merge_requests')
 
-        form = forms.MergeRequestApprovalForm(request.POST)
+        form = forms.MergeRequestApprovalForm(request.POST, candidate_users=candidate_users)
         if form.is_valid():
             target_user = form.cleaned_data['target_user']
             requester = cast('User | None', merge_request.user)
@@ -218,11 +233,12 @@ def merge_request_detail(request: HttpRequest, pk: int):
             messages.success(request, 'Účty byly úspěšně sloučeny.')
             return redirect('merge_requests')
     else:
-        form = forms.MergeRequestApprovalForm()
+        form = forms.MergeRequestApprovalForm(candidate_users=candidate_users)
 
     return render(request, 'main/merge_request_detail.html', {
         'merge_request': merge_request,
         'form': form,
+        'candidate_users': candidate_users,
     })
 
 

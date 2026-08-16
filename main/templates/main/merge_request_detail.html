@@ -40,22 +40,26 @@
                 <dd class="col-sm-8">
                     {% if merge_request.student_by_name %}
                         {{ merge_request.student_by_name }}
-                        {% with parents=merge_request.student_by_name.parents.all %}
-                            {% if parents %}
-                                <br>
-                                <span class="text-muted small">
-                                    Zákonní zástupci v systému:
-                                    {% for parent in parents %}
-                                        {{ parent.user.first_name }} {{ parent.user.last_name }}
-                                        ({{ parent.user.email }}){% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                </span>
-                            {% endif %}
-                        {% endwith %}
                     {% else %}
                         <span class="text-muted fst-italic">Jméno a datum narození se nepodařilo ověřit proti žádnému žákovi.</span>
                     {% endif %}
                 </dd>
+
+                {% if candidate_users %}
+                <dt class="col-sm-4 text-muted fw-normal">Nalezené odpovídající účty</dt>
+                <dd class="col-sm-8">
+                    <span class="text-muted small d-block mb-1">Podle dřívějšího e-mailu (případně žáka) - níže předvybráno:</span>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for candidate in candidate_users %}
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary candidate-user-btn"
+                                    data-user-id="{{ candidate.pk }}">
+                                {{ candidate.first_name }} {{ candidate.last_name }} ({{ candidate.email }})
+                            </button>
+                        {% endfor %}
+                    </div>
+                </dd>
+                {% endif %}
 
                 {% if merge_request.comments %}
                 <dt class="col-sm-4 text-muted fw-normal">Poznámky</dt>
@@ -83,4 +87,15 @@
 
     </div>
 </div>
+
+<script>
+document.querySelectorAll('.candidate-user-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var select = document.getElementById('id_target_user');
+        if (select) {
+            select.value = btn.dataset.userId;
+        }
+    });
+});
+</script>
 {% endblock %}
