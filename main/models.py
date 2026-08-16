@@ -107,7 +107,7 @@ class ClassCollective(models.Model):
     @override
     def __str__(self):
         return (
-            f"{self.school_class}{self.variant if self.variant else ''} ({self.year})"
+            f"{self.get_school_class_display()}{', ' + self.variant if self.variant else ''} ({self.year})"
         )
 
 
@@ -200,7 +200,7 @@ class Student(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} ({self.school_class})"
 
 
 @final

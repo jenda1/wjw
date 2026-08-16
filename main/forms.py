@@ -148,7 +148,7 @@ ProfileStudentRequestFormSet = forms.formset_factory(ProfileStudentRequestForm, 
 @final
 class StudentRequestApprovalForm(forms.Form):
     student = forms.ModelChoiceField(
-        queryset=Student.objects.all().order_by('last_name', 'first_name'),
+        queryset=Student.objects.all().select_related('school_class').order_by('last_name', 'first_name'),
         label="Žák",
         help_text="Žák musí být v systému už založený (administrátorem) - zde ho jen připojíte k rodiči.",
     )

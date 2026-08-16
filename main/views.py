@@ -213,7 +213,7 @@ def new_user(request: HttpRequest):
 def merge_requests(request: HttpRequest):
     pending_requests = ProfileMergeRequest.objects.filter(
         status=ProfileMergeRequest.RequestStatus.PENDING
-    ).select_related('user', 'student_by_name').order_by('id')
+    ).select_related('user', 'student_by_name', 'student_by_name__school_class').order_by('id')
 
     return render(request, 'main/merge_requests.html', {
         'merge_requests': pending_requests,
@@ -314,7 +314,7 @@ def membership_request_detail(request: HttpRequest, pk: int):
 def student_requests(request: HttpRequest):
     pending_requests = ProfileStudentRequest.objects.filter(
         status=ProfileStudentRequest.RequestStatus.PENDING
-    ).select_related('profile__user', 'student_by_name').order_by('id')
+    ).select_related('profile__user', 'student_by_name', 'student_by_name__school_class').order_by('id')
 
     return render(request, 'main/student_requests.html', {
         'student_requests': pending_requests,
