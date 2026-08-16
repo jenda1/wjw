@@ -2,13 +2,11 @@
 
 {% block menu %}
 <ul class="navbar-nav ms-auto">
-    <li class="nav-item"><a class="nav-link" href="https://www.waldorfjinonice.cz/spolek-rodicu/">Kontakty</a></li>
-
     {% if user.is_authenticated %}
+    {% if can_approve_requests %}
     <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-circle me-1"></i>
-            {{ user.first_name|default:user.username }}
+        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="requestsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Žádosti
             {% if pending_requests_count %}
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                 {{ pending_requests_count }}
@@ -16,9 +14,7 @@
             </span>
             {% endif %}
         </a>
-        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
-            {% if can_approve_requests %}
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="requestsDropdown">
             <li>
                 <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'membership_requests' %}">
                     <span><i class="bi bi-person-badge me-2"></i>Žádosti o členství</span>
@@ -51,7 +47,16 @@
                     {% endif %}
                 </a>
             </li>
-            {% endif %}
+        </ul>
+    </li>
+    {% endif %}
+    <li class="nav-item dropdown ms-lg-3">
+        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle me-1"></i>
+            {{ user.first_name|default:user.username }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form action="{% url 'account_logout' %}" method="post" class="px-3 py-1">
