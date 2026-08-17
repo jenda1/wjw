@@ -53,26 +53,26 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="issuesDropdown">
             <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphan_students' %}">
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphaned_students' %}">
                     <span><i class="bi bi-person-x me-2"></i>Žáci bez rodiče</span>
-                    {% if orphan_students_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ orphan_students_count }}</span>
+                    {% if orphaned_students_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ orphaned_students_count }}</span>
                     {% endif %}
                 </a>
             </li>
             <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'profiles_without_students' %}">
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphaned_members' %}">
                     <span><i class="bi bi-person-dash me-2"></i>Členové bez žáka</span>
-                    {% if profiles_without_students_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ profiles_without_students_count }}</span>
+                    {% if orphaned_members_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ orphaned_members_count }}</span>
                     {% endif %}
                 </a>
             </li>
             <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphan_classes' %}">
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphaned_classes' %}">
                     <span><i class="bi bi-people me-2"></i>Třídy bez zástupce</span>
-                    {% if orphan_classes_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ orphan_classes_count }}</span>
+                    {% if orphaned_classes_count %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ orphaned_classes_count }}</span>
                     {% endif %}
                 </a>
             </li>

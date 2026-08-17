@@ -8,13 +8,13 @@ from main.models import ClassRepresentative
 from .helpers import create_class_collective, create_profile, create_user, create_vr_member
 
 
-class OrphanClassesViewTests(TestCase):
+class OrphanedClassesViewTests(TestCase):
     def test_requires_approver_group(self):
         user = create_user('parent1')
         create_profile(user)
         self.client.force_login(user)
 
-        resp = self.client.get(reverse('orphan_classes'))
+        resp = self.client.get(reverse('orphaned_classes'))
         self.assertNotEqual(resp.status_code, 200)
 
     def test_class_with_both_roles_filled_is_not_listed(self):
@@ -35,7 +35,7 @@ class OrphanClassesViewTests(TestCase):
         vr_member = create_vr_member()
         self.client.force_login(vr_member)
 
-        resp = self.client.get(reverse('orphan_classes'))
+        resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
         self.assertNotIn('3. ročník', content)
 
@@ -51,7 +51,7 @@ class OrphanClassesViewTests(TestCase):
         vr_member = create_vr_member()
         self.client.force_login(vr_member)
 
-        resp = self.client.get(reverse('orphan_classes'))
+        resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
         self.assertIn('4. ročník', content)
 
@@ -74,6 +74,6 @@ class OrphanClassesViewTests(TestCase):
         vr_member = create_vr_member()
         self.client.force_login(vr_member)
 
-        resp = self.client.get(reverse('orphan_classes'))
+        resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
         self.assertIn('5. ročník', content)

@@ -366,29 +366,29 @@ def student_request_detail(request: HttpRequest, pk: int):
 
 
 @view_others_required
-def orphan_students(request: HttpRequest):
+def orphaned_students(request: HttpRequest):
     students = Student.objects.filter(parents__isnull=True).select_related('school_class').order_by(
         'last_name', 'first_name'
     )
 
-    return render(request, 'main/orphan_students.html', {
+    return render(request, 'main/orphaned_students.html', {
         'students': students,
     })
 
 
 @view_others_required
-def profiles_without_students(request: HttpRequest):
+def orphaned_members(request: HttpRequest):
     profiles = Profile.objects.filter(
         status=Profile.ProfileStatus.ACTIVE, children__isnull=True
     ).select_related('user').order_by('user__last_name', 'user__first_name')
 
-    return render(request, 'main/profiles_without_students.html', {
+    return render(request, 'main/orphaned_members.html', {
         'profiles': profiles,
     })
 
 
 @view_others_required
-def orphan_classes(request: HttpRequest):
+def orphaned_classes(request: HttpRequest):
     today = timezone.localdate()
     currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
 
@@ -413,6 +413,6 @@ def orphan_classes(request: HttpRequest):
         for class_collective in incomplete_classes
     ]
 
-    return render(request, 'main/orphan_classes.html', {
+    return render(request, 'main/orphaned_classes.html', {
         'classes': classes,
     })

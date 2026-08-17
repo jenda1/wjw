@@ -24,8 +24,8 @@ def pending_requests_count(request):
         })
 
     if can_view_others(request.user):
-        orphan_students_count = Student.objects.filter(parents__isnull=True).count()
-        profiles_without_students_count = Profile.objects.filter(
+        orphaned_students_count = Student.objects.filter(parents__isnull=True).count()
+        orphaned_members_count = Profile.objects.filter(
             status=Profile.ProfileStatus.ACTIVE, children__isnull=True
         ).count()
 
@@ -37,17 +37,17 @@ def pending_requests_count(request):
         classes_with_treasurer = set(ClassRepresentative.objects.filter(
             currently_valid, representant_type=ClassRepresentative.RepresentantType.TREASURER
         ).values_list('school_class_id', flat=True))
-        orphan_classes_count = (
+        orphaned_classes_count = (
             ClassCollective.objects.exclude(pk__in=classes_with_vr)
             | ClassCollective.objects.exclude(pk__in=classes_with_treasurer)
         ).distinct().count()
 
         context.update({
             'can_view_others': True,
-            'orphan_students_count': orphan_students_count,
-            'profiles_without_students_count': profiles_without_students_count,
-            'orphan_classes_count': orphan_classes_count,
-            'issues_count': orphan_students_count + profiles_without_students_count + orphan_classes_count,
+            'orphaned_students_count': orphaned_students_count,
+            'orphaned_members_count': orphaned_members_count,
+            'orphaned_classes_count': orphaned_classes_count,
+            'issues_count': orphaned_students_count + orphaned_members_count + orphaned_classes_count,
         })
 
     return context

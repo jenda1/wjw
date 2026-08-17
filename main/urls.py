@@ -14,7 +14,7 @@ urlpatterns = [
     path("membership_requests/<int:pk>", views.membership_request_detail, name="membership_request_detail"),
     path("student_requests", views.student_requests, name="student_requests"),
     path("student_requests/<int:pk>", views.student_request_detail, name="student_request_detail"),
-    path("orphan_students", views.orphan_students, name="orphan_students"),
-    path("profiles_without_students", views.profiles_without_students, name="profiles_without_students"),
-    path("orphan_classes", views.orphan_classes, name="orphan_classes"),
+    path("orphaned_students", views.orphaned_students, name="orphaned_students"),
+    path("orphaned_members", views.orphaned_members, name="orphaned_members"),
+    path("orphaned_classes", views.orphaned_classes, name="orphaned_classes"),
 ]

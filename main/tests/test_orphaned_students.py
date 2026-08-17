@@ -8,13 +8,13 @@ from main.models import ParentRelationship
 from .helpers import create_profile, create_student, create_user, create_vr_member
 
 
-class OrphanStudentsViewTests(TestCase):
+class OrphanedStudentsViewTests(TestCase):
     def test_requires_approver_group(self):
         user = create_user('parent1')
         create_profile(user)
         self.client.force_login(user)
 
-        resp = self.client.get(reverse('orphan_students'))
+        resp = self.client.get(reverse('orphaned_students'))
         self.assertNotEqual(resp.status_code, 200)
 
     def test_lists_only_students_without_parents(self):
@@ -28,7 +28,7 @@ class OrphanStudentsViewTests(TestCase):
         vr_member = create_vr_member()
         self.client.force_login(vr_member)
 
-        resp = self.client.get(reverse('orphan_students'))
+        resp = self.client.get(reverse('orphaned_students'))
         content = resp.content.decode()
         self.assertIn(orphan.first_name, content)
         self.assertNotIn('Jiny', content)
