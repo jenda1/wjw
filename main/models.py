@@ -250,21 +250,43 @@ class ClassRepresentative(models.Model):
         max_length=20, choices=RepresentantType.choices, verbose_name="Typ zástupce"
     )
 
-    valid_from = models.DateField(auto_now=True, verbose_name="Platnost od")
+    valid_from = models.DateField(default=date.today, verbose_name="Platnost od")
     valid_until = models.DateField(null=True, blank=True, verbose_name="Platnost do")
 
     @final
     class Meta:
-        # Zabráníme duplicitnímu vztahu mezi stejným zástupcem, třídou a typem zastoupení
-        # (stejná osoba ale může být pro jednu třídu zástupcem VR i pokladníkem zároveň)
+        # Zabráníme duplicitnímu vztahu mezi stejným zástupcem, třídou, typem zastoupení
+        # a obdobím platnosti (stejná osoba tak může tutéž roli ve třídě zastávat
+        # opakovaně v různých, na sebe nenavazujících obdobích - viz clean()).
         constraints = [
             models.UniqueConstraint(
-                fields=["school_class", "representative", "representant_type"],
+                fields=["school_class", "representative", "representant_type", "valid_until"],
                 name="class_representative_unique",
             )
         ]
         verbose_name = "Zástupce třídy"
         verbose_name_plural = "Zástupci tříd"
+
+    @override
+    def clean(self):
+        super().clean()
+
+        # Uniqueness na úrovni DB nestačí - stejnou roli ve stejné třídě nesmí mít ve
+        # stejném období dva různí zástupci, i když jde o odlišné záznamy.
+        if self.school_class_id and self.representant_type and self.valid_from:
+            overlapping = ClassRepresentative.objects.filter(
+                school_class_id=self.school_class_id, representant_type=self.representant_type,
+            ).exclude(pk=self.pk)
+            overlapping = overlapping.filter(
+                models.Q(valid_until__isnull=True) | models.Q(valid_until__gte=self.valid_from)
+            )
+            if self.valid_until is not None:
+                overlapping = overlapping.filter(valid_from__lte=self.valid_until)
+
+            if overlapping.exists():
+                raise ValidationError(
+                    "Pro tuto třídu a roli už existuje jiný zástupce v překrývajícím se období."
+                )
 
     @override
     def __str__(self):

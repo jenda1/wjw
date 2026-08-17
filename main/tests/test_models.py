@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 
@@ -72,13 +73,14 @@ class ClassRepresentativeModelTests(TestCase):
         self.assertIn(profile, class_collective.representatives.all())
         self.assertIn(class_collective, profile.represented_classes.all())
 
-    def test_same_representative_and_type_cannot_be_added_twice_to_same_class(self):
+    def test_same_representative_type_and_valid_until_cannot_be_added_twice_to_same_class(self):
         user = create_user('parent1')
         profile = create_profile(user)
         class_collective = create_class_collective()
         ClassRepresentative.objects.create(
             school_class=class_collective, representative=profile,
             representant_type=ClassRepresentative.RepresentantType.VR,
+            valid_until=datetime.date(2030, 1, 1),
         )
 
         with self.assertRaises(IntegrityError):
@@ -86,7 +88,83 @@ class ClassRepresentativeModelTests(TestCase):
                 ClassRepresentative.objects.create(
                     school_class=class_collective, representative=profile,
                     representant_type=ClassRepresentative.RepresentantType.VR,
+                    valid_until=datetime.date(2030, 1, 1),
                 )
+
+    def test_same_representative_can_have_multiple_non_overlapping_terms(self):
+        # valid_until=None u obou by DB constraint nezachytil (NULL != NULL), ale
+        # clean() by to i tak odmítl jako překryv - tady jde jen o to, že rozdílný
+        # valid_until přes DB constraint projde.
+        user = create_user('parent1')
+        profile = create_profile(user)
+        class_collective = create_class_collective()
+        ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+            valid_until=datetime.date(2020, 1, 1),
+        )
+        second = ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+            valid_from=datetime.date(2021, 1, 1),
+        )
+        self.assertIsNotNone(second.pk)
+
+    def test_clean_rejects_overlapping_representatives_of_same_role(self):
+        user1 = create_user('parent1')
+        profile1 = create_profile(user1)
+        user2 = create_user('parent2')
+        profile2 = create_profile(user2)
+        class_collective = create_class_collective()
+
+        ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile1,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        )
+
+        second = ClassRepresentative(
+            school_class=class_collective, representative=profile2,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        )
+        with self.assertRaises(ValidationError):
+            second.clean()
+
+    def test_clean_allows_representative_after_previous_one_ended(self):
+        user1 = create_user('parent1')
+        profile1 = create_profile(user1)
+        user2 = create_user('parent2')
+        profile2 = create_profile(user2)
+        class_collective = create_class_collective()
+
+        ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile1,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+            valid_until=datetime.date(2000, 1, 1),
+        )
+
+        second = ClassRepresentative(
+            school_class=class_collective, representative=profile2,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        )
+        second.clean()
+
+    def test_clean_allows_different_role_to_overlap(self):
+        user1 = create_user('parent1')
+        profile1 = create_profile(user1)
+        user2 = create_user('parent2')
+        profile2 = create_profile(user2)
+        class_collective = create_class_collective()
+
+        ClassRepresentative.objects.create(
+            school_class=class_collective, representative=profile1,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        )
+
+        second = ClassRepresentative(
+            school_class=class_collective, representative=profile2,
+            representant_type=ClassRepresentative.RepresentantType.TREASURER,
+        )
+        second.clean()
 
     def test_same_representative_can_hold_two_different_roles_for_same_class(self):
         user = create_user('parent1')
