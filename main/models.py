@@ -105,6 +105,7 @@ class ClassCollective(models.Model):
     class Meta:
         verbose_name = "Třídna"
         verbose_name_plural = "Třídy"
+        ordering = ["year", "variant"]
         constraints = [
             models.UniqueConstraint(
                 fields=["year", "variant"], name="unique_class_collective_name"

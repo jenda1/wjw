@@ -22,7 +22,7 @@ from .models import (
     ProfileStudentRequest,
     Student,
 )
-from .permissions import approver_required, view_others_required
+from .permissions import CAPO_DI_TUTTI_GROUP_NAME, VR_MEMBER_GROUP_NAME, approver_required, view_others_required
 
 def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
@@ -415,4 +415,35 @@ def orphaned_classes(request: HttpRequest):
 
     return render(request, 'main/orphaned_classes.html', {
         'classes': classes,
+    })
+
+
+@login_required
+def show_vr(request: HttpRequest):
+    today = timezone.localdate()
+    currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+
+    vr_profiles = Profile.objects.filter(
+        user__groups__name=VR_MEMBER_GROUP_NAME
+    ).select_related('user').distinct().order_by('user__last_name', 'user__first_name')
+
+    members = []
+    other_profiles = []
+    for profile in vr_profiles:
+        if cast(User, profile.user).groups.filter(name=CAPO_DI_TUTTI_GROUP_NAME).exists():
+            members.append({'profile': profile, 'role': "Předseda spolku"})
+        else:
+            other_profiles.append(profile)
+
+    for profile in other_profiles:
+        represented_classes = ClassRepresentative.objects.filter(
+            currently_valid, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        ).select_related('school_class')
+        class_names = ", ".join(str(rep.school_class) for rep in represented_classes)
+        role = f"Zástupce třídy {class_names}" if class_names else "Zástupce třídy"
+        members.append({'profile': profile, 'role': role})
+
+    return render(request, 'main/show_vr.html', {
+        'members': members,
     })

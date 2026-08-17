@@ -17,4 +17,5 @@ urlpatterns = [
     path("orphaned_students", views.orphaned_students, name="orphaned_students"),
     path("orphaned_members", views.orphaned_members, name="orphaned_members"),
     path("orphaned_classes", views.orphaned_classes, name="orphaned_classes"),
+    path("show_vr", views.show_vr, name="show_vr"),
 ]
