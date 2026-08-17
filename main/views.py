@@ -6,13 +6,22 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Manager
+from django.db.models import Manager, Q
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from . import forms
-from .models import ParentRelationship, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+from .models import (
+    ClassCollective,
+    ClassRepresentative,
+    ParentRelationship,
+    Profile,
+    ProfileMergeRequest,
+    ProfileStudentRequest,
+    Student,
+)
 from .permissions import approver_required, view_others_required
 
 def is_member(profile: Profile | None) -> bool:
@@ -375,4 +384,35 @@ def profiles_without_students(request: HttpRequest):
 
     return render(request, 'main/profiles_without_students.html', {
         'profiles': profiles,
+    })
+
+
+@view_others_required
+def orphan_classes(request: HttpRequest):
+    today = timezone.localdate()
+    currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+
+    classes_with_vr = set(ClassRepresentative.objects.filter(
+        currently_valid, representant_type=ClassRepresentative.RepresentantType.VR
+    ).values_list('school_class_id', flat=True))
+    classes_with_treasurer = set(ClassRepresentative.objects.filter(
+        currently_valid, representant_type=ClassRepresentative.RepresentantType.TREASURER
+    ).values_list('school_class_id', flat=True))
+
+    incomplete_classes = (
+        ClassCollective.objects.exclude(pk__in=classes_with_vr)
+        | ClassCollective.objects.exclude(pk__in=classes_with_treasurer)
+    ).distinct().order_by('-year', 'school_class', 'variant')
+
+    classes = [
+        {
+            'class_collective': class_collective,
+            'missing_vr': class_collective.pk not in classes_with_vr,
+            'missing_treasurer': class_collective.pk not in classes_with_treasurer,
+        }
+        for class_collective in incomplete_classes
+    ]
+
+    return render(request, 'main/orphan_classes.html', {
+        'classes': classes,
     })

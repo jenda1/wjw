@@ -1,4 +1,7 @@
-from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+from django.db.models import Q
+from django.utils import timezone
+
+from .models import ClassCollective, ClassRepresentative, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 from .permissions import can_approve_requests, can_view_others
 
 
@@ -26,11 +29,25 @@ def pending_requests_count(request):
             status=Profile.ProfileStatus.ACTIVE, children__isnull=True
         ).count()
 
+        today = timezone.localdate()
+        currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+        classes_with_vr = set(ClassRepresentative.objects.filter(
+            currently_valid, representant_type=ClassRepresentative.RepresentantType.VR
+        ).values_list('school_class_id', flat=True))
+        classes_with_treasurer = set(ClassRepresentative.objects.filter(
+            currently_valid, representant_type=ClassRepresentative.RepresentantType.TREASURER
+        ).values_list('school_class_id', flat=True))
+        orphan_classes_count = (
+            ClassCollective.objects.exclude(pk__in=classes_with_vr)
+            | ClassCollective.objects.exclude(pk__in=classes_with_treasurer)
+        ).distinct().count()
+
         context.update({
             'can_view_others': True,
             'orphan_students_count': orphan_students_count,
             'profiles_without_students_count': profiles_without_students_count,
-            'issues_count': orphan_students_count + profiles_without_students_count,
+            'orphan_classes_count': orphan_classes_count,
+            'issues_count': orphan_students_count + profiles_without_students_count + orphan_classes_count,
         })
 
     return context

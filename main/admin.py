@@ -11,6 +11,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from main.models import (
     ClassCollective,
+    ClassRepresentative,
     ParentRelationship,
     Profile,
     ProfileMergeRequest,
@@ -55,6 +56,26 @@ class ParentInline(admin.TabularInline):
     verbose_name_plural = "Zákonní zástupci"
 
 
+@final
+class ClassRepresentativeInlineForClass(admin.TabularInline):
+    model = ClassRepresentative
+    fk_name = "school_class"
+    extra = 1
+    autocomplete_fields = ["representative"]
+    verbose_name = "Zástupce"
+    verbose_name_plural = "Zástupci třídy"
+
+
+@final
+class ClassRepresentativeInlineForProfile(admin.TabularInline):
+    model = ClassRepresentative
+    fk_name = "representative"
+    extra = 1
+    autocomplete_fields = ["school_class"]
+    verbose_name = "Zastupovaná třída"
+    verbose_name_plural = "Zastupované třídy"
+
+
 class SocialAccountInlineChecks(admin.checks.InlineModelAdminChecks):
     """SocialAccount nemá FK na Profile (jen na auth.User), takže standardní kontrolu
     vztahu vypínáme - vazbu řeší SocialAccountInline.get_formset."""
@@ -96,7 +117,7 @@ class ClassCollectiveAdmin(SimpleHistoryAdmin):
     list_filter = ("year", "school_class")
     search_fields = ("school_class", "year", "variant")
     ordering = ("-year", "school_class", "variant")
-    inlines = [StudentInline]
+    inlines = [StudentInline, ClassRepresentativeInlineForClass]
 
     @admin.display(description="Třída")
     def school_class_display(self, obj):
@@ -116,7 +137,7 @@ class ProfileAdmin(SimpleHistoryAdmin):
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
     # Použití upraveného inline s novým pojmenováním
-    inlines = [StudentInlineForParent, SocialAccountInline]
+    inlines = [StudentInlineForParent, SocialAccountInline, ClassRepresentativeInlineForProfile]
 
     autocomplete_fields = ["user"]
     readonly_fields = ("created_at",)
