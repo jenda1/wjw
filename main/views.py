@@ -374,9 +374,20 @@ def student_request_detail(request: HttpRequest, pk: int):
 
 @view_others_required
 def orphaned_students(request: HttpRequest):
+    user = cast(User, request.user)
     students = Student.objects.filter(parents__isnull=True).select_related('school_class').order_by(
         'last_name', 'first_name'
     )
+
+    if not can_view_all_classes(user):
+        profile = getattr(user, 'profile', None)
+        today = timezone.localdate()
+        currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+        represented_class_ids = ClassRepresentative.objects.filter(
+            currently_valid, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.VR,
+        ).values_list('school_class_id', flat=True)
+        students = students.filter(school_class_id__in=represented_class_ids)
 
     return render(request, 'main/orphaned_students.html', {
         'students': students,

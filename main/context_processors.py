@@ -24,13 +24,22 @@ def pending_requests_count(request):
         })
 
     if can_view_others(request.user):
-        orphaned_students_count = Student.objects.filter(parents__isnull=True).count()
+        today = timezone.localdate()
+        currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+
+        orphaned_students_qs = Student.objects.filter(parents__isnull=True)
+        if not can_view_all_classes(request.user):
+            represented_class_ids = ClassRepresentative.objects.filter(
+                currently_valid, representative=getattr(request.user, 'profile', None),
+                representant_type=ClassRepresentative.RepresentantType.VR,
+            ).values_list('school_class_id', flat=True)
+            orphaned_students_qs = orphaned_students_qs.filter(school_class_id__in=represented_class_ids)
+        orphaned_students_count = orphaned_students_qs.count()
+
         orphaned_members_count = Profile.objects.filter(
             status=Profile.ProfileStatus.ACTIVE, children__isnull=True
         ).count()
 
-        today = timezone.localdate()
-        currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
         classes_with_vr = set(ClassRepresentative.objects.filter(
             currently_valid, representant_type=ClassRepresentative.RepresentantType.VR
         ).values_list('school_class_id', flat=True))
