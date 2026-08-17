@@ -5,6 +5,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Manager, Q
 from django.http import HttpRequest
@@ -22,7 +23,13 @@ from .models import (
     ProfileStudentRequest,
     Student,
 )
-from .permissions import CAPO_DI_TUTTI_GROUP_NAME, VR_MEMBER_GROUP_NAME, approver_required, view_others_required
+from .permissions import (
+    CAPO_DI_TUTTI_GROUP_NAME,
+    VR_MEMBER_GROUP_NAME,
+    approver_required,
+    can_view_all_classes,
+    view_others_required,
+)
 
 def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
@@ -446,4 +453,36 @@ def show_vr(request: HttpRequest):
 
     return render(request, 'main/show_vr.html', {
         'members': members,
+    })
+
+
+@login_required
+def show_members(request: HttpRequest, pk: int):
+    class_collective = get_object_or_404(ClassCollective, pk=pk)
+    user = cast(User, request.user)
+    profile = getattr(user, 'profile', None)
+
+    if not is_member(profile):
+        raise PermissionDenied("Nemáte oprávnění zobrazit kontakty na členy třídy.")
+
+    assert profile is not None
+    class_students = cast('Manager[Student]', class_collective.students)
+    if not can_view_all_classes(user) and not class_students.filter(parents=profile).exists():
+        raise PermissionDenied("Nemáte oprávnění zobrazit kontakty na členy této třídy.")
+
+    members = Profile.objects.filter(
+        status=Profile.ProfileStatus.ACTIVE, children__school_class=class_collective
+    ).select_related('user').distinct().order_by('user__last_name', 'user__first_name')
+
+    members_data = [
+        {
+            'profile': member,
+            'children': cast('Manager[Student]', member.children).filter(school_class=class_collective),
+        }
+        for member in members
+    ]
+
+    return render(request, 'main/show_members.html', {
+        'class_collective': class_collective,
+        'members': members_data,
     })

@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import ClassCollective, ClassRepresentative, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
-from .permissions import can_approve_requests, can_view_others
+from .permissions import can_approve_requests, can_view_all_classes, can_view_others
 
 
 def pending_requests_count(request):
@@ -51,3 +51,17 @@ def pending_requests_count(request):
         })
 
     return context
+
+
+def available_classes(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    if profile is None or profile.status != Profile.ProfileStatus.ACTIVE:
+        return {}
+
+    if can_view_all_classes(user):
+        classes = ClassCollective.objects.all()
+    else:
+        classes = ClassCollective.objects.filter(students__parents=profile).distinct()
+
+    return {'available_classes': classes}

@@ -91,7 +91,7 @@
         <span class="fw-medium text-dark">
           {% if user.profile.children.all %}
             {% for child in user.profile.children.all %}
-              {{ child.first_name }} {{ child.last_name }}{% if child.school_class %} ({{ child.school_class.get_school_class_display }}{% if child.school_class.variant %}{{ child.school_class.variant }}{% endif %}){% endif %}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
+              {{ child.first_name }} {{ child.last_name }}{% if child.school_class %} (<a href="{% url 'show_members' child.school_class.pk %}" title="Kontakty na rodiče spolužáků">{{ child.school_class.get_school_class_display }}{% if child.school_class.variant %}{{ child.school_class.variant }}{% endif %}</a>){% endif %}{% if not forloop.last %}<span class="text-muted me-1">,</span>{% endif %}
             {% endfor %}
           {% elif not pending_student_requests %}
             <span class="text-muted fst-italic">Žádné děti nenalezeny</span>

@@ -51,3 +51,14 @@ def view_others_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return login_required(wrapper)
+
+
+ALL_CLASSES_GROUP_NAMES = [CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
+
+
+def can_view_all_classes(user) -> bool:
+    """Členové skupiny CapoDiTutti a SecretaryOfTheTreasury (a superuživatelé) vidí
+    kontakty na členy ve všech třídách, ne jen ve třídách svých dětí."""
+    return user.is_authenticated and (
+        user.is_superuser or user.groups.filter(name__in=ALL_CLASSES_GROUP_NAMES).exists()
+    )

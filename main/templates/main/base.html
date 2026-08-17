@@ -89,6 +89,16 @@
                     <i class="bi bi-people me-2"></i>Výkonná rada
                 </a>
             </li>
+            {% if available_classes %}
+            <li><hr class="dropdown-divider"></li>
+            {% for class_collective in available_classes %}
+            <li>
+                <a class="dropdown-item" href="{% url 'show_members' class_collective.pk %}">
+                    <i class="bi bi-telephone me-2"></i>{{ class_collective }}
+                </a>
+            </li>
+            {% endfor %}
+            {% endif %}
         </ul>
     </li>
     <li class="nav-item dropdown ms-lg-3">
