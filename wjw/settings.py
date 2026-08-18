@@ -33,6 +33,7 @@ INSTALLED_APPS_DEFAULT = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 ]
 
 INSTALLED_APPS_ALLAUTH = [
