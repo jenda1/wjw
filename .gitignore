@@ -39,7 +39,6 @@ local_settings.py
 
 # --- Environment variables (Citlivá data) ---
 .env
-.venv
 
 # --- IDEs & Editory ---
 *.swp
