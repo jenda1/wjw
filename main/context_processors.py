@@ -62,6 +62,13 @@ def pending_requests_count(request):
     return context
 
 
+def nastenka_pages(request):
+    from doc.models import NASTENKA_MENU_TAG, DocPage
+
+    pages = DocPage.objects.live().filter(tags__name=NASTENKA_MENU_TAG).order_by('title')
+    return {'nastenka_pages': pages}
+
+
 def available_classes(request):
     user = request.user
     profile = getattr(user, 'profile', None)

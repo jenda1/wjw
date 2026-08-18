@@ -2,6 +2,22 @@
 
 {% block menu %}
 <ul class="navbar-nav ms-auto">
+    {% if nastenka_pages %}
+    <li class="nav-item dropdown ms-lg-3">
+        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="nastenkaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Nástěnka
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="nastenkaDropdown">
+            {% for nastenka_page in nastenka_pages %}
+            <li>
+                <a class="dropdown-item" href="{{ nastenka_page.url }}">
+                    <i class="bi bi-info-circle me-2"></i>{{ nastenka_page.title }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endif %}
     {% if user.is_authenticated %}
     {% if can_approve_requests %}
     <li class="nav-item dropdown ms-lg-3">
@@ -108,6 +124,9 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
             <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
+            {% if perms.wagtailadmin.access_admin %}
+            <li><a class="dropdown-item" href="/cms/"><i class="bi bi-file-earmark-text me-2"></i>Správa stránek Nástěnky</a></li>
+            {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form action="{% url 'account_logout' %}" method="post" class="px-3 py-1">

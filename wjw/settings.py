@@ -54,6 +54,25 @@ INSTALLED_APPS_ALLAUTH = [
 INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
 
+INSTALLED_APPS_WAGTAIL = [
+    'doc',
+
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+
+    'modelcluster',
+    'taggit',
+]
+
 INSTALLED_APPS_MY = [
     'jazzmin',  # musi byt prvni
     'main',
@@ -63,7 +82,7 @@ INSTALLED_APPS_MY = [
     'simple_history',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
+INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_WAGTAIL + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,6 +96,8 @@ MIDDLEWARE = [
 
     'allauth.account.middleware.AccountMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'wjw.urls'
@@ -94,6 +115,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.pending_requests_count',
                 'main.context_processors.available_classes',
+                'main.context_processors.nastenka_pages',
             ],
         },
     },
@@ -242,3 +264,11 @@ PHONENUMBER_DEFAULT_REGION = "CZ"
 
 MAPY_CZ_API_URL = "https://api.mapy.cz/v1/geocode"
 MAPY_CZ_API_KEY = env.str('MAPY_CZ_API_KEY', default='')
+
+# Wagtail
+WAGTAIL_SITE_NAME = "Spolek waldorfské školy v Jinonicích"
+WAGTAILADMIN_BASE_URL = env.str('WAGTAILADMIN_BASE_URL', default='http://localhost:8000')
+WAGTAIL_I18N_ENABLED = False
+
+# https://github.com/wagtail/wagtail/issues/14487 - lze smazat po upgradu wagtailu.
+SILENCED_SYSTEM_CHECKS = ["treebeard.E001"]

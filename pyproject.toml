@@ -19,6 +19,7 @@ dependencies = [
     "gunicorn",
     "whitenoise",
     "django-simple-history>=3.13.0",
+    "wagtail>=7.4.2",
 ]
 
 [build-system]
@@ -42,7 +43,7 @@ django_settings_module = "wjw.settings"
 
 
 [tool.setuptools.packages.find]
-include = ["wjw*", "main*", "prispevky*"]
+include = ["wjw*", "main*", "prispevky*", "doc*"]
 
 [tool.autopep8]
 max_line_length = 120
