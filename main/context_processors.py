@@ -71,7 +71,7 @@ def pending_requests_count(request):
 def nastenka_pages(request):
     from wagtail.models import Page
 
-    pages = Page.objects.live().filter(show_in_menus=True).order_by('title')
+    pages = Page.objects.live().filter(show_in_menus=True).specific().order_by('title')
     visible_pages = [
         page for page in pages
         if all(restriction.accept_request(request) for restriction in page.get_view_restrictions())
