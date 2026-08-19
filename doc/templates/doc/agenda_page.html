@@ -1,0 +1,44 @@
+{% extends "main/base.html" %}
+{% load wagtailcore_tags %}
+{% load doc_tags %}
+
+{% block title %}{{ page.display_title }}{% endblock %}
+
+{% block content %}
+<div class="row my-4">
+  <div class="col-12 col-md-10 col-lg-8">
+    <h1 class="mb-2 fw-bold text-dark">{{ page.display_title }}</h1>
+    <p class="text-muted mb-4">
+      {{ page.meeting_date }}, {{ page.meeting_time }}{% if page.location %} &ndash; {{ page.location }}{% endif %}
+    </p>
+
+    {% if page.participants %}
+    <p class="text-muted mb-4">
+      Účastníci:
+      {% for participant in page.participants %}{{ participant.value|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+    {% endif %}
+
+    {% for block in page.items %}
+    {% with item=block.value %}
+    <div class="mb-4" id="{{ block.id }}">
+      <h2 class="h5 fw-bold">{{ forloop.counter }}. {{ item.heading }}</h2>
+      {% if item.presenter %}
+      <p class="text-muted mb-2">
+        Předkládá:
+        {% for person in item.presenter %}{{ person|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </p>
+      {% endif %}
+      <div>{{ item.body }}</div>
+      {% if item.outcome %}
+      <div class="mt-2">
+        <strong>Výstup:</strong>
+        {{ item.outcome }}
+      </div>
+      {% endif %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
