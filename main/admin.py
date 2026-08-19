@@ -2,8 +2,10 @@ from typing import final
 
 from allauth.socialaccount.models import SocialAccount
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import Group
 from django.utils.html import format_html, format_html_join
 from import_export.admin import ImportExportMixin
 from import_export.forms import ConfirmImportForm, ImportForm
@@ -19,6 +21,7 @@ from main.models import (
     Student,
 )
 from main.resources import StudentResource
+from main.setup_checks import check_setup
 
 # Django admin (Jazzmin) bundluje Font Awesome, ne Bootstrap Icons používané na veřejných stránkách.
 SOCIAL_PROVIDER_ICONS = {
@@ -273,3 +276,19 @@ class ProfileStudentRequestAdmin(admin.ModelAdmin):
     list_filter = ("action", "status")
     search_fields = ("profile__user__last_name", "first_name", "last_name")
     autocomplete_fields = ["profile", "student_by_name"]
+
+
+admin.site.unregister(Group)
+
+
+@final
+@admin.register(Group)
+class SetupCheckingGroupAdmin(GroupAdmin):
+    """Standardní GroupAdmin doplněný o varování při nekonzistenci v přiřazení
+    rolí/skupin (viz main.setup_checks.check_setup) - právě tady se tyto
+    nesrovnalosti opravují, takže se hlásí přímo na této stránce."""
+
+    def changelist_view(self, request, extra_context=None):
+        for issue in check_setup():
+            messages.warning(request, issue)
+        return super().changelist_view(request, extra_context=extra_context)

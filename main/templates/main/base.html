@@ -2,7 +2,7 @@
 
 {% block menu %}
 <ul class="navbar-nav ms-auto">
-    {% if nastenka_pages %}
+    {% if nastenka_pages or perms.wagtailadmin.access_admin %}
     <li class="nav-item dropdown ms-lg-3">
         <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="nastenkaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Nástěnka
@@ -15,6 +15,16 @@
                 </a>
             </li>
             {% endfor %}
+            {% if perms.wagtailadmin.access_admin %}
+            {% if nastenka_pages %}
+            <li><hr class="dropdown-divider"></li>
+            {% endif %}
+            <li>
+                <a class="dropdown-item" href="/cms/">
+                    <i class="bi bi-pencil-square me-2"></i>Editovat
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </li>
     {% endif %}

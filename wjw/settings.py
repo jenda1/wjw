@@ -193,6 +193,10 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení
 LOGOUT_REDIRECT_URL = '/'
 
+# Nepřihlášeného uživatele na /cms/ přesměrovat na běžné (allauth) přihlášení
+# místo defaultního wagtailadmin loginu.
+WAGTAILADMIN_LOGIN_URL = '/accounts/login/'
+
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
