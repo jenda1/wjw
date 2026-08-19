@@ -2,7 +2,7 @@
 
 {% block menu %}
 <ul class="navbar-nav ms-auto">
-    {% if nastenka_pages or perms.wagtailadmin.access_admin %}
+    {% if nastenka_pages %}
     <li class="nav-item dropdown ms-lg-3">
         <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="nastenkaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Nástěnka
@@ -15,69 +15,82 @@
                 </a>
             </li>
             {% endfor %}
-            {% if perms.wagtailadmin.access_admin %}
-            {% if nastenka_pages %}
-            <li><hr class="dropdown-divider"></li>
-            {% endif %}
-            <li>
-                <a class="dropdown-item" href="/cms/">
-                    <i class="bi bi-pencil-square me-2"></i>Editovat
-                </a>
-            </li>
-            {% endif %}
         </ul>
     </li>
     {% endif %}
     {% if user.is_authenticated %}
-    {% if can_approve_requests %}
     <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="requestsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Žádosti
-            {% if pending_requests_count %}
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {{ pending_requests_count }}
-                <span class="visually-hidden">Nevyřízené žádosti</span>
-            </span>
-            {% endif %}
+        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="contactsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Kontakty
         </a>
-        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="requestsDropdown">
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="contactsDropdown">
             <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'membership_requests' %}">
-                    <span><i class="bi bi-person-badge me-2"></i>Žádosti o členství</span>
-                    {% if pending_membership_requests_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_membership_requests_count }}</span>
-                    {% endif %}
+                <a class="dropdown-item" href="{% url 'show_vr' %}">
+                    <i class="bi bi-people me-2"></i>Výkonná rada
                 </a>
             </li>
+            {% if available_classes %}
+            <li><hr class="dropdown-divider"></li>
+            {% for class_collective in available_classes %}
             <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'merge_requests' %}">
-                    <span><i class="bi bi-people me-2"></i>Žádosti o sloučení účtů</span>
-                    {% if pending_merge_requests_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_merge_requests_count }}</span>
-                    {% endif %}
+                <a class="dropdown-item" href="{% url 'show_members' class_collective.pk %}">
+                    <i class="bi bi-telephone me-2"></i>{{ class_collective }}
                 </a>
             </li>
-            <li>
-                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'student_requests' %}">
-                    <span><i class="bi bi-person-plus me-2"></i>Žádosti o přidání žáka</span>
-                    {% if pending_student_requests_count %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ pending_student_requests_count }}</span>
-                    {% endif %}
-                </a>
-            </li>
+            {% endfor %}
+            {% endif %}
         </ul>
     </li>
-    {% endif %}
-    {% if can_view_others and issues_count %}
+    {% if show_issues_menu %}
     <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark position-relative" href="#" id="issuesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Chyby
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {{ issues_count }}
-                <span class="visually-hidden">Nalezené nesrovnalosti</span>
+        <a class="nav-link" href="#" id="issuesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Žádosti a chyby">
+            <span class="position-relative d-inline-block">
+                <i class="bi bi-exclamation-triangle fs-5 text-dark"></i>
+                {% if pending_requests_count %}
+                <span class="position-absolute badge rounded-pill bg-warning text-dark" style="top: 0; left: 100%; transform: translate(-35%, -30%);">
+                    {{ pending_requests_count }}
+                    <span class="visually-hidden">Nevyřízené žádosti</span>
+                </span>
+                {% endif %}
+                {% if issues_count %}
+                <span class="position-absolute badge rounded-pill bg-danger" style="top: 0; left: 100%; transform: translate(-50%, -60%);">
+                    {{ issues_count }}
+                    <span class="visually-hidden">Nalezené nesrovnalosti</span>
+                </span>
+                {% endif %}
             </span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="issuesDropdown">
+            {% if can_approve_requests %}
+            {% if pending_membership_requests_count %}
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'membership_requests' %}">
+                    <span><i class="bi bi-person-badge me-2"></i>Žádosti o členství</span>
+                    <span class="badge bg-warning text-dark rounded-pill ms-2">{{ pending_membership_requests_count }}</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if pending_merge_requests_count %}
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'merge_requests' %}">
+                    <span><i class="bi bi-people me-2"></i>Žádosti o sloučení účtů</span>
+                    <span class="badge bg-warning text-dark rounded-pill ms-2">{{ pending_merge_requests_count }}</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if pending_student_requests_count %}
+            <li>
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'student_requests' %}">
+                    <span><i class="bi bi-person-plus me-2"></i>Žádosti o přidání žáka</span>
+                    <span class="badge bg-warning text-dark rounded-pill ms-2">{{ pending_student_requests_count }}</span>
+                </a>
+            </li>
+            {% endif %}
+            {% endif %}
+            {% if pending_requests_count and can_view_others and issues_count %}
+            <li><hr class="dropdown-divider"></li>
+            {% endif %}
+            {% if can_view_others %}
             {% if orphaned_students_count %}
             <li>
                 <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'orphaned_students' %}">
@@ -102,44 +115,22 @@
                 </a>
             </li>
             {% endif %}
+            {% endif %}
         </ul>
     </li>
     {% endif %}
     <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="contactsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Kontakty
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="contactsDropdown">
-            <li>
-                <a class="dropdown-item" href="{% url 'show_vr' %}">
-                    <i class="bi bi-people me-2"></i>Výkonná rada
-                </a>
-            </li>
-            {% if available_classes %}
-            <li><hr class="dropdown-divider"></li>
-            {% for class_collective in available_classes %}
-            <li>
-                <a class="dropdown-item" href="{% url 'show_members' class_collective.pk %}">
-                    <i class="bi bi-telephone me-2"></i>{{ class_collective }}
-                </a>
-            </li>
-            {% endfor %}
-            {% endif %}
-        </ul>
-    </li>
-    <li class="nav-item dropdown ms-lg-3">
-        <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ user.first_name|default:user.username }}">
             {% if user_avatar_url %}
-            <img src="{{ user_avatar_url }}" alt="" class="rounded-circle me-1" width="24" height="24">
+            <img src="{{ user_avatar_url }}" alt="{{ user.first_name|default:user.username }}" class="rounded-circle" width="32" height="32">
             {% else %}
-            <i class="bi bi-person-circle me-1"></i>
+            <i class="bi bi-person-circle fs-4"></i>
             {% endif %}
-            {{ user.first_name|default:user.username }}
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
             <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Nastavení</a></li>
             {% if perms.wagtailadmin.access_admin %}
-            <li><a class="dropdown-item" href="/cms/"><i class="bi bi-file-earmark-text me-2"></i>Správa stránek Nástěnky</a></li>
+            <li><a class="dropdown-item" href="/cms/"><i class="bi bi-file-earmark-text me-2"></i>Editace nástěnky</a></li>
             {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
