@@ -54,6 +54,10 @@ INSTALLED_APPS_ALLAUTH = [
 
 INSTALLED_APPS_DEV = ['django_extensions',] if DEBUG else []
 
+# Musí být až po 'django.contrib.admin' (INSTALLED_APPS_DEFAULT), protože
+# hijack.contrib.admin při startu dodatečně obaluje už zaregistrovaný UserAdmin.
+INSTALLED_APPS_HIJACK = ['hijack', 'hijack.contrib.admin']
+
 
 INSTALLED_APPS_WAGTAIL = [
     'doc',
@@ -83,7 +87,10 @@ INSTALLED_APPS_MY = [
     'simple_history',
 ]
 
-INSTALLED_APPS = INSTALLED_APPS_MY + INSTALLED_APPS_WAGTAIL + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
+INSTALLED_APPS = (
+    INSTALLED_APPS_MY + INSTALLED_APPS_WAGTAIL + INSTALLED_APPS_DEFAULT + INSTALLED_APPS_HIJACK
+    + INSTALLED_APPS_ALLAUTH + INSTALLED_APPS_DEV
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -92,6 +99,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'hijack.middleware.HijackUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
@@ -278,3 +286,7 @@ WAGTAIL_I18N_ENABLED = False
 
 # https://github.com/wagtail/wagtail/issues/14487 - lze smazat po upgradu wagtailu.
 SILENCED_SYSTEM_CHECKS = ["treebeard.E001"]
+
+# django-hijack - přihlášení jako jiný uživatel z Django adminu (viz main.admin.ProfileAdmin).
+# Výchozí hodnota, ale uvedena explicitně - přihlásit se jako někdo jiný smí jen superuživatel.
+HIJACK_PERMISSION_CHECK = "hijack.permissions.superusers_only"

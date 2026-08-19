@@ -72,7 +72,11 @@ def nastenka_pages(request):
     from wagtail.models import Page
 
     pages = Page.objects.live().filter(show_in_menus=True).order_by('title')
-    return {'nastenka_pages': pages}
+    visible_pages = [
+        page for page in pages
+        if all(restriction.accept_request(request) for restriction in page.get_view_restrictions())
+    ]
+    return {'nastenka_pages': visible_pages}
 
 
 def user_avatar_url(request):

@@ -11,6 +11,7 @@ from wagtail import urls as wagtail_urls
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
     path('admin/', admin.site.urls),
+    path('hijack/', include('hijack.urls')),
     path('cms/', include(wagtailadmin_urls)),
     path('doc/', include(wagtaildocs_urls)),
     path('accounts/', include('allauth.urls')),

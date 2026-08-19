@@ -132,6 +132,9 @@
             {% if perms.wagtailadmin.access_admin %}
             <li><a class="dropdown-item" href="/cms/"><i class="bi bi-file-earmark-text me-2"></i>Editace nástěnky</a></li>
             {% endif %}
+            {% if user.is_staff %}
+            <li><a class="dropdown-item" href="/admin/"><i class="bi bi-shield-lock me-2"></i>Administrace</a></li>
+            {% endif %}
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form action="{% url 'account_logout' %}" method="post" class="px-3 py-1">

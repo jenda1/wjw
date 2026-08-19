@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html, format_html_join
+from hijack.contrib.admin import HijackUserAdminMixin
 from import_export.admin import ImportExportMixin
 from import_export.forms import ConfirmImportForm, ImportForm
 from simple_history.admin import SimpleHistoryAdmin
@@ -134,7 +135,7 @@ class ClassCollectiveAdmin(SimpleHistoryAdmin):
 
 @final
 @admin.register(Profile)
-class ProfileAdmin(SimpleHistoryAdmin):
+class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
     list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts", "created_at")
     list_filter = ("status", "membership", "city")
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
@@ -162,6 +163,11 @@ class ProfileAdmin(SimpleHistoryAdmin):
             "fields": ("membership", "status", "comments")
         }),
     )
+
+    def get_hijack_user(self, obj):
+        # HijackUserAdminMixin ze základu předpokládá, že admin spravuje přímo User -
+        # tady spravuje Profile, takže mu musíme ukázat na propojený účet.
+        return obj.user
 
     @admin.display(description="Celé jméno", ordering="user__last_name")
     def full_name(self, obj):
