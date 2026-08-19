@@ -63,9 +63,9 @@ def pending_requests_count(request):
 
 
 def nastenka_pages(request):
-    from doc.models import NASTENKA_MENU_TAG, DocPage
+    from wagtail.models import Page
 
-    pages = DocPage.objects.live().filter(tags__name=NASTENKA_MENU_TAG).order_by('title')
+    pages = Page.objects.live().filter(show_in_menus=True).order_by('title')
     return {'nastenka_pages': pages}
 
 
