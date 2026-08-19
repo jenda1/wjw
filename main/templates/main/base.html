@@ -129,7 +129,11 @@
     </li>
     <li class="nav-item dropdown ms-lg-3">
         <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% if user_avatar_url %}
+            <img src="{{ user_avatar_url }}" alt="" class="rounded-circle me-1" width="24" height="24">
+            {% else %}
             <i class="bi bi-person-circle me-1"></i>
+            {% endif %}
             {{ user.first_name|default:user.username }}
         </a>
         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">

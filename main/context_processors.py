@@ -69,6 +69,20 @@ def nastenka_pages(request):
     return {'nastenka_pages': pages}
 
 
+def user_avatar_url(request):
+    """Adresa avataru z prvního propojeného účtu (Google apod.), který nějaký nabízí -
+    viz SocialAccount.get_avatar_url(). Providery bez avataru (Facebook, MojeID) vrátí None."""
+    if not request.user.is_authenticated:
+        return {}
+
+    for account in request.user.socialaccount_set.all():
+        avatar_url = account.get_avatar_url()
+        if avatar_url:
+            return {'user_avatar_url': avatar_url}
+
+    return {}
+
+
 def available_classes(request):
     user = request.user
     profile = getattr(user, 'profile', None)
