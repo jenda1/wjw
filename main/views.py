@@ -484,6 +484,12 @@ def show_members(request: HttpRequest, pk: int):
     if not can_view_all_classes(user) and not class_students.filter(parents=profile).exists():
         raise PermissionDenied("Nemáte oprávnění zobrazit kontakty na členy této třídy.")
 
+    today = timezone.localdate()
+    currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+    representatives = ClassRepresentative.objects.filter(
+        currently_valid, school_class=class_collective,
+    ).select_related('representative__user').order_by('representant_type')
+
     members = Profile.objects.filter(
         status=Profile.ProfileStatus.ACTIVE, children__school_class=class_collective
     ).select_related('user').distinct().order_by('user__last_name', 'user__first_name')
@@ -498,6 +504,7 @@ def show_members(request: HttpRequest, pk: int):
 
     return render(request, 'main/show_members.html', {
         'class_collective': class_collective,
+        'representatives': representatives,
         'members': members_data,
     })
 
