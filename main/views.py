@@ -520,8 +520,14 @@ def show_circle(request: HttpRequest, pk: int):
         '-speaker_of_circle', 'profile__user__last_name', 'profile__user__first_name'
     )
 
+    pages = cast('PageQuerySet', circle.pages).live().specific()
+    visible_pages = [
+        page for page in pages
+        if all(restriction.accept_request(request) for restriction in page.get_view_restrictions())
+    ]
+
     return render(request, 'main/show_circle.html', {
         'circle': circle,
         'memberships': memberships,
-        'pages': cast('PageQuerySet', circle.pages).live(),
+        'pages': visible_pages,
     })

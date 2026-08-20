@@ -50,7 +50,7 @@
                 <span class="fw-bold">Stránky kruhu:</span>
                 {% for page in pages %}
                 <a class="d-inline-flex align-items-center" href="{{ page.url }}">
-                    <i class="bi bi-file-earmark-text me-1"></i>{{ page.title }}
+                    <i class="bi bi-file-earmark-text me-1"></i>{{ page.display_title|default:page.title }}
                 </a>{% if not forloop.last %}<span class="text-muted">,</span>{% endif %}
                 {% endfor %}
             </div>

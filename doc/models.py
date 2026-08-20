@@ -150,12 +150,20 @@ class AgendaPage(Page):
         if self.pk is None and not self.title:
             self.title = "Jednání VR"
 
+    def _display_title(self, title):
+        if not self.meeting_date:
+            return title
+        return f"{title} ({date_format(self.meeting_date, 'j.n.Y')})"
+
     @property
     def display_title(self):
         """Titulek doplněný o datum jednání, použitý na frontendu místo holého page.title."""
-        if not self.meeting_date:
-            return self.title
-        return f"{self.title} ({date_format(self.meeting_date, 'j.n.Y')})"
+        return self._display_title(self.title)
+
+    def get_admin_display_title(self):
+        """Stejné doplnění o datum jednání i v adminu (explorer, vyhledávání, breadcrumbs) -
+        podle draft_title, aby se projevily i needzveřejněné změny názvu."""
+        return self._display_title(self.draft_title or self.title)
 
     content_panels = Page.content_panels + [
         FieldPanel('meeting_date'),
