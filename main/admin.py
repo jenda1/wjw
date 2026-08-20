@@ -13,6 +13,8 @@ from import_export.forms import ConfirmImportForm, ImportForm
 from simple_history.admin import SimpleHistoryAdmin
 
 from main.models import (
+    Circle,
+    CircleMembership,
     ClassCollective,
     ClassRepresentative,
     ParentRelationship,
@@ -80,6 +82,26 @@ class ClassRepresentativeInlineForProfile(admin.TabularInline):
     verbose_name_plural = "Zastupované třídy"
 
 
+@final
+class CircleMembershipInlineForCircle(admin.TabularInline):
+    model = CircleMembership
+    fk_name = "circle"
+    extra = 1
+    autocomplete_fields = ["profile"]
+    verbose_name = "Člen kruhu"
+    verbose_name_plural = "Členové kruhu"
+
+
+@final
+class CircleMembershipInlineForProfile(admin.TabularInline):
+    model = CircleMembership
+    fk_name = "profile"
+    extra = 1
+    autocomplete_fields = ["circle"]
+    verbose_name = "Kruh"
+    verbose_name_plural = "Kruhy"
+
+
 class SocialAccountInlineChecks(admin.checks.InlineModelAdminChecks):
     """SocialAccount nemá FK na Profile (jen na auth.User), takže standardní kontrolu
     vztahu vypínáme - vazbu řeší SocialAccountInline.get_formset."""
@@ -134,6 +156,27 @@ class ClassCollectiveAdmin(SimpleHistoryAdmin):
 
 
 @final
+@admin.register(Circle)
+class CircleAdmin(SimpleHistoryAdmin):
+    list_display = ("name", "tags_list", "member_count", "page_count")
+    search_fields = ("name", "tags__name")
+    ordering = ("name",)
+    inlines = [CircleMembershipInlineForCircle]
+
+    @admin.display(description="Počet členů")
+    def member_count(self, obj):
+        return obj.members.count()
+
+    @admin.display(description="Počet stránek")
+    def page_count(self, obj):
+        return obj.pages.count()
+
+    @admin.display(description="Tagy")
+    def tags_list(self, obj):
+        return ", ".join(tag.name for tag in obj.tags.all()) or "---"
+
+
+@final
 @admin.register(Profile)
 class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
     list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts", "created_at")
@@ -141,7 +184,10 @@ class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
     # Použití upraveného inline s novým pojmenováním
-    inlines = [StudentInlineForParent, SocialAccountInline, ClassRepresentativeInlineForProfile]
+    inlines = [
+        StudentInlineForParent, SocialAccountInline, ClassRepresentativeInlineForProfile,
+        CircleMembershipInlineForProfile,
+    ]
 
     autocomplete_fields = ["user"]
     readonly_fields = ("created_at",)

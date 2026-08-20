@@ -124,6 +124,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.pending_requests_count',
                 'main.context_processors.available_classes',
+                'main.context_processors.available_circles',
                 'main.context_processors.nastenka_pages',
                 'main.context_processors.user_avatar_url',
             ],

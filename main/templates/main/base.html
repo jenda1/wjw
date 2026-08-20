@@ -39,6 +39,16 @@
             </li>
             {% endfor %}
             {% endif %}
+            {% if available_circles %}
+            <li><hr class="dropdown-divider"></li>
+            {% for circle in available_circles %}
+            <li>
+                <a class="dropdown-item" href="{% url 'show_circle' circle.pk %}">
+                    <i class="bi bi-circle me-2"></i>{{ circle.name }}
+                </a>
+            </li>
+            {% endfor %}
+            {% endif %}
         </ul>
     </li>
     {% if show_issues_menu %}

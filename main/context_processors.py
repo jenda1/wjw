@@ -1,7 +1,15 @@
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import ClassCollective, ClassRepresentative, Profile, ProfileMergeRequest, ProfileStudentRequest, Student
+from .models import (
+    Circle,
+    ClassCollective,
+    ClassRepresentative,
+    Profile,
+    ProfileMergeRequest,
+    ProfileStudentRequest,
+    Student,
+)
 from .permissions import can_approve_requests, can_view_all_classes, can_view_others
 
 
@@ -105,3 +113,12 @@ def available_classes(request):
         classes = ClassCollective.objects.filter(students__parents=profile).distinct()
 
     return {'available_classes': classes}
+
+
+def available_circles(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    if profile is None or profile.status != Profile.ProfileStatus.ACTIVE:
+        return {}
+
+    return {'available_circles': Circle.objects.all()}

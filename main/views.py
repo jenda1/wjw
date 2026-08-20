@@ -12,9 +12,12 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from wagtail.query import PageQuerySet
 
 from . import forms
 from .models import (
+    Circle,
+    CircleMembership,
     ClassCollective,
     ClassRepresentative,
     ParentRelationship,
@@ -496,4 +499,29 @@ def show_members(request: HttpRequest, pk: int):
     return render(request, 'main/show_members.html', {
         'class_collective': class_collective,
         'members': members_data,
+    })
+
+
+@login_required
+def show_circle(request: HttpRequest, pk: int):
+    circle = get_object_or_404(Circle, pk=pk)
+    user = cast(User, request.user)
+    profile = getattr(user, 'profile', None)
+
+    if not is_member(profile):
+        raise PermissionDenied("Nemáte oprávnění zobrazit kontakty na členy kruhu.")
+
+    today = timezone.localdate()
+    currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+
+    memberships = CircleMembership.objects.filter(
+        currently_valid, circle=circle, profile__status=Profile.ProfileStatus.ACTIVE,
+    ).select_related('profile__user').order_by(
+        '-speaker_of_circle', 'profile__user__last_name', 'profile__user__first_name'
+    )
+
+    return render(request, 'main/show_circle.html', {
+        'circle': circle,
+        'memberships': memberships,
+        'pages': cast('PageQuerySet', circle.pages).live(),
     })

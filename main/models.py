@@ -7,6 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from simple_history.models import HistoricalRecords
+from taggit.managers import TaggableManager
+from wagtail.models import Page
 
 import requests
 
@@ -294,6 +296,82 @@ class ClassRepresentative(models.Model):
             f"{self.representative} -> {self.school_class} "
             f"({self.valid_from} - {self.valid_until or 'současnost'})"
         )
+
+
+@final
+class Circle(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Jméno")
+
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Tagy stránek",
+        help_text="Stránky s libovolným z těchto tagů se zobrazí jako stránky kruhu.",
+    )
+
+    members = models.ManyToManyField(
+        Profile,
+        through="CircleMembership",
+        related_name="circles",
+        verbose_name="Členové",
+    )
+
+    history = HistoricalRecords()
+
+    @final
+    class Meta:
+        verbose_name = "Kruh"
+        verbose_name_plural = "Kruhy"
+        ordering = ["name"]
+
+    @override
+    def __str__(self):
+        return self.name
+
+    @property
+    def pages(self):
+        """Stránky kruhu nejsou explicitní vazbou, ale dohledávají se dynamicky podle tagů
+        (viz `tags`) - editor tak stránku přiřadí ke kruhu přímo při její editaci (přes tag),
+        bez zásahu do administrace Kruhů."""
+        from doc.models import AgendaPage, DocPage
+
+        tag_names = list(self.tags.names())
+        if not tag_names:
+            return Page.objects.none()
+
+        page_ids = list(
+            DocPage.objects.filter(tags__name__in=tag_names).values_list('pk', flat=True).distinct()
+        )
+        page_ids += list(
+            AgendaPage.objects.filter(tags__name__in=tag_names).values_list('pk', flat=True).distinct()
+        )
+        return Page.objects.filter(pk__in=page_ids)
+
+
+@final
+class CircleMembership(models.Model):
+    circle = models.ForeignKey(Circle, blank=False, null=False, on_delete=models.PROTECT)
+    profile = models.ForeignKey(Profile, blank=False, null=False, on_delete=models.PROTECT)
+
+    valid_from = models.DateField(default=date.today, verbose_name="Platnost od")
+    valid_until = models.DateField(null=True, blank=True, verbose_name="Platnost do")
+
+    speaker_of_circle = models.BooleanField(default=False, verbose_name="Mluvčí kruhu")
+
+    @final
+    class Meta:
+        # Stejně jako u ClassRepresentative - umožňuje členovi kruh v různých,
+        # na sebe nenavazujících obdobích opakovaně opustit a znovu se přidat.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["circle", "profile", "valid_until"], name="circle_membership_unique"
+            )
+        ]
+        verbose_name = "Členství v kruhu"
+        verbose_name_plural = "Členství v kruzích"
+
+    @override
+    def __str__(self):
+        return f"{self.profile} -> {self.circle} ({self.valid_from} - {self.valid_until or 'současnost'})"
 
 
 @final
