@@ -47,7 +47,7 @@ SOCIAL_PROVIDER_ICONS = {
 # Ostatní poskytovatelé nemají ikonu v Bootstrap Icons - použije se stejný obrázek
 # jako na přihlašovací stránce (templates/account/login.html).
 SOCIAL_PROVIDER_ICON_IMAGES = {
-    'seznam': 'main/images/seznam-icon.png',
+    'seznam': 'main/images/seznam-logo-esko-18-cervena.svg',
     'mojeid': 'main/images/mojeid-icon.png',
 }
 

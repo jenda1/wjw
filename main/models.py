@@ -107,17 +107,21 @@ class ClassCollective(models.Model):
     class Meta:
         verbose_name = "Třídna"
         verbose_name_plural = "Třídy"
-        ordering = ["year", "variant"]
+        ordering = ["-year", "variant"]
         constraints = [
             models.UniqueConstraint(
                 fields=["year", "variant"], name="unique_class_collective_name"
+            ),
+            models.UniqueConstraint(
+                fields=["school_class", "variant"], name="unique_class_collective_name2"
+ 
             )
-        ]
+         ]
 
     @override
     def __str__(self):
         return (
-            f"{self.get_school_class_display()}{', ' + self.variant if self.variant else ''} ({self.year})"
+            f"{self.school_class}.{self.variant if self.variant else ''} ({self.year})"
         )
 
 
@@ -172,8 +176,8 @@ class Profile(models.Model):
 
     @override
     def __str__(self):
-        stav = self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership
-        return f"{self.user.first_name} {self.user.last_name} ({stav})"
+        #stav = self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership
+        return f"{self.user.first_name} {self.user.last_name}"  # ({stav})
 
     def get_status_full(self):
         return f"{self.get_status_display()} - {self.get_membership_display()}"
