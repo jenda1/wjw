@@ -17,12 +17,6 @@ def load_social_data(sender, request, sociallogin, **kwargs):
         user.first_name = extra_data.get('given_name', '')
         user.last_name = extra_data.get('family_name', '')
 
-    # Příklad pro FACEBOOK
-    elif provider == 'facebook':
-        user.email = extra_data.get('email', '')
-        user.first_name = extra_data.get('first_name', '')
-        user.last_name = extra_data.get('last_name', '')
-
     # Příklad pro GITHUB (GitHub často nevrací rozdělené jméno)
     elif provider == 'github':
         user.email = extra_data.get('email', '')

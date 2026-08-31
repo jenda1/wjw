@@ -89,7 +89,7 @@ def nastenka_pages(request):
 
 def user_avatar_url(request):
     """Adresa avataru z prvního propojeného účtu (Google apod.), který nějaký nabízí -
-    viz SocialAccount.get_avatar_url(). Providery bez avataru (Facebook, MojeID) vrátí None."""
+    viz SocialAccount.get_avatar_url(). Providery bez avataru (Seznam, MojeID) vrátí None."""
     if not request.user.is_authenticated:
         return {}
 

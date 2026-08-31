@@ -29,7 +29,6 @@ from main.setup_checks import check_setup
 # Django admin (Jazzmin) bundluje Font Awesome, ne Bootstrap Icons používané na veřejných stránkách.
 SOCIAL_PROVIDER_ICONS = {
     'google': 'fab fa-google',
-    'facebook': 'fab fa-facebook',
 }
 
 

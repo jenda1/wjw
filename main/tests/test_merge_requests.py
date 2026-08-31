@@ -60,7 +60,7 @@ class MergeRequestDetailViewTests(TestCase):
 
     def test_approve_moves_social_accounts_and_deletes_requester(self):
         SocialAccount.objects.create(user=self.target, provider='google', uid='g1')
-        SocialAccount.objects.create(user=self.requester, provider='facebook', uid='f1')
+        SocialAccount.objects.create(user=self.requester, provider='seznam', uid='f1')
         self.client.force_login(self.approver)
 
         resp = self.client.post(
@@ -80,7 +80,7 @@ class MergeRequestDetailViewTests(TestCase):
         target_providers = set(
             SocialAccount.objects.filter(user=self.target).values_list('provider', flat=True)
         )
-        self.assertEqual(target_providers, {'google', 'facebook'})
+        self.assertEqual(target_providers, {'google', 'seznam'})
 
     def test_reject_keeps_requester_and_marks_rejected(self):
         self.client.force_login(self.approver)

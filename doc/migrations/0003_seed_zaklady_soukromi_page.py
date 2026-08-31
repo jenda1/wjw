@@ -23,7 +23,7 @@ BODY = """
 </ul>
 <p>Tyto údaje zadáváte vy sami při registraci, nebo je doplňuje administrátor spolku při schvalování žádosti.</p>
 <h2>Přihlášení a účet</h2>
-<p>Do systému se můžete přihlásit e-mailem a heslem, nebo přes účet Google, Facebook, Seznam či MojeID. V tom případě nám příslušná služba předá jen jméno a e-mail (případně profilovou fotku), abychom vás mohli spárovat s vaším členským profilem. Heslo k vašemu Google/Facebook/Seznam/MojeID účtu nikdy nevidíme ani neukládáme.</p>
+<p>Do systému se můžete přihlásit e-mailem a heslem, nebo přes účet Google, Seznam či MojeID. V tom případě nám příslušná služba předá jen jméno a e-mail (případně profilovou fotku), abychom vás mohli spárovat s vaším členským profilem. Heslo k vašemu Google/Seznam/MojeID účtu nikdy nevidíme ani neukládáme.</p>
 <h2>Proč údaje zpracováváme</h2>
 <ul>
 <li>vedení členské evidence a správa členství (schvalování žádostí, aktivní/pasivní členství)</li>

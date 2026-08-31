@@ -28,13 +28,6 @@
                 {% endwith %}
 
             </form>
-            <!-- Facebook -->
-            <form action="{% provider_login_url 'facebook' %}" method="post" class="form w-100">
-                {% csrf_token %}
-                {% with button_text='<i class="bi bi-facebook me-3"></i> Pokračovat přes Facebook' %}
-                {% bootstrap_button button_type="submit" content=button_text|safe button_class="btn-primary" %}
-                {% endwith %}
-            </form>
 
             <!-- Seznam -->
             <form action="{% provider_login_url 'seznam' %}" method="post" class="form w-100">

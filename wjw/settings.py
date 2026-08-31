@@ -45,9 +45,8 @@ INSTALLED_APPS_ALLAUTH = [
     'allauth.account',
     'allauth.socialaccount',
 
-    # Poskytovatelé (Providers) pro Google a Facebook
+    # Poskytovatelé (Providers) pro Google
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.openid_connect',  # MojeID (viz SOCIALACCOUNT_PROVIDERS)
     'seznam_provider',  # vlastní OAuth2 provider pro Seznam.cz
 ]
@@ -234,17 +233,6 @@ SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         }
-    },
-    'facebook': {
-        'APPS': [
-            {
-                'client_id': env.str('FACEBOOK_OAUTH_CLIENT_ID', default=''),
-                'secret': env.str('FACEBOOK_OAUTH_CLIENT_SECRET', default=''),
-                'key': ''
-            },
-        ],
-        'SCOPE': ['email'],
-        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name'],
     },
     'seznam': {
         'APPS': [

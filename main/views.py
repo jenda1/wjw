@@ -41,7 +41,6 @@ def is_member(profile: Profile | None) -> bool:
 # Bootstrap Icons pro poskytovatele, kteří v nich mají oficiální ikonu (viz přihlašovací stránka).
 SOCIAL_PROVIDER_ICONS = {
     'google': 'bi-google',
-    'facebook': 'bi-facebook',
 }
 
 # Ostatní poskytovatelé nemají ikonu v Bootstrap Icons - použije se stejný obrázek
@@ -53,7 +52,7 @@ SOCIAL_PROVIDER_ICON_IMAGES = {
 
 
 def get_connected_social_accounts(user):
-    """Vrátí propojené účty (Google/Facebook/Seznam/MojeID/...) s ikonou poskytovatele a e-mailem."""
+    """Vrátí propojené účty (Google/Seznam/MojeID/...) s ikonou poskytovatele a e-mailem."""
     accounts = []
     for account in user.socialaccount_set.all():
         email = account.extra_data.get('email') or account.extra_data.get('username') or user.username
@@ -138,7 +137,7 @@ def profile_edit(request: HttpRequest):
             if new_email != old_email and social_emails and new_email.lower() not in social_emails:
                 messages.warning(
                     request,
-                    'Nový e-mail neodpovídá žádnému z propojených účtů (Google/Facebook/...). '
+                    'Nový e-mail neodpovídá žádnému z propojených účtů (Google/Seznam/...). '
                     'Zkontrolujte jej prosím, že je opravdu správný!'
                 )
 

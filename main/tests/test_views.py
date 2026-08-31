@@ -149,7 +149,7 @@ class HomeViewTests(TestCase):
             user=user, provider='google', uid='g1', extra_data={'email': 'petr.google@example.com'}
         )
         SocialAccount.objects.create(
-            user=user, provider='facebook', uid='f1', extra_data={'email': 'petr.fb@example.com'}
+            user=user, provider='seznam', uid='f1', extra_data={'email': 'petr.seznam@example.com'}
         )
         self.client.force_login(user)
 
@@ -157,9 +157,9 @@ class HomeViewTests(TestCase):
         content = resp.content.decode()
         self.assertIn('petr@example.com', content)
         self.assertIn('petr.google@example.com', content)
-        self.assertIn('petr.fb@example.com', content)
+        self.assertIn('petr.seznam@example.com', content)
         self.assertIn('bi-google', content)
-        self.assertIn('bi-facebook', content)
+        self.assertIn('seznam-logo-esko-18-cervena.svg', content)
 
     def test_shows_represented_class_when_representative(self):
         user = create_user('parent1', email='petr@example.com')
