@@ -206,7 +206,7 @@ LOGOUT_REDIRECT_URL = '/'
 # místo defaultního wagtailadmin loginu.
 WAGTAILADMIN_LOGIN_URL = '/accounts/login/'
 
-SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
+SOCIALACCOUNT_ADAPTER = 'main.adapter.SocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # Pokud přihlášení přes nového poskytovatele přinese ověřený e-mail, který už
@@ -253,6 +253,9 @@ SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
                 'settings': {
                     # doplní si '/.well-known/openid-configuration'
                     'server_url': 'https://mojeid.cz',
+                    # Musí odpovídat volbě "Přihlašovací metoda pro token endpoint"
+                    # v registraci klienta na mojeid.cz/consumer_admin/.
+                    'token_auth_method': 'client_secret_basic',
                 },
             },
         ],
@@ -275,6 +278,20 @@ WAGTAIL_I18N_ENABLED = False
 
 # https://github.com/wagtail/wagtail/issues/14487 - lze smazat po upgradu wagtailu.
 SILENCED_SYSTEM_CHECKS = ["treebeard.E001"]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
 
 # django-hijack - přihlášení jako jiný uživatel z Django adminu (viz main.admin.ProfileAdmin).
 # Výchozí hodnota, ale uvedena explicitně - přihlásit se jako někdo jiný smí jen superuživatel.

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Dokončení registrace | ZŠ waldorfská Jinonice{% endblock %}
+
+{% block content %}
+<div class="container login-container">
+    <div class="login-card text-center">
+
+        <h1 class="brand-title mb-2">
+            <img src="{% static 'main/images/logo.svg' %}" alt="Spolek waldorfské školy v Jinonicích" height="112">
+        </h1>
+
+        <p class="text-muted mb-4 px-2">
+            Chystáte se použít svůj účet <strong>{{ account.get_provider.name }}</strong> k přihlášení na naše stránky.
+            Jako poslední krok, prosím, vyplňte následující formulář:
+        </p>
+
+        <form method="post" action="{% url 'socialaccount_signup' %}" class="text-start">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            {{ redirect_field }}
+            {% bootstrap_button "Zaregistrovat se" button_type="submit" button_class="btn-waldorf w-100 py-2 fw-bold" %}
+        </form>
+
+    </div>
+</div>
+{% endblock %}
