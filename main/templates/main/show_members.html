@@ -19,7 +19,7 @@
                 <span class="fw-bold">Zástupci třídy:</span>
                 {% for rep in representatives %}
                 <a class="d-inline-flex align-items-center text-decoration-none" href="mailto:{{ rep.representative.user.email }}">
-                    <i class="bi bi-person-badge me-1"></i>{{ rep.get_representant_type_display }}: {{ rep.representative.user.first_name }} {{ rep.representative.user.last_name }}
+                    <i class="bi bi-person-badge me-1"></i>{{ rep.get_representant_type_display }}: {{ rep.representative.user.last_name }} {{ rep.representative.user.first_name }}
                 </a>{% if not forloop.last %}<span class="text-muted">,</span>{% endif %}
                 {% endfor %}
             </div>
@@ -39,7 +39,7 @@
                     <tbody>
                         {% for member in members %}
                         <tr>
-                            <td>{{ member.profile.user.first_name }} {{ member.profile.user.last_name }}</td>
+                            <td>{{ member.profile.user.last_name }} {{ member.profile.user.first_name }}</td>
                             <td>{{ member.profile.user.email }}</td>
                             <td>{% if member.profile.phone_visible %}{{ member.profile.phone_number|default:"---" }}{% else %}---{% endif %}</td>
                             <td>

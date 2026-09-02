@@ -197,7 +197,7 @@ class MergeRequestApprovalFormTests(TestCase):
         user = create_user('target', first_name='Petr', last_name='Novak', email='petr@example.com')
         form = MergeRequestApprovalForm()
         label = form.fields['target_user'].label_from_instance(user)
-        self.assertEqual(label, "Petr Novak (petr@example.com)")
+        self.assertEqual(label, "Novak Petr (petr@example.com)")
 
     def test_valid_with_existing_user(self):
         user = create_user('target')

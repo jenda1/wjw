@@ -26,7 +26,7 @@ class ShowVrViewTests(TestCase):
 
         resp = self.client.get(reverse('show_vr'))
         content = resp.content.decode()
-        self.assertIn('Karel Predseda', content)
+        self.assertIn('Predseda Karel', content)
         self.assertIn('Předseda spolku', content)
         self.assertIn('capo@example.com', content)
 
@@ -48,7 +48,7 @@ class ShowVrViewTests(TestCase):
 
         resp = self.client.get(reverse('show_vr'))
         content = resp.content.decode()
-        self.assertIn('Anna Zastupkyne', content)
+        self.assertIn('Zastupkyne Anna', content)
         self.assertIn('3. ročník', content)
 
     def test_non_vr_member_not_listed(self):

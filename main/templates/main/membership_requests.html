@@ -29,7 +29,7 @@
                     <tbody>
                         {% for profile in profiles %}
                         <tr>
-                            <td>{{ profile.user.first_name }} {{ profile.user.last_name }}</td>
+                            <td>{{ profile.user.last_name }} {{ profile.user.first_name }}</td>
                             <td>{{ profile.user.email }}</td>
                             <td>{{ profile.street_and_number }}, {{ profile.zip_code }} {{ profile.city }}</td>
                             <td>{{ profile.get_membership_display }}</td>

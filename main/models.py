@@ -182,7 +182,7 @@ class Profile(models.Model):
     @override
     def __str__(self):
         #stav = self.status if self.status == self.ProfileStatus.PENDING[0] else self.membership
-        return f"{self.user.first_name} {self.user.last_name}"  # ({stav})
+        return f"{self.user.last_name} {self.user.first_name}"  # ({stav})
 
     def get_status_full(self):
         return f"{self.get_status_display()} - {self.get_membership_display()}"

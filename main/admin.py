@@ -309,7 +309,7 @@ class StudentAdmin(ImportExportMixin, SimpleHistoryAdmin):
     @admin.display(description="Zákonní zástupci")
     def get_parents(self, obj):
         parents = obj.parents.all()
-        return ", ".join([f"{p.user.first_name} {p.user.last_name}" for p in parents]) or "---"
+        return ", ".join([f"{p.user.last_name} {p.user.first_name}" for p in parents]) or "---"
 
 
 @final

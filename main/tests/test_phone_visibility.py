@@ -33,7 +33,7 @@ class PhoneVisibilityTests(TestCase):
         self._viewer_in_class(class_collective, student)
 
         content = self.client.get(reverse('show_members', args=[class_collective.pk])).content.decode()
-        self.assertIn('Petr Tajny', content)
+        self.assertIn('Tajny Petr', content)
         self.assertNotIn(HIDDEN_PHONE, content)
 
     def test_show_members_shows_phone_when_allowed(self):
@@ -64,7 +64,7 @@ class PhoneVisibilityTests(TestCase):
         self.client.force_login(viewer)
 
         content = self.client.get(reverse('show_vr')).content.decode()
-        self.assertIn('Anna Zastupkyne', content)
+        self.assertIn('Zastupkyne Anna', content)
         self.assertNotIn(HIDDEN_PHONE, content)
 
     def test_show_circle_hides_speakers_phone_when_not_allowed(self):
@@ -80,7 +80,7 @@ class PhoneVisibilityTests(TestCase):
         self.client.force_login(viewer)
 
         content = self.client.get(reverse('show_circle', args=[circle.pk])).content.decode()
-        self.assertIn('Jana Mluvci', content)
+        self.assertIn('Mluvci Jana', content)
         self.assertNotIn(HIDDEN_PHONE, content)
 
     def test_orphaned_members_shows_phone_to_leadership(self):

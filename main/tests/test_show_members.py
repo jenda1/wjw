@@ -32,7 +32,7 @@ class ShowMembersViewTests(TestCase):
         resp = self.client.get(reverse('show_members', args=[self.class_collective.pk]))
         self.assertEqual(resp.status_code, 200)
         content = resp.content.decode()
-        self.assertIn('Petr Rodic', content)
+        self.assertIn('Rodic Petr', content)
         self.assertIn('petr@example.com', content)
         self.assertIn('Rodicova Anicka', content)
 
@@ -58,7 +58,7 @@ class ShowMembersViewTests(TestCase):
 
         resp = self.client.get(reverse('show_members', args=[self.class_collective.pk]))
         self.assertEqual(resp.status_code, 200)
-        self.assertIn('Petr Rodic', resp.content.decode())
+        self.assertIn('Rodic Petr', resp.content.decode())
 
     def test_secretary_can_see_any_class(self):
         secretary_user = create_user('secretary1')

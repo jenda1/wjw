@@ -27,7 +27,7 @@
                     <tbody>
                         {% for membership in memberships %}
                         <tr>
-                            <td>{{ membership.profile.user.first_name }} {{ membership.profile.user.last_name }}</td>
+                            <td>{{ membership.profile.user.last_name }} {{ membership.profile.user.first_name }}</td>
                             <td>{% if membership.speaker_of_circle %}{{ membership.profile.user.email }}{% endif %}</td>
                             <td>{% if membership.speaker_of_circle %}{% if membership.profile.phone_visible %}{{ membership.profile.phone_number|default:"---" }}{% else %}---{% endif %}{% endif %}</td>
                             <td>{% if membership.speaker_of_circle %}Mluvčí kruhu{% else %}Člen kruhu{% endif %}</td>
