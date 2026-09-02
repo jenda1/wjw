@@ -7,6 +7,7 @@ WELCOMING_TEAM_GROUP_NAME = "WelcomingTeam"
 VR_MEMBER_GROUP_NAME = "VRmember"
 CAPO_DI_TUTTI_GROUP_NAME = "CapoDiTutti"
 SECRETARY_OF_THE_TREASURY_GROUP_NAME = "SecretaryOfTheTreasury"
+KOLEGIUM_GROUP_NAME = "Kolegium"
 WAGTAIL_EDITORS_GROUP_NAME = "Editors"  # vestavěná Wagtail skupina (wagtailcore 0002_initial_data)
 WAGTAIL_MODERATORS_GROUP_NAME = "Moderators"  # vestavěná Wagtail skupina (wagtailcore 0002_initial_data)
 

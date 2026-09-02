@@ -28,6 +28,7 @@ from .models import (
 )
 from .permissions import (
     CAPO_DI_TUTTI_GROUP_NAME,
+    KOLEGIUM_GROUP_NAME,
     VR_MEMBER_GROUP_NAME,
     approver_required,
     can_view_all_classes,
@@ -400,7 +401,9 @@ def orphaned_students(request: HttpRequest):
 def orphaned_members(request: HttpRequest):
     profiles = Profile.objects.filter(
         status=Profile.ProfileStatus.ACTIVE, children__isnull=True
-    ).select_related('user').order_by('user__last_name', 'user__first_name')
+    ).exclude(user__groups__name=KOLEGIUM_GROUP_NAME).select_related('user').order_by(
+        'user__last_name', 'user__first_name'
+    )
 
     return render(request, 'main/orphaned_members.html', {
         'profiles': profiles,
@@ -444,14 +447,17 @@ def show_vr(request: HttpRequest):
     currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
 
     vr_profiles = Profile.objects.filter(
-        user__groups__name=VR_MEMBER_GROUP_NAME
+        user__groups__name__in=[VR_MEMBER_GROUP_NAME, KOLEGIUM_GROUP_NAME]
     ).select_related('user').distinct().order_by('user__last_name', 'user__first_name')
 
     members = []
     other_profiles = []
     for profile in vr_profiles:
-        if cast(User, profile.user).groups.filter(name=CAPO_DI_TUTTI_GROUP_NAME).exists():
+        user = cast(User, profile.user)
+        if user.groups.filter(name=CAPO_DI_TUTTI_GROUP_NAME).exists():
             members.append({'profile': profile, 'role': "Předseda spolku"})
+        elif user.groups.filter(name=KOLEGIUM_GROUP_NAME).exists():
+            members.append({'profile': profile, 'role': "kolegium"})
         else:
             other_profiles.append(profile)
 
