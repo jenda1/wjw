@@ -3,6 +3,7 @@ from datetime import time
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.formats import date_format
+from django.utils.functional import cached_property
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from taggit.models import TaggedItemBase
@@ -159,6 +160,12 @@ class AgendaPage(Page):
     def display_title(self):
         """Titulek doplněný o datum jednání, použitý na frontendu místo holého page.title."""
         return self._display_title(self.title)
+
+    @cached_property
+    def numbered_items(self):
+        """Bloky z `items` doplněné o pořadové číslo bodu programu - používá se
+        pro přehled na začátku stránky i pro číslování v samotném výpisu bodů."""
+        return [{'block': block, 'number': number} for number, block in enumerate(self.items, start=1)]
 
     def get_admin_display_title(self):
         """Stejné doplnění o datum jednání i v adminu (explorer, vyhledávání, breadcrumbs) -

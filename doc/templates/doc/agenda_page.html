@@ -19,10 +19,29 @@
     </p>
     {% endif %}
 
-    {% for block in page.items %}
-    {% with item=block.value %}
+    {% if page.numbered_items %}
+    <div class="mb-4 p-3 bg-light rounded-3">
+      <h2 class="h6 fw-bold text-uppercase text-muted mb-2">Přehled bodů programu</h2>
+      <ol class="mb-0">
+        {% for entry in page.numbered_items %}
+        <li>
+          <a href="#{{ entry.block.id }}">{{ entry.block.value.heading }}</a>
+          {% if entry.block.value.presenter %}
+          <span class="text-muted">
+            &ndash;
+            {% for person in entry.block.value.presenter %}{{ person|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+
+    {% for entry in page.numbered_items %}
+    {% with block=entry.block item=entry.block.value %}
     <div class="mb-4" id="{{ block.id }}">
-      <h2 class="h5 fw-bold">{{ forloop.counter }}. {{ item.heading }}</h2>
+      <h2 class="h5 fw-bold">{{ entry.number }}. {{ item.heading }}</h2>
       {% if item.presenter %}
       <p class="text-muted mb-2">
         Předkládá:
