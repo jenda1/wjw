@@ -34,7 +34,7 @@ class ShowMembersViewTests(TestCase):
         content = resp.content.decode()
         self.assertIn('Petr Rodic', content)
         self.assertIn('petr@example.com', content)
-        self.assertIn('Anicka Rodicova', content)
+        self.assertIn('Rodicova Anicka', content)
 
     def test_member_without_child_in_class_is_forbidden(self):
         outsider_user = create_user('outsider1')

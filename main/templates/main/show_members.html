@@ -44,7 +44,7 @@
                             <td>{% if member.profile.phone_visible %}{{ member.profile.phone_number|default:"---" }}{% else %}---{% endif %}</td>
                             <td>
                                 {% for child in member.children %}
-                                    {{ child.first_name }} {{ child.last_name }}{% if not forloop.last %}, {% endif %}
+                                    {{ child.last_name }} {{ child.first_name }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </td>
                         </tr>

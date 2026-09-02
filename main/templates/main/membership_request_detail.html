@@ -54,7 +54,7 @@
             <ul class="list-unstyled mb-0">
                 {% for student_request in student_requests %}
                 <li class="mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}">
-                    {{ student_request.first_name }} {{ student_request.last_name }}
+                    {{ student_request.last_name }} {{ student_request.first_name }}
                     ({{ student_request.birth_date }})
                     {% if student_request.student_by_name %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle">

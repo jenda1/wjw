@@ -219,7 +219,7 @@ class Student(models.Model):
 
     @override
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.school_class})"
+        return f"{self.last_name} {self.first_name} ({self.school_class})"
 
 
 @final

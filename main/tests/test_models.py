@@ -43,7 +43,7 @@ class ProfileModelTests(TestCase):
 class StudentModelTests(TestCase):
     def test_str(self):
         student = create_student(first_name='Anicka', last_name='Novakova')
-        self.assertEqual(str(student), "Anicka Novakova (3. ročník (2023))")
+        self.assertEqual(str(student), "Novakova Anicka (3. ročník (2023))")
 
 
 class ClassRepresentativeModelTests(TestCase):

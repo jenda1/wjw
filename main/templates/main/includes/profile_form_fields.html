@@ -1,6 +1,4 @@
 {% load django_bootstrap5 %}
-{# Pole profilu vykreslujeme po jednom, aby šly části adresy vizuálně spojit
-   do jednoho bloku se společnou poznámkou o viditelnosti. #}
 {% bootstrap_form_errors form type="non_fields" %}
 
 {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
