@@ -1,0 +1,7 @@
+graft main/templates
+graft main/static
+graft doc/templates
+graft templates
+
+global-exclude *.py[cod]
+prune **/__pycache__
