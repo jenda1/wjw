@@ -199,6 +199,11 @@ h1, h2, h3, .navbar-brand {
     color: #d4a359;
 }
 
+.icon-merge {
+    background-color: rgba(61, 64, 91, 0.08);
+    color: var(--waldorf-dark);
+}
+
 
 .card-news {
     border: none;

@@ -9,6 +9,8 @@ from .models import Profile, ProfileMergeRequest, ProfileStudentRequest, Student
 
 STANOVY_URL = "https://www.waldorfjinonice.cz/wp-content/uploads/2018/01/SpolekWS-stanovy-zapsano-03.03.2017.pdf"
 
+EXISTING_MEMBER_NOTE = "STÁVAJÍCÍ ČLEN – přihlášku podal(a) dříve papírově."
+
 
 def fold_name(value: str) -> str:
     """Sjednotí jméno pro porovnání bez ohledu na velikost písmen a diakritiku."""
@@ -28,6 +30,8 @@ class ProfileForm(forms.ModelForm):
         disabled=True,
         help_text="E-mail nelze změnit, je součástí vašeho přihlašovacího účtu.",
     )
+
+    existing_member = forms.BooleanField(required=False, widget=forms.HiddenInput())
 
     class Meta:
         model = Profile
@@ -71,6 +75,15 @@ class ProfileForm(forms.ModelForm):
             self.fields['membership'].help_text = (
                 "Typ členství nelze měnit svépomocí, kontaktujte prosím výkonnou radu spolku."
             )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data.get('existing_member'):
+            comments = cleaned_data.get('comments') or ''
+            cleaned_data['comments'] = f"{EXISTING_MEMBER_NOTE}\n{comments}".strip()
+
+        return cleaned_data
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -183,8 +196,8 @@ class ProfileMergeRequestForm(StudentLookupMixin, forms.ModelForm):
 
         fields = [ 'old_email', 'first_name', 'last_name', 'comments']
 
-        lables = {
-            'old_email': 'E-mail, který jste používali dříve (nebo stále používáte)',
+        labels = {
+            'old_email': 'E-mail, který jste na těchto stránkách používali dříve',
         }
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Poznánky...'}),

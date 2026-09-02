@@ -3,7 +3,12 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from main.forms import MergeRequestApprovalForm, ProfileForm, ProfileStudentRequestForm
+from main.forms import (
+    EXISTING_MEMBER_NOTE,
+    MergeRequestApprovalForm,
+    ProfileForm,
+    ProfileStudentRequestForm,
+)
 
 from .helpers import create_class_collective, create_student, create_user
 
@@ -108,6 +113,30 @@ class ProfileFormTests(TestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn('email', form.errors)
+
+    def test_existing_member_flag_marks_comments(self):
+        user = create_user('parent1')
+
+        with patch('main.models.validuj_adresu'):
+            form = ProfileForm(
+                user, self._valid_post_data(existing_member='1', comments='Mám dvě děti.'),
+            )
+            self.assertTrue(form.is_valid(), form.errors)
+            form.instance.user = user
+            profile = form.save()
+
+        self.assertEqual(profile.comments, f'{EXISTING_MEMBER_NOTE}\nMám dvě děti.')
+
+    def test_comments_untouched_without_existing_member_flag(self):
+        user = create_user('parent1')
+
+        with patch('main.models.validuj_adresu'):
+            form = ProfileForm(user, self._valid_post_data(comments='Mám dvě děti.'))
+            self.assertTrue(form.is_valid(), form.errors)
+            form.instance.user = user
+            profile = form.save()
+
+        self.assertEqual(profile.comments, 'Mám dvě děti.')
 
 
 class StudentLookupMixinTests(TestCase):
