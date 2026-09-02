@@ -1,5 +1,5 @@
 # builder
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
@@ -15,20 +15,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 COPY pyproject.toml uv.lock* ./
 
+# VIRTUAL_ENV je potřeba i pro `uv pip` níže — UV_PROJECT_ENVIRONMENT platí jen pro `uv sync`.
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV VIRTUAL_ENV=/opt/venv
 RUN uv venv /opt/venv && uv sync --no-dev --no-install-project
 
 # Zkopírování zdrojového kódu aplikace
+# Všechny aplikace z INSTALLED_APPS (wjw/settings.py) + prispevky (zatím bez URL,
+# ale je součástí balíčku podle [tool.setuptools.packages.find]).
 COPY wjw/ /app/wjw/
 COPY templates /app/templates/
 COPY main/ /app/main/
-COPY manage.py pyproject.toml /app/
+COPY doc/ /app/doc/
+COPY prispevky/ /app/prispevky/
+COPY seznam_provider/ /app/seznam_provider/
+COPY manage.py pyproject.toml README.md /app/
 
 RUN uv pip install --no-deps .
 
 
 # finalni obraz
-FROM python:3.11-slim AS runner
+FROM python:3.13-slim AS runner
 
 WORKDIR /app
 
@@ -52,8 +59,10 @@ COPY --from=builder /app /app
 RUN useradd -u 1001 django-user && chown -R django-user:django-user /app
 USER django-user
 
-# Sběr statických souborů (všechny příkazy nyní automaticky běží ve venv díky PATH)
-RUN python manage.py collectstatic --noinput --clear
+# Sběr statických souborů (všechny příkazy nyní automaticky běží ve venv díky PATH).
+# Proměnné jsou jen zástupné hodnoty pro build – za běhu je dodá prostředí kontejneru.
+RUN SECRET_KEY=build-time-dummy DEBUG=False DATABASE_URL="sqlite:///:memory:" \
+    python manage.py collectstatic --noinput --clear
 
 EXPOSE 8000
 
