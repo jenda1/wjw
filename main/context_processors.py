@@ -10,7 +10,12 @@ from .models import (
     ProfileStudentRequest,
     Student,
 )
-from .permissions import can_approve_requests, can_view_all_classes, can_view_others
+from .permissions import (
+    KOLEGIUM_GROUP_NAME,
+    can_approve_requests,
+    can_view_all_classes,
+    can_view_others,
+)
 
 
 def pending_requests_count(request):
@@ -49,7 +54,7 @@ def pending_requests_count(request):
 
         orphaned_members_count = Profile.objects.filter(
             status=Profile.ProfileStatus.ACTIVE, children__isnull=True
-        ).count()
+        ).exclude(user__groups__name=KOLEGIUM_GROUP_NAME).count()
 
         classes_with_vr = set(ClassRepresentative.objects.filter(
             currently_valid, representant_type=ClassRepresentative.RepresentantType.VR

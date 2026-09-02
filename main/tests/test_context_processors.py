@@ -1,11 +1,13 @@
 import datetime
 
+from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
 from main.models import Profile, ProfileMergeRequest, ProfileStudentRequest
+from main.permissions import KOLEGIUM_GROUP_NAME
 
-from .helpers import create_approver, create_profile, create_user
+from .helpers import create_approver, create_profile, create_user, create_vr_member
 
 
 class PendingRequestsCountContextProcessorTests(TestCase):
@@ -50,3 +52,41 @@ class PendingRequestsCountContextProcessorTests(TestCase):
         self.assertEqual(resp.context['pending_merge_requests_count'], 1)
         self.assertEqual(resp.context['pending_student_requests_count'], 1)
         self.assertEqual(resp.context['pending_requests_count'], 3)
+
+
+class OrphanedMembersCountContextProcessorTests(TestCase):
+    """Počet v hlavičce musí odpovídat výpisu ve view - kolegium se nepočítá."""
+
+    def test_kolegium_member_without_student_is_not_counted(self):
+        kolegium_user = create_user('kolegium1')
+        create_profile(kolegium_user, status=Profile.ProfileStatus.ACTIVE)
+        group, _ = Group.objects.get_or_create(name=KOLEGIUM_GROUP_NAME)
+        kolegium_user.groups.add(group)
+
+        viewer = create_vr_member()
+        create_profile(viewer, status=Profile.ProfileStatus.ACTIVE)
+        self.client.force_login(viewer)
+
+        # index aktivního člena přesměruje na home, proto počítadlo z hlavičky
+        # čteme rovnou ze stránky s výpisem.
+        resp = self.client.get(reverse('orphaned_members'))
+        rows = resp.context['profiles']
+
+        self.assertNotIn(kolegium_user.profile, rows)
+        self.assertEqual(resp.context['orphaned_members_count'], len(rows))
+
+    def test_regular_member_without_student_is_counted(self):
+        childless = create_user('childless1')
+        create_profile(childless, status=Profile.ProfileStatus.ACTIVE)
+
+        viewer = create_vr_member()
+        create_profile(viewer, status=Profile.ProfileStatus.ACTIVE)
+        self.client.force_login(viewer)
+
+        # index aktivního člena přesměruje na home, proto počítadlo z hlavičky
+        # čteme rovnou ze stránky s výpisem.
+        resp = self.client.get(reverse('orphaned_members'))
+        rows = resp.context['profiles']
+
+        self.assertIn(childless.profile, rows)
+        self.assertEqual(resp.context['orphaned_members_count'], len(rows))
