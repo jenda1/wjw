@@ -1,6 +1,7 @@
 {% extends "main/base.html" %}
 {% load custom_tags %}
 {% load django_bootstrap5 %}
+{% load static %}
 
 {% block header %}
 <div class="text-center mb-5 mx-auto" style="max-width: 46rem;">
@@ -118,7 +119,7 @@
                 <form method="POST" class="form">
                     {% csrf_token %}
 
-                    {% bootstrap_form profile_form %}
+                    {% include "main/includes/profile_form_fields.html" with form=profile_form %}
 
                     <h3 class="h5 text-primary mb-3">Údaje o dětech</h3>
                     {{ students_form.management_form }}
@@ -183,6 +184,7 @@
 
 
 {% block javascript %}
+<script src="{% static 'main/js/phone-visible.js' %}"></script>
 <script>
     const profileModal = document.getElementById('profileModal');
     const addFormBtn = document.getElementById('add-form-btn');

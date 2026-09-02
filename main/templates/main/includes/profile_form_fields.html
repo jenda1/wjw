@@ -1,0 +1,28 @@
+{% load django_bootstrap5 %}
+{# Pole profilu vykreslujeme po jednom, aby šly části adresy vizuálně spojit
+   do jednoho bloku se společnou poznámkou o viditelnosti. #}
+{% bootstrap_form_errors form type="non_fields" %}
+
+{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+{% bootstrap_field form.first_name %}
+{% bootstrap_field form.last_name %}
+{% bootstrap_field form.email %}
+{% bootstrap_field form.birth_date %}
+
+<fieldset class="mb-3 px-3 pt-2 pb-1 border rounded-3">
+    <legend class="float-none w-auto px-2 mb-2 fs-6 text-muted">Adresa bydliště</legend>
+
+    {% bootstrap_field form.street_and_number %}
+    <div class="row g-3">
+        <div class="col-sm-8">{% bootstrap_field form.city %}</div>
+        <div class="col-sm-4">{% bootstrap_field form.zip_code %}</div>
+    </div>
+
+    <div class="form-text mb-2">{{ form.address_help_text }}</div>
+</fieldset>
+
+{% bootstrap_field form.phone_number %}
+{% bootstrap_field form.phone_visible %}
+{% bootstrap_field form.membership %}
+{% bootstrap_field form.comments %}

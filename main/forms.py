@@ -28,10 +28,15 @@ class ProfileForm(forms.ModelForm):
         label="E-mail",
         required=False,
         disabled=True,
-        help_text="E-mail nelze změnit, je součástí vašeho přihlašovacího účtu.",
+        help_text=(
+            "E-mail nelze změnit, je součástí vašeho přihlašovacího účtu. "
+            "Je viditelný ostatním členům spolku."
+        ),
     )
 
     existing_member = forms.BooleanField(required=False, widget=forms.HiddenInput())
+
+    address_help_text = "Adresu potřebujeme pouze pro účely evidence spolku, ostatním členům spolku se nezobrazuje."
 
     class Meta:
         model = Profile
@@ -40,9 +45,20 @@ class ProfileForm(forms.ModelForm):
             'first_name', 'last_name', 'email',
             'birth_date',
             'street_and_number', 'city', 'zip_code',
-            'phone_number',
+            'phone_number', 'phone_visible',
             'membership', 'comments'
         ]
+
+        help_texts = {
+            'birth_date': (
+                "Datum narození potřebujeme pouze pro účely evidence spolku, ostatním členům spolku se nezobrazuje."
+            ),
+            'phone_visible': (
+                "Pokud zaškrtnete, telefon bude viditelný i ostatním rodičům z vaší třídy "
+                "a ostatním členům, pokud jste členem výkonné rady či mluvčím kruhu "
+                "(nikdo další ho nevidí, ať zaškrtnete, nebo ne)."
+            ),
+        }
 
         # Můžeš přidat i hezké HTML widgety (např. kalendář pro datum)
         widgets = {
@@ -63,7 +79,9 @@ class ProfileForm(forms.ModelForm):
         if allow_email_change:
             self.fields['email'].disabled = False
             self.fields['email'].required = True
-            self.fields['email'].help_text = "Používá se pro přihlášení do systému."
+            self.fields['email'].help_text = (
+                "Používá se pro přihlášení do systému. Je viditelný ostatním členům spolku."
+            )
 
         if allow_membership_change:
             self.fields['membership'].help_text = format_html(

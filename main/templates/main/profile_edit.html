@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load django_bootstrap5 %}
+{% load static %}
 
 {% block header %}
 <div class="text-center mb-5 max-width-md mx-auto">
@@ -17,7 +18,7 @@
         <div class="card border-0 shadow-sm p-4 bg-white rounded-4" style="border-top: 4px solid var(--waldorf-brown) !important;">
             <form method="POST">
                 {% csrf_token %}
-                {% bootstrap_form profile_form %}
+                {% include "main/includes/profile_form_fields.html" with form=profile_form %}
 
                 <div class="text-end">
                     {% bootstrap_button "Uložit změny" button_type="submit" button_class="btn-waldorf px-4" %}
@@ -40,4 +41,8 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'main/js/phone-visible.js' %}"></script>
 {% endblock %}

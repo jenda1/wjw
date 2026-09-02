@@ -199,7 +199,7 @@ class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
             "fields": ("birth_date",)
         }),
         ("Kontaktní údaje", {
-            "fields": ("phone_number",)
+            "fields": ("phone_number", "phone_visible")
         }),
         ("Adresa (Ověřuje se přes Mapy.cz)", {
             "fields": ("street_and_number", "city", "zip_code")

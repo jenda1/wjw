@@ -153,6 +153,11 @@ class Profile(models.Model):
 
     phone_number = PhoneNumberField(blank=True, verbose_name="Telefonní číslo")
 
+    phone_visible = models.BooleanField(
+        default=True,
+        verbose_name="Telefon viditelný ostatním členům",
+    )
+
     membership = models.CharField(max_length=2, choices=MembershipType.choices, default=MembershipType.ACTIVE)
 
     status = models.CharField(max_length=2, choices=ProfileStatus.choices, default=ProfileStatus.PENDING)

@@ -29,7 +29,7 @@
                         <tr>
                             <td>{{ member.profile.user.first_name }} {{ member.profile.user.last_name }}</td>
                             <td>{{ member.profile.user.email }}</td>
-                            <td>{{ member.profile.phone_number|default:"---" }}</td>
+                            <td>{% if member.profile.phone_visible %}{{ member.profile.phone_number|default:"---" }}{% else %}---{% endif %}</td>
                             <td>{{ member.role }}</td>
                         </tr>
                         {% empty %}
