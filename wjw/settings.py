@@ -293,6 +293,9 @@ LOGGING = {
     },
 }
 
+# Vlastní test runner ztišuje logování očekávaných 4xx odpovědí v testech.
+TEST_RUNNER = "wjw.test_runner.QuietTestRunner"
+
 # django-hijack - přihlášení jako jiný uživatel z Django adminu (viz main.admin.ProfileAdmin).
 # Výchozí hodnota, ale uvedena explicitně - přihlásit se jako někdo jiný smí jen superuživatel.
 HIJACK_PERMISSION_CHECK = "hijack.permissions.superusers_only"
