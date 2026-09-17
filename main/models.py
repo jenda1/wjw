@@ -278,18 +278,6 @@ class ClassRepresentative(models.Model):
         verbose_name_plural = "Zástupci tříd"
 
     @override
-    def clean(self):
-        super().clean()
-
-        # Zástupcem třídy může být jen člen skupiny VRmember
-        if self.representative_id and not self.representative.user.groups.filter(
-            name=VR_MEMBER_GROUP_NAME
-        ).exists():
-            raise ValidationError(
-                {"representative": f"Zástupce třídy musí být členem skupiny {VR_MEMBER_GROUP_NAME}."}
-            )
-
-    @override
     def __str__(self):
         return (
             f"{self.representative} -> {self.school_class} "
