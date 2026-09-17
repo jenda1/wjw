@@ -10,6 +10,8 @@ from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from wagtail.models import Page
 
+from main.permissions import VR_MEMBER_GROUP_NAME
+
 import requests
 
 def validuj_datum_narozeni(value):
@@ -266,9 +268,6 @@ class ClassRepresentative(models.Model):
 
     @final
     class Meta:
-        # Zabráníme duplicitnímu vztahu mezi stejným zástupcem, třídou, typem zastoupení
-        # a obdobím platnosti (stejná osoba tak může tutéž roli ve třídě zastávat
-        # opakovaně v různých, na sebe nenavazujících obdobích - viz clean()).
         constraints = [
             models.UniqueConstraint(
                 fields=["school_class", "representative", "representant_type", "valid_until"],
@@ -282,22 +281,13 @@ class ClassRepresentative(models.Model):
     def clean(self):
         super().clean()
 
-        # Uniqueness na úrovni DB nestačí - stejnou roli ve stejné třídě nesmí mít ve
-        # stejném období dva různí zástupci, i když jde o odlišné záznamy.
-        if self.school_class_id and self.representant_type and self.valid_from:
-            overlapping = ClassRepresentative.objects.filter(
-                school_class_id=self.school_class_id, representant_type=self.representant_type,
-            ).exclude(pk=self.pk)
-            overlapping = overlapping.filter(
-                models.Q(valid_until__isnull=True) | models.Q(valid_until__gte=self.valid_from)
+        # Zástupcem třídy může být jen člen skupiny VRmember
+        if self.representative_id and not self.representative.user.groups.filter(
+            name=VR_MEMBER_GROUP_NAME
+        ).exists():
+            raise ValidationError(
+                {"representative": f"Zástupce třídy musí být členem skupiny {VR_MEMBER_GROUP_NAME}."}
             )
-            if self.valid_until is not None:
-                overlapping = overlapping.filter(valid_from__lte=self.valid_until)
-
-            if overlapping.exists():
-                raise ValidationError(
-                    "Pro tuto třídu a roli už existuje jiný zástupce v překrývajícím se období."
-                )
 
     @override
     def __str__(self):

@@ -6,7 +6,9 @@ from django.test import TestCase
 
 from main.models import ClassRepresentative, Profile, ProfileMergeRequest
 
-from .helpers import create_class_collective, create_profile, create_student, create_user
+from .helpers import (
+    create_class_collective, create_profile, create_student, create_user, create_vr_member,
+)
 
 
 class ProfileModelTests(TestCase):
@@ -92,9 +94,8 @@ class ClassRepresentativeModelTests(TestCase):
                 )
 
     def test_same_representative_can_have_multiple_non_overlapping_terms(self):
-        # valid_until=None u obou by DB constraint nezachytil (NULL != NULL), ale
-        # clean() by to i tak odmítl jako překryv - tady jde jen o to, že rozdílný
-        # valid_until přes DB constraint projde.
+        # valid_until=None u obou by DB constraint nezachytil (NULL != NULL) - tady
+        # jde jen o to, že rozdílný valid_until přes DB constraint projde.
         user = create_user('parent1')
         profile = create_profile(user)
         class_collective = create_class_collective()
@@ -110,10 +111,11 @@ class ClassRepresentativeModelTests(TestCase):
         )
         self.assertIsNotNone(second.pk)
 
-    def test_clean_rejects_overlapping_representatives_of_same_role(self):
-        user1 = create_user('parent1')
+    def test_two_representatives_of_same_role_can_overlap(self):
+        # Jedna třída může mít ve stejném období víc zástupců téže role.
+        user1 = create_vr_member('parent1')
         profile1 = create_profile(user1)
-        user2 = create_user('parent2')
+        user2 = create_vr_member('parent2')
         profile2 = create_profile(user2)
         class_collective = create_class_collective()
 
@@ -126,45 +128,40 @@ class ClassRepresentativeModelTests(TestCase):
             school_class=class_collective, representative=profile2,
             representant_type=ClassRepresentative.RepresentantType.VR,
         )
-        with self.assertRaises(ValidationError):
-            second.clean()
+        second.full_clean()
+        second.save()
 
-    def test_clean_allows_representative_after_previous_one_ended(self):
-        user1 = create_user('parent1')
-        profile1 = create_profile(user1)
-        user2 = create_user('parent2')
-        profile2 = create_profile(user2)
+        self.assertEqual(
+            ClassRepresentative.objects.filter(
+                school_class=class_collective,
+                representant_type=ClassRepresentative.RepresentantType.VR,
+            ).count(),
+            2,
+        )
+
+    def test_clean_rejects_representative_outside_vr_group(self):
+        user = create_user('parent1')
+        profile = create_profile(user)
         class_collective = create_class_collective()
 
-        ClassRepresentative.objects.create(
-            school_class=class_collective, representative=profile1,
-            representant_type=ClassRepresentative.RepresentantType.VR,
-            valid_until=datetime.date(2000, 1, 1),
-        )
-
-        second = ClassRepresentative(
-            school_class=class_collective, representative=profile2,
+        rep = ClassRepresentative(
+            school_class=class_collective, representative=profile,
             representant_type=ClassRepresentative.RepresentantType.VR,
         )
-        second.clean()
+        with self.assertRaises(ValidationError) as ctx:
+            rep.clean()
+        self.assertIn('representative', ctx.exception.message_dict)
 
-    def test_clean_allows_different_role_to_overlap(self):
-        user1 = create_user('parent1')
-        profile1 = create_profile(user1)
-        user2 = create_user('parent2')
-        profile2 = create_profile(user2)
+    def test_clean_accepts_representative_in_vr_group(self):
+        user = create_vr_member('parent1')
+        profile = create_profile(user)
         class_collective = create_class_collective()
 
-        ClassRepresentative.objects.create(
-            school_class=class_collective, representative=profile1,
-            representant_type=ClassRepresentative.RepresentantType.VR,
-        )
-
-        second = ClassRepresentative(
-            school_class=class_collective, representative=profile2,
+        rep = ClassRepresentative(
+            school_class=class_collective, representative=profile,
             representant_type=ClassRepresentative.RepresentantType.TREASURER,
         )
-        second.clean()
+        rep.clean()
 
     def test_same_representative_can_hold_two_different_roles_for_same_class(self):
         user = create_user('parent1')
