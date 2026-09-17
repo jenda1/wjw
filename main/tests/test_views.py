@@ -174,7 +174,7 @@ class HomeViewTests(TestCase):
         resp = self.client.get(reverse('home'))
         content = resp.content.decode()
         self.assertIn('Zástupce třídy', content)
-        self.assertIn('3. ročník', content)
+        self.assertIn('3. (2023)', content)
 
     def test_no_represented_class_row_when_not_representative(self):
         user = create_user('parent1', email='petr@example.com')

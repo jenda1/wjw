@@ -37,7 +37,7 @@ class OrphanedClassesViewTests(TestCase):
 
         resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
-        self.assertNotIn('3. ročník', content)
+        self.assertNotIn('3. (2023)', content)
 
     def test_class_missing_treasurer_is_listed(self):
         incomplete_class = create_class_collective(school_class=4)
@@ -53,7 +53,7 @@ class OrphanedClassesViewTests(TestCase):
 
         resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
-        self.assertIn('4. ročník', content)
+        self.assertIn('4. (2023)', content)
 
     def test_expired_representative_does_not_count(self):
         incomplete_class = create_class_collective(school_class=5)
@@ -76,4 +76,4 @@ class OrphanedClassesViewTests(TestCase):
 
         resp = self.client.get(reverse('orphaned_classes'))
         content = resp.content.decode()
-        self.assertIn('5. ročník', content)
+        self.assertIn('5. (2023)', content)

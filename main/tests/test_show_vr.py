@@ -49,7 +49,7 @@ class ShowVrViewTests(TestCase):
         resp = self.client.get(reverse('show_vr'))
         content = resp.content.decode()
         self.assertIn('Zastupkyne Anna', content)
-        self.assertIn('3. ročník', content)
+        self.assertIn('3. (2023)', content)
 
     def test_non_vr_member_not_listed(self):
         outsider = create_user('outsider1', first_name='Petr', last_name='Nikdo')

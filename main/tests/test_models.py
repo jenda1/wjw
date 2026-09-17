@@ -12,20 +12,17 @@ from .helpers import (
 
 
 class ProfileModelTests(TestCase):
-    def test_str_uses_user_name_and_membership_when_active(self):
+    def test_str_shows_last_name_first(self):
         user = create_user('parent1', first_name='Petr', last_name='Novak')
         profile = create_profile(user, status='AC', membership='A')
-        self.assertEqual(str(profile), "Petr Novak (A)")
+        self.assertEqual(str(profile), "Novak Petr")
 
-    def test_str_when_pending_shows_membership(self):
-        # NOTE: Profile.__str__ compares self.status to
-        # self.ProfileStatus.PENDING[0], which indexes the *string* 'PE' and
-        # yields 'P' rather than the PENDING choice - so this branch never
-        # actually distinguishes PENDING and always falls through to
-        # self.membership. This test documents the current (buggy) behavior.
+    def test_str_is_not_affected_by_status(self):
+        # Profile.__str__ uvádí jen jméno - stav ani typ členství v něm nejsou
+        # (viz zakomentovaný `stav`); get_status_full() je od toho zvlášť.
         user = create_user('parent1', first_name='Petr', last_name='Novak')
         profile = create_profile(user, status='PE', membership='A')
-        self.assertEqual(str(profile), "Petr Novak (A)")
+        self.assertEqual(str(profile), "Novak Petr")
 
     def test_user_is_required(self):
         with self.assertRaises(IntegrityError):
@@ -45,7 +42,7 @@ class ProfileModelTests(TestCase):
 class StudentModelTests(TestCase):
     def test_str(self):
         student = create_student(first_name='Anicka', last_name='Novakova')
-        self.assertEqual(str(student), "Novakova Anicka (3. ročník (2023))")
+        self.assertEqual(str(student), "Novakova Anicka (3. (2023))")
 
 
 class ClassRepresentativeModelTests(TestCase):
