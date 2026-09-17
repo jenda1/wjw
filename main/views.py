@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import cast
 
 from allauth.socialaccount.models import SocialAccount
@@ -448,30 +449,61 @@ def show_vr(request: HttpRequest):
 
     vr_profiles = Profile.objects.filter(
         user__groups__name__in=[VR_MEMBER_GROUP_NAME, KOLEGIUM_GROUP_NAME]
-    ).select_related('user').distinct().order_by('user__last_name', 'user__first_name')
+    ).select_related('user').prefetch_related('user__groups').distinct().order_by(
+        'user__last_name', 'user__first_name'
+    )
 
-    members = []
-    other_profiles = []
+    represented_classes: dict[int, list[ClassCollective]] = defaultdict(list)
+    class_order: dict[int, int] = {}
+    for rep in ClassRepresentative.objects.filter(
+        currently_valid, representant_type=ClassRepresentative.RepresentantType.VR,
+    ).select_related('school_class').order_by('school_class'):
+        class_order.setdefault(rep.school_class_id, len(class_order))
+        represented_classes[rep.representative_id].append(rep.school_class)
+
+    chairmen: list[dict] = []
+    class_representatives: list[dict] = []
+    kolegium: list[dict] = []
+    others: list[dict] = []
+
     for profile in vr_profiles:
         user = cast(User, profile.user)
-        if user.groups.filter(name=CAPO_DI_TUTTI_GROUP_NAME).exists():
-            members.append({'profile': profile, 'role': "Předseda spolku"})
-        elif user.groups.filter(name=KOLEGIUM_GROUP_NAME).exists():
-            members.append({'profile': profile, 'role': "kolegium"})
-        else:
-            other_profiles.append(profile)
+        group_names = {group.name for group in user.groups.all()}
+        classes = represented_classes.get(profile.pk, [])
 
-    for profile in other_profiles:
-        represented_classes = ClassRepresentative.objects.filter(
-            currently_valid, representative=profile,
-            representant_type=ClassRepresentative.RepresentantType.VR,
-        ).select_related('school_class')
-        class_names = ", ".join(str(rep.school_class) for rep in represented_classes)
-        role = f"Zástupce třídy {class_names}" if class_names else "Zástupce třídy"
-        members.append({'profile': profile, 'role': role})
+        # Rolí může mít člověk víc (předseda bývá i zástupcem třídy, zástupce může mít víc tříd),
+        # ve sloupci Role se proto vypíšou všechny.
+        roles = []
+        if CAPO_DI_TUTTI_GROUP_NAME in group_names:
+            roles.append("Předseda spolku")
+        roles.extend(f"zástupce {class_collective}" for class_collective in classes)
+        if KOLEGIUM_GROUP_NAME in group_names:
+            roles.append("kolegium")
+        member = {'profile': profile, 'role': ", ".join(roles)}
+
+        # Do které sekce člověk spadne, rozhoduje jeho první role v tomhle pořadí.
+        if CAPO_DI_TUTTI_GROUP_NAME in group_names:
+            chairmen.append(member)
+        elif classes:
+            # Zástupce víc tříd zařadíme k té z nich, která je v pořadí první.
+            class_representatives.append(member | {'sort_key': class_order[classes[0].pk]})
+        elif KOLEGIUM_GROUP_NAME in group_names:
+            kolegium.append(member)
+        else:
+            others.append(member)
+
+    # Řazení je stabilní, takže v rámci jedné třídy zůstane abecední pořadí z dotazu.
+    class_representatives.sort(key=lambda member: member['sort_key'])
+
+    sections = [
+        {'title': "Předseda spolku", 'members': chairmen},
+        {'title': "Zástupci tříd", 'members': class_representatives},
+        {'title': "Kolegium", 'members': kolegium},
+        {'title': "Ostatní členové výkonné rady", 'members': others},
+    ]
 
     return render(request, 'main/show_vr.html', {
-        'members': members,
+        'sections': [section for section in sections if section['members']],
     })
 
 
