@@ -4,10 +4,12 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import ParentRelationship, Profile
+from main.models import ClassRepresentative, ParentRelationship, Profile
 from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME
 
-from .helpers import create_class_collective, create_profile, create_student, create_user
+from .helpers import (
+    create_class_collective, create_profile, create_student, create_user, create_vr_member,
+)
 
 
 class ShowMembersViewTests(TestCase):
@@ -77,3 +79,77 @@ class ShowMembersViewTests(TestCase):
 
         resp = self.client.get(reverse('show_members', args=[self.class_collective.pk]))
         self.assertEqual(resp.status_code, 403)
+
+
+class ShowMembersRepresentativesTests(TestCase):
+    """Zástupci třídy se vypisují po řádcích - zvlášť zástupci ve VR, zvlášť pokladníci."""
+
+    def setUp(self):
+        self.class_collective = create_class_collective(school_class=3)
+        self.child = create_student(school_class=self.class_collective)
+
+        viewer = create_user('viewer1')
+        viewer_profile = create_profile(viewer)
+        ParentRelationship.objects.create(parent=viewer_profile, student=self.child)
+        self.client.force_login(viewer)
+
+    def _create_representative(self, username, representant_type, **profile_kwargs):
+        user = create_vr_member(username, **{
+            'first_name': profile_kwargs.pop('first_name', 'Jan'),
+            'last_name': profile_kwargs.pop('last_name', 'Zastupce'),
+            'email': profile_kwargs.pop('email', f'{username}@example.com'),
+        })
+        profile = create_profile(user, **profile_kwargs)
+        ParentRelationship.objects.create(parent=profile, student=self.child)
+        return ClassRepresentative.objects.create(
+            school_class=self.class_collective, representative=profile,
+            representant_type=representant_type,
+        )
+
+    def _content(self):
+        resp = self.client.get(reverse('show_members', args=[self.class_collective.pk]))
+        self.assertEqual(resp.status_code, 200)
+        return resp.content.decode()
+
+    def test_vr_representatives_are_listed_before_treasurers(self):
+        self._create_representative(
+            'treasurer1', ClassRepresentative.RepresentantType.TREASURER,
+            last_name='Pokladni', email='pokladni@example.com',
+        )
+        self._create_representative(
+            'vrrep1', ClassRepresentative.RepresentantType.VR,
+            last_name='Radni', email='radni@example.com',
+        )
+
+        content = self._content()
+        self.assertLess(content.index("Zástupce ve VR:"), content.index("Pokladník:"))
+        self.assertLess(content.index('radni@example.com'), content.index('pokladni@example.com'))
+
+    def test_several_representatives_of_one_type_share_a_line(self):
+        self._create_representative(
+            'vrrep2', ClassRepresentative.RepresentantType.VR, last_name='Bbb',
+        )
+        self._create_representative(
+            'vrrep3', ClassRepresentative.RepresentantType.VR, last_name='Aaa',
+        )
+
+        content = self._content()
+        self.assertIn("Zástupci ve VR:", content)
+        self.assertNotIn("Zástupce ve VR:", content)
+        # V rámci řádku abecedně podle příjmení.
+        self.assertLess(content.index('Aaa'), content.index('Bbb'))
+
+    def test_representative_phone_respects_visibility(self):
+        self._create_representative(
+            'vrrep4', ClassRepresentative.RepresentantType.VR,
+            phone_number='+420111222333', phone_visible=False,
+        )
+        self._create_representative(
+            'treasurer2', ClassRepresentative.RepresentantType.TREASURER,
+            phone_number='+420444555666', phone_visible=True,
+        )
+
+        content = self._content()
+        reps_section = content[:content.index('<table')]
+        self.assertNotIn('+420111222333', reps_section)
+        self.assertIn('+420444555666', reps_section)

@@ -13,16 +13,14 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-12 col-lg-10">
-        {% if representatives %}
+        {% if representative_groups %}
         <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <span class="fw-bold">Zástupci třídy:</span>
-                {% for rep in representatives %}
-                <a class="d-inline-flex align-items-center text-decoration-none" href="mailto:{{ rep.representative.user.email }}">
-                    <i class="bi bi-person-badge me-1"></i>{{ rep.get_representant_type_display }}: {{ rep.representative.user.last_name }} {{ rep.representative.user.first_name }}
-                </a>{% if not forloop.last %}<span class="text-muted">,</span>{% endif %}
-                {% endfor %}
+            {% for group in representative_groups %}
+            <div{% if not forloop.last %} class="mb-2"{% endif %}>
+                <span class="fw-bold"><i class="bi bi-person-badge me-1"></i>{{ group.title }}:</span>
+                {% for rep in group.representatives %}{% with user=rep.representative.user %}{{ user.last_name }} {{ user.first_name }} <span class="text-muted">(<a class="text-decoration-none" href="mailto:{{ user.email }}">{{ user.email }}</a>{% if rep.representative.phone_visible and rep.representative.phone_number %}, <a class="text-decoration-none" href="tel:{{ rep.representative.phone_number }}">{{ rep.representative.phone_number }}</a>{% endif %})</span>{% if not forloop.last %}<span class="text-muted">,</span> {% endif %}{% endwith %}{% endfor %}
             </div>
+            {% endfor %}
         </div>
         {% endif %}
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">

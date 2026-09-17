@@ -525,7 +525,22 @@ def show_members(request: HttpRequest, pk: int):
     currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
     representatives = ClassRepresentative.objects.filter(
         currently_valid, school_class=class_collective,
-    ).select_related('representative__user').order_by('representant_type')
+    ).select_related('representative__user').order_by(
+        'representative__user__last_name', 'representative__user__first_name'
+    )
+
+    # Každý typ zástupce má vlastní řádek, v pevném pořadí (ne abecedním podle kódu typu).
+    representative_groups = []
+    for representant_type, singular, plural in (
+        (ClassRepresentative.RepresentantType.VR, "Zástupce ve VR", "Zástupci ve VR"),
+        (ClassRepresentative.RepresentantType.TREASURER, "Pokladník", "Pokladníci"),
+    ):
+        group = [rep for rep in representatives if rep.representant_type == representant_type]
+        if group:
+            representative_groups.append({
+                'title': singular if len(group) == 1 else plural,
+                'representatives': group,
+            })
 
     members = Profile.objects.filter(
         status=Profile.ProfileStatus.ACTIVE, children__school_class=class_collective
@@ -541,7 +556,7 @@ def show_members(request: HttpRequest, pk: int):
 
     return render(request, 'main/show_members.html', {
         'class_collective': class_collective,
-        'representatives': representatives,
+        'representative_groups': representative_groups,
         'members': members_data,
     })
 
