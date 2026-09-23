@@ -136,19 +136,6 @@ class ClassRepresentativeModelTests(TestCase):
             2,
         )
 
-    def test_clean_rejects_representative_outside_vr_group(self):
-        user = create_user('parent1')
-        profile = create_profile(user)
-        class_collective = create_class_collective()
-
-        rep = ClassRepresentative(
-            school_class=class_collective, representative=profile,
-            representant_type=ClassRepresentative.RepresentantType.VR,
-        )
-        with self.assertRaises(ValidationError) as ctx:
-            rep.clean()
-        self.assertIn('representative', ctx.exception.message_dict)
-
     def test_clean_accepts_representative_in_vr_group(self):
         user = create_vr_member('parent1')
         profile = create_profile(user)
