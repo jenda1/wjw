@@ -20,19 +20,30 @@
     {% endif %}
 
     {% if page.numbered_items %}
+    <p class="mb-4">
+      Zobrazit:
+      <a href="{{ page.url }}" class="{% if not zobrazit %}fw-bold{% endif %}">vše</a>
+      &middot;
+      <a href="{{ page.url }}?zobrazit=item" class="{% if zobrazit == 'item' %}fw-bold{% endif %}">jen popis</a>
+      &middot;
+      <a href="{{ page.url }}?zobrazit=outcome" class="{% if zobrazit == 'outcome' %}fw-bold{% endif %}">jen výstupy</a>
+    </p>
+
     <div class="mb-4 p-3 bg-light rounded-3">
       <h2 class="h6 fw-bold text-uppercase text-muted mb-2">Přehled bodů programu</h2>
       <ol class="mb-0">
         {% for entry in page.numbered_items %}
+        {% if not zobrazit or entry.block.value|get_item:zobrazit %}
         <li>
           <a href="#{{ entry.block.id }}">{{ entry.block.value.heading }}</a>
-          {% if entry.block.value.presenter %}
+          {% if not zobrazit and entry.block.value.presenter %}
           <span class="text-muted">
             &ndash;
             {% for person in entry.block.value.presenter %}{{ person|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
           {% endif %}
         </li>
+        {% endif %}
         {% endfor %}
       </ol>
     </div>
@@ -40,8 +51,14 @@
 
     {% for entry in page.numbered_items %}
     {% with block=entry.block item=entry.block.value %}
+    {% if not zobrazit or item|get_item:zobrazit %}
     <div class="mb-4" id="{{ block.id }}">
       <h2 class="h5 fw-bold">{{ entry.number }}. {{ item.heading }}</h2>
+      {% if zobrazit == 'item' %}
+      <div>{{ item.item }}</div>
+      {% elif zobrazit == 'outcome' %}
+      <div>{{ item.outcome }}</div>
+      {% else %}
       {% if item.presenter %}
       <p class="text-muted mb-2">
         Předkládá:
@@ -61,7 +78,9 @@
         {{ item.outcome }}
       </div>
       {% endif %}
+      {% endif %}
     </div>
+    {% endif %}
     {% endwith %}
     {% endfor %}
   </div>
