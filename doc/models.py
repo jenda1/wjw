@@ -72,19 +72,17 @@ def _profile_display(user_id):
 
 
 def person_display(person):
-    """person je StreamValue s právě jedním blokem (viz Person.Meta.min_num/max_num)."""
-    if not len(person):
-        return ''
-    block = person[0]
-    if block.block_type in ('vr_member', 'member'):
-        return _profile_display(block.value) or ''
-    return block.value
+    """person je jeden blok ze streamu osob (viz People)."""
+    if person.block_type in ('vr_member', 'member'):
+        return _profile_display(person.value) or ''
+    return person.value
 
 
-class Person(blocks.StreamBlock):
-    """Jedna osoba - buď člen VR, nebo jiný člen spolku, nebo (výjimečně) někdo mimo členy volným textem.
-    Editor vybírá právě jednu z variant (max_num/min_num = 1), takže výlučnost je vynucená strukturou,
-    ne až dodatečnou validací."""
+class People(blocks.StreamBlock):
+    """Seznam osob - každá položka streamu je jeden člověk: buď člen VR, nebo jiný člen spolku,
+    nebo (výjimečně) někdo mimo členy volným textem. Osoba a volba varianty jsou jeden a týž blok,
+    takže výlučnost variant je vynucená strukturou (ne dodatečnou validací) a editor přidává
+    další osobu pořád stejným tlačítkem - žádné vnořené 'přidat' s limitem jedné položky."""
 
     vr_member = blocks.ChoiceBlock(choices=_vr_member_choices, label="Člen VR")
     member = blocks.ChoiceBlock(choices=_other_member_choices, label="Jiný člen")
@@ -92,15 +90,14 @@ class Person(blocks.StreamBlock):
 
     class Meta:
         icon = "user"
-        label = "Osoba"
-        min_num = 1
-        max_num = 1
+        label = "Osoby"
 
 
 class AgendaItemBlock(blocks.StructBlock):
     heading = blocks.CharBlock(max_length=255, label="Název bodu")
-    presenter = blocks.ListBlock(Person(), min_num=1, label="Předkládá")
-    body = blocks.RichTextBlock(required=False, label="Popis")
+    presenter = People(min_num=1, label="Předkládá")
+    item = blocks.RichTextBlock(required=False, label="Popis")
+    discussion = blocks.RichTextBlock(required=False, label="Debata")
     outcome = blocks.RichTextBlock(required=False, label="Výstup")
 
     class Meta:
@@ -118,13 +115,13 @@ class AgendaItemsBlock(blocks.StreamBlock):
         label = "Body programu"
 
 
+AGENDA_DISPLAY_FIELDS = ('item', 'outcome')
+
+
 def _default_participants():
     """Výchozí seznam účastníků nového jednání = aktuální členové skupiny VRmember.
     'id' u jednotlivých bloků se doplní automaticky při prvním uložení."""
-    return [
-        {'type': 'participant', 'value': [{'type': 'vr_member', 'value': pk}]}
-        for pk, _ in _vr_member_choices()
-    ]
+    return [{'type': 'vr_member', 'value': pk} for pk, _ in _vr_member_choices()]
 
 
 class AgendaPage(Page):
@@ -137,7 +134,7 @@ class AgendaPage(Page):
     )
     tags = ClusterTaggableManager(through=AgendaPageTag, blank=True)
     participants = StreamField(
-        [('participant', Person())],
+        People(),
         blank=True,
         default=_default_participants,
         verbose_name="Seznam účastníků",
@@ -166,6 +163,14 @@ class AgendaPage(Page):
         """Bloky z `items` doplněné o pořadové číslo bodu programu - používá se
         pro přehled na začátku stránky i pro číslování v samotném výpisu bodů."""
         return [{'block': block, 'number': number} for number, block in enumerate(self.items, start=1)]
+
+    def get_context(self, request, *args, **kwargs):
+        """`zobrazit=item`/`zobrazit=outcome` v query stringu omezí výpis jen na daný typ
+        obsahu (popis, nebo výstup) - pro rychlý přehled bez zbytku zápisu."""
+        context = super().get_context(request, *args, **kwargs)
+        zobrazit = request.GET.get('zobrazit')
+        context['zobrazit'] = zobrazit if zobrazit in AGENDA_DISPLAY_FIELDS else None
+        return context
 
     def get_admin_display_title(self):
         """Stejné doplnění o datum jednání i v adminu (explorer, vyhledávání, breadcrumbs) -

@@ -15,7 +15,7 @@
     {% if page.participants %}
     <p class="text-muted mb-4">
       Účastníci:
-      {% for participant in page.participants %}{{ participant.value|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      {% for participant in page.participants %}{{ participant|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
     </p>
     {% endif %}
 
@@ -48,7 +48,13 @@
         {% for person in item.presenter %}{{ person|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
       </p>
       {% endif %}
-      <div>{{ item.body }}</div>
+      <div>{{ item.item }}</div>
+      {% if item.discussion %}
+      <div class="mt-2">
+        <strong>Debata:</strong>
+        {{ item.discussion }}
+      </div>
+      {% endif %}
       {% if item.outcome %}
       <div class="mt-2">
         <strong>Výstup:</strong>
