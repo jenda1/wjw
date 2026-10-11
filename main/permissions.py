@@ -11,6 +11,11 @@ KOLEGIUM_GROUP_NAME = "Kolegium"
 WAGTAIL_EDITORS_GROUP_NAME = "Editors"  # vestavěná Wagtail skupina (wagtailcore 0002_initial_data)
 WAGTAIL_MODERATORS_GROUP_NAME = "Moderators"  # vestavěná Wagtail skupina (wagtailcore 0002_initial_data)
 
+# Lokální části adres mailing listů - conf.d/router/100_local_mailinglists
+VR_MAILING_LIST = "vr"
+ADMINS_MAILING_LIST = "admins"
+TRIDA_MAILING_LIST = "trida-{school_class}{variant}"
+
 
 APPROVER_GROUP_NAMES = [WELCOMING_TEAM_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
 

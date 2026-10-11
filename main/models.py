@@ -10,7 +10,7 @@ from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from wagtail.models import Page
 
-from main.permissions import VR_MEMBER_GROUP_NAME
+from main.permissions import TRIDA_MAILING_LIST, VR_MEMBER_GROUP_NAME
 
 import requests
 
@@ -125,6 +125,14 @@ class ClassCollective(models.Model):
         return (
             f"{self.school_class}.{self.variant if self.variant else ''} ({self.year})"
         )
+
+    @property
+    def mailing_list(self) -> str | None:
+        """Lokální část adresy mailing listu třídy (trida-<rocnik><varianta>@...),"""
+        if self.school_class is None:
+            return None
+        variant = self.variant.lower() if self.variant else ''
+        return TRIDA_MAILING_LIST.format(school_class=self.school_class, variant=variant)
 
 
 @final

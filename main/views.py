@@ -15,6 +15,8 @@ from django.urls import reverse
 from django.utils import timezone
 from wagtail.query import PageQuerySet
 
+from django.contrib.sites.models import Site
+
 from . import forms
 from .models import (
     Circle,
@@ -28,8 +30,10 @@ from .models import (
     Student,
 )
 from .permissions import (
+    ADMINS_MAILING_LIST,
     CAPO_DI_TUTTI_GROUP_NAME,
     KOLEGIUM_GROUP_NAME,
+    VR_MAILING_LIST,
     VR_MEMBER_GROUP_NAME,
     approver_required,
     can_view_all_classes,
@@ -38,6 +42,32 @@ from .permissions import (
 
 def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
+
+
+def get_user_mailing_lists(profile: Profile) -> list[str]:
+    user = cast(User, profile.user)
+    domain = Site.objects.get_current().domain
+    local_parts = []
+
+    if user.is_superuser:
+        local_parts.append(ADMINS_MAILING_LIST)
+    if user.groups.filter(name=VR_MEMBER_GROUP_NAME).exists():
+        local_parts.append(VR_MAILING_LIST)
+
+    today = timezone.localdate()
+    currently_valid = (
+        Q(students__parentrelationship__valid_until__isnull=True)
+        | Q(students__parentrelationship__valid_until__gte=today)
+    )
+    class_collectives = ClassCollective.objects.filter(
+        currently_valid, students__parentrelationship__parent=profile,
+    ).distinct().order_by('school_class', 'variant')
+    for class_collective in class_collectives:
+        local_part = class_collective.mailing_list
+        if local_part is not None:
+            local_parts.append(local_part)
+
+    return [f"{local_part}@{domain}" for local_part in local_parts]
 
 
 # Bootstrap Icons pro poskytovatele, kteří v nich mají oficiální ikonu (viz přihlašovací stránka).
@@ -107,6 +137,7 @@ def home(request: HttpRequest):
         'user': request.user,
         'pending_student_requests': pending_student_requests,
         'connected_social_accounts': get_connected_social_accounts(request.user),
+        'mailing_lists': get_user_mailing_lists(profile),
     })
 
 
@@ -554,8 +585,13 @@ def show_members(request: HttpRequest, pk: int):
         for member in members
     ]
 
+    class_email = class_collective.mailing_list
+    if class_email is not None:
+        class_email = f"{class_email}@{Site.objects.get_current().domain}"
+
     return render(request, 'main/show_members.html', {
         'class_collective': class_collective,
+        'class_email': class_email,
         'representative_groups': representative_groups,
         'members': members_data,
     })
