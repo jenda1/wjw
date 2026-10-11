@@ -6,6 +6,7 @@ from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import Group
+from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from hijack.contrib.admin import HijackUserAdminMixin
 from import_export.admin import ImportExportMixin
@@ -178,8 +179,11 @@ class CircleAdmin(SimpleHistoryAdmin):
 @final
 @admin.register(Profile)
 class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
-    list_display = ("full_name", "email", "phone_number", "membership", "status_badge", "social_accounts", "created_at")
-    list_filter = ("status", "membership", "city")
+    list_display = (
+        "full_name", "email", "phone_number", "membership", "status_badge", "groups_list",
+        "social_accounts", "created_at",
+    )
+    list_filter = ("status", "membership", "city", "user__groups")
     search_fields = ("user__first_name", "user__last_name", "user__email", "phone_number", "city")
     ordering = ("user__last_name", "user__first_name")
     # Použití upraveného inline s novým pojmenováním
@@ -189,11 +193,11 @@ class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
     ]
 
     autocomplete_fields = ["user"]
-    readonly_fields = ("created_at",)
+    readonly_fields = ("created_at", "groups_edit_link")
 
     fieldsets = (
         ("Účet", {
-            "fields": ("user", "created_at")
+            "fields": ("user", "created_at", "groups_edit_link")
         }),
         ("Osobní údaje", {
             "fields": ("birth_date",)
@@ -221,6 +225,20 @@ class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
     @admin.display(description="Email")
     def email(self, obj):
         return obj.user.email
+
+    @admin.display(description="Skupiny")
+    def groups_list(self, obj):
+        return ", ".join(group.name for group in obj.user.groups.all()) or "---"
+
+    @admin.display(description="Skupiny (oprávnění)")
+    def groups_edit_link(self, obj):
+        """Skupiny se editují na uživatelském účtu (auth.User), ne na Profilu - tohle
+        je jen odkaz + náhled, ať se admin nemusí dohledávat přes autocomplete."""
+        if obj.pk is None:
+            return "---"
+        current = ", ".join(group.name for group in obj.user.groups.all()) or "žádné"
+        url = reverse("admin:auth_user_change", args=[obj.user.pk])
+        return format_html('{} - <a href="{}#id_groups_from">upravit skupiny na účtu</a>', current, url)
 
     @admin.display(description="Propojené účty")
     def social_accounts(self, obj):
