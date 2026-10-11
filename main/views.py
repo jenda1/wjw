@@ -36,6 +36,7 @@ from .permissions import (
     VR_MAILING_LIST,
     VR_MEMBER_GROUP_NAME,
     approver_required,
+    can_email_vr,
     can_view_all_classes,
     view_others_required,
 )
@@ -535,6 +536,7 @@ def show_vr(request: HttpRequest):
 
     return render(request, 'main/show_vr.html', {
         'sections': [section for section in sections if section['members']],
+        'vr_email': f"{VR_MAILING_LIST}@{Site.objects.get_current().domain}" if can_email_vr(request.user) else None,
     })
 
 

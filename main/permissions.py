@@ -70,3 +70,9 @@ def can_view_all_classes(user) -> bool:
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=ALL_CLASSES_GROUP_NAMES).exists()
     )
+
+
+def can_email_vr(user) -> bool:
+    """jen aktivní člen spolku smí psát na vr@... mailing list."""
+    profile = getattr(user, 'profile', None)
+    return profile is not None and profile.status == profile.ProfileStatus.ACTIVE
