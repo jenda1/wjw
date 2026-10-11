@@ -262,10 +262,6 @@ SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, object]] = {
     },
 }
 
-BOOTSTRAP5 = {
-    "alert_dismissible": True,
-}
-
 PHONENUMBER_DEFAULT_REGION = "CZ"
 
 MAPY_CZ_API_URL = "https://api.mapy.cz/v1/geocode"
