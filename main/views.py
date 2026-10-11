@@ -40,6 +40,7 @@ from .permissions import (
     can_view_all_classes,
     view_others_required,
 )
+from .usernames import generate_username
 
 def is_member(profile: Profile | None) -> bool:
     return profile is not None and profile.status == Profile.ProfileStatus.ACTIVE
@@ -213,7 +214,7 @@ def add_student(request: HttpRequest):
 
 @login_required
 def new_user(request: HttpRequest):
-    user = request.user
+    user = cast(User, request.user)
     profile_form = forms.ProfileForm(user)
     students_form = forms.ProfileStudentRequestFormSet()
     merge_form = forms.ProfileMergeRequestForm()
@@ -227,6 +228,11 @@ def new_user(request: HttpRequest):
                 with transaction.atomic():
                     profile_form.instance.user = user
                     profile = profile_form.save()
+
+                    desired_username = generate_username(user.first_name, user.last_name, exclude_pk=user.pk)
+                    if user.username != desired_username:
+                        user.username = desired_username
+                        user.save(update_fields=['username'])
 
                     for student_form in students_form:
                         # Přeskočíme prázdné (nevyplněné) formuláře, např. nevyužitý extra formulář

@@ -195,10 +195,13 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
+ACCOUNT_ADAPTER = 'main.adapter.AccountAdapter'
 ACCOUNT_LOGIN_METHODS = ['email', ]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # pro začátek 'optional', na produkci 'mandatory'
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+# Username se nesbírá od uživatele, ale automaticky generuje (viz main.adapter.AccountAdapter
+# a main.views.new_user) ve formátu jmeno.prijmeni, jakmile je známo jméno a příjmení.
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 LOGIN_REDIRECT_URL = '/'                 # Kam uživatele přesměrovat po přihlášení
 LOGOUT_REDIRECT_URL = '/'
 

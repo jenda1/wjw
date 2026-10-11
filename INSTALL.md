@@ -59,7 +59,7 @@ vr_mailinglist:
   skip_syntax_errors
   data = ${lookup pgsql{SELECT email FROM main_mailinglist_vrmembers}}
   errors_to = postmaster@$domain
-  headers_remove = Sender
+  headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 
 admins_mailinglist:
@@ -71,7 +71,7 @@ admins_mailinglist:
   # nezávisle na main.Profile.
   data = ${lookup pgsql{SELECT email FROM main_mailinglist_admins}}
   errors_to = postmaster@$domain
-  headers_remove = Sender
+  headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 
 trida_mailinglist:
@@ -91,6 +91,6 @@ trida_mailinglist:
         }}}\
       {:fail: neplatny format aliasu tridy}}
   errors_to = postmaster@$domain
-  headers_remove = Sender
+  headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 ```
