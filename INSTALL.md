@@ -37,46 +37,52 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 deny
   message = Na tuto adresu mohou psát jen ověření členové spolku.
   log_message = mailinglist: odmitnut neznamy odesilatel $sender_address pro $local_part@$domain
-  local_parts = vr : admins : ^trida-\d+[a-z]*$
-  domains = +local_domains
+  local_parts = vr : admins : \N^trida-\d+[a-z]*$\N
+  domains = SPOLEK_LIST_DOMAIN
   condition = ${lookup pgsql{SELECT 1 FROM main_mailinglist_members WHERE lower(trim(email)) = lower(trim('${quote_pgsql:$sender_address}')) LIMIT 1}{no}{yes}}
 
 defer
   message = Na tento mailing list jde z vaší adresy příliš mnoho zpráv, zkuste to prosím později.
   log_message = mailinglist: ratelimit prekrocen pro $sender_address na $local_part@$domain
-  local_parts = vr : admins : ^trida-\d+[a-z]*$
-  domains = +local_domains
+  local_parts = vr : admins : \N^trida-\d+[a-z]*$\N
+  domains = SPOLEK_LIST_DOMAIN
   ratelimit = 5 / 1h / strict / ${sender_address}:${local_part}
 ```
-
-
 
 ```text
 # /etc/exim4/conf.d/router/100_local_mailinglists
 
 vr_mailinglist:
   driver = redirect
-  domains = +local_domains
+  domains = SPOLEK_LIST_DOMAIN
   local_parts = vr
   skip_syntax_errors
   data = ${lookup pgsql{SELECT email FROM main_mailinglist_vrmembers}}
+  errors_to = postmaster@$domain
+  headers_remove = Sender
+  headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 
 admins_mailinglist:
   driver = redirect
-  domains = +local_domains
+  domains = SPOLEK_LIST_DOMAIN
   local_parts = admins
   skip_syntax_errors
-  # main_mailinglist_admins view (main/migrations/0018) = jen is_superuser=True,
+  # main_mailinglist_admins view (main/migrations/0017) = jen is_superuser=True,
   # nezávisle na main.Profile.
   data = ${lookup pgsql{SELECT email FROM main_mailinglist_admins}}
+  errors_to = postmaster@$domain
+  headers_remove = Sender
+  headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 
 trida_mailinglist:
   driver = redirect
-  domains = +local_domains
-  local_parts = ^trida-\d+[a-z]*$
+  domains = SPOLEK_LIST_DOMAIN
+  # Např. "trida-1a" -> school_class=1, variant='a'; "trida-5" -> school_class=5,
+  # variant=NULL/prázdná.
+  local_parts = \N^trida-\d+[a-z]*$\N
   allow_fail
   skip_syntax_errors
-  data = ${if match{$local_part}{^trida-(\d+)([a-z]*)$}\
+  data = ${if match{$local_part}{\N^trida-(\d+)([a-z]*)$\N}\
       {${lookup pgsql{\
           SELECT email FROM main_mailinglist_class \
           WHERE school_class = $1 \
@@ -84,5 +90,7 @@ trida_mailinglist:
                 OR lower(variant) = '$2' )\
         }}}\
       {:fail: neplatny format aliasu tridy}}
-
+  errors_to = postmaster@$domain
+  headers_remove = Sender
+  headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 ```
