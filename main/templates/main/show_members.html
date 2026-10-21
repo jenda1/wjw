@@ -7,8 +7,12 @@
     </div>
     <h1 class="display-5 mb-3">Kontakty na rodiče - třída {{ class_collective }}</h1>
     <p class="lead text-muted">Zákonní zástupci žáků v této třídě.</p>
-    {% if class_email %}
+    {% if class_emails %}
     <p class="text-muted mb-0">
+        Třídní email:
+        {% for class_email in class_emails %}
+            <a class="text-decoration-none" href="mailto:{{ class_email }}">{{ class_email }}</a>{% if not forloop.last %}, {% endif %}
+        {% endfor %}
     </p>
     {% endif %}
 </div>

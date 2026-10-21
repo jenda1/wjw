@@ -4,7 +4,7 @@ from allauth.socialaccount.models import SocialAccount
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
@@ -31,6 +31,17 @@ from main.setup_checks import check_setup
 SOCIAL_PROVIDER_ICONS = {
     'google': 'fab fa-google',
 }
+
+
+class SetupCheckWarningMixin:
+    """Zobrazí na changelist stránce varování při nekonzistenci v přiřazení rolí/skupin
+    (viz main.setup_checks.check_setup) - používá se na stránkách, kde se tyto
+    nesrovnalosti opravují (Skupiny, Uživatelé, Členové spolku)."""
+
+    def changelist_view(self, request, extra_context=None):
+        for issue in check_setup():
+            messages.warning(request, issue)
+        return super().changelist_view(request, extra_context=extra_context)
 
 
 @final
@@ -178,7 +189,7 @@ class CircleAdmin(SimpleHistoryAdmin):
 
 @final
 @admin.register(Profile)
-class ProfileAdmin(HijackUserAdminMixin, SimpleHistoryAdmin):
+class ProfileAdmin(SetupCheckWarningMixin, HijackUserAdminMixin, SimpleHistoryAdmin):
     list_display = (
         "full_name", "email", "phone_number", "membership", "status_badge", "groups_list",
         "social_accounts", "created_at",
@@ -348,16 +359,18 @@ class ProfileStudentRequestAdmin(admin.ModelAdmin):
 
 
 admin.site.unregister(Group)
+admin.site.unregister(get_user_model())
 
 
 @final
 @admin.register(Group)
-class SetupCheckingGroupAdmin(GroupAdmin):
-    """Standardní GroupAdmin doplněný o varování při nekonzistenci v přiřazení
-    rolí/skupin (viz main.setup_checks.check_setup) - právě tady se tyto
-    nesrovnalosti opravují, takže se hlásí přímo na této stránce."""
+class SetupCheckingGroupAdmin(SetupCheckWarningMixin, GroupAdmin):
+    """Standardní GroupAdmin doplněný o varování z main.setup_checks.check_setup -
+    právě tady se nesrovnalosti v přiřazení rolí/skupin opravují, takže se hlásí
+    přímo na této stránce (stejně jako na Uživatelích a Členech spolku)."""
 
-    def changelist_view(self, request, extra_context=None):
-        for issue in check_setup():
-            messages.warning(request, issue)
-        return super().changelist_view(request, extra_context=extra_context)
+
+@final
+@admin.register(get_user_model())
+class SetupCheckingUserAdmin(SetupCheckWarningMixin, UserAdmin):
+    """Standardní UserAdmin doplněný o stejná varování jako SetupCheckingGroupAdmin."""

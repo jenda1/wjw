@@ -68,6 +68,7 @@ def get_user_mailing_lists(profile: Profile) -> list[str]:
         local_part = class_collective.mailing_list
         if local_part is not None:
             local_parts.append(local_part)
+        local_parts.append(class_collective.mailing_list_by_year)
 
     return [f"{local_part}@{domain}" for local_part in local_parts]
 
@@ -593,13 +594,13 @@ def show_members(request: HttpRequest, pk: int):
         for member in members
     ]
 
-    class_email = class_collective.mailing_list
-    if class_email is not None:
-        class_email = f"{class_email}@{Site.objects.get_current().domain}"
+    domain = Site.objects.get_current().domain
+    class_local_parts = [class_collective.mailing_list, class_collective.mailing_list_by_year]
+    class_emails = [f"{local_part}@{domain}" for local_part in class_local_parts if local_part is not None]
 
     return render(request, 'main/show_members.html', {
         'class_collective': class_collective,
-        'class_email': class_email,
+        'class_emails': class_emails,
         'representative_groups': representative_groups,
         'members': members_data,
     })
