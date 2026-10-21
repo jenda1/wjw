@@ -14,6 +14,7 @@ WAGTAIL_MODERATORS_GROUP_NAME = "Moderators"  # vestavěná Wagtail skupina (wag
 # Lokální části adres mailing listů - conf.d/router/100_local_mailinglists
 VR_MAILING_LIST = "vr"
 ADMINS_MAILING_LIST = "admins"
+POKLADNICI_MAILING_LIST = "pokladnici"
 TRIDA_MAILING_LIST = "{school_class}{variant}"
 TRIDA_MAILING_LIST_BY_YEAR = "{year}{variant}"
 

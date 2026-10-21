@@ -30,21 +30,21 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 ```
 
 ```text
-# /etc/exim4/conf.d/acl/35_local_mailinglist_senders
+# /etc/exim4/conf.d/acl/25_local_mailinglist_senders
 #
 # Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči
 
 deny
   message = Na tuto adresu mohou psát jen ověření členové spolku.
   log_message = mailinglist: odmitnut neznamy odesilatel $sender_address pro $local_part@$domain
-  local_parts = vr : admins : \N^trida-\d+[a-z]*$\N
+  local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
   condition = ${lookup pgsql{SELECT 1 FROM main_mailinglist_members WHERE lower(trim(email)) = lower(trim('${quote_pgsql:$sender_address}')) LIMIT 1}{no}{yes}}
 
 defer
   message = Na tento mailing list jde z vaší adresy příliš mnoho zpráv, zkuste to prosím později.
   log_message = mailinglist: ratelimit prekrocen pro $sender_address na $local_part@$domain
-  local_parts = vr : admins : \N^trida-\d+[a-z]*$\N
+  local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
   ratelimit = 5 / 1h / strict / ${sender_address}:${local_part}
 ```
@@ -74,18 +74,28 @@ admins_mailinglist:
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
 
+pokladnici_mailinglist:
+  driver = redirect
+  domains = SPOLEK_LIST_DOMAIN
+  local_parts = pokladnici
+  skip_syntax_errors
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_pokladnici}}
+  errors_to = postmaster@$domain
+  headers_remove = Sender:From:Reply-To
+  headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
+
 trida_mailinglist:
   driver = redirect
   domains = SPOLEK_LIST_DOMAIN
-  # Např. "trida-1a" -> school_class=1, variant='a'; "trida-5" -> school_class=5,
-  # variant=NULL/prázdná.
-  local_parts = \N^trida-\d+[a-z]*$\N
+  # "2023a" -> school_class=2023 NEBO year=2023 (jen druhý existuje), variant='a';
+  # "5" -> school_class=5, variant=NULL/prázdná.
+  local_parts = \N^\d+[a-z]*$\N
   allow_fail
   skip_syntax_errors
-  data = ${if match{$local_part}{\N^trida-(\d+)([a-z]*)$\N}\
+  data = ${if match{$local_part}{\N^(\d+)([a-z]*)$\N}\
       {${lookup pgsql{\
           SELECT email FROM main_mailinglist_class \
-          WHERE school_class = $1 \
+          WHERE (school_class = $1 OR year = $1) \
           AND ( (variant IS NULL OR variant = '') AND '$2' = '' \
                 OR lower(variant) = '$2' )\
         }}}\

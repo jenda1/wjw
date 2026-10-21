@@ -33,6 +33,8 @@ from .permissions import (
     ADMINS_MAILING_LIST,
     CAPO_DI_TUTTI_GROUP_NAME,
     KOLEGIUM_GROUP_NAME,
+    POKLADNICI_MAILING_LIST,
+    SECRETARY_OF_THE_TREASURY_GROUP_NAME,
     VR_MAILING_LIST,
     VR_MEMBER_GROUP_NAME,
     approver_required,
@@ -57,6 +59,17 @@ def get_user_mailing_lists(profile: Profile) -> list[str]:
         local_parts.append(VR_MAILING_LIST)
 
     today = timezone.localdate()
+    currently_valid_representative = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+    is_pokladnik = (
+        user.groups.filter(name=SECRETARY_OF_THE_TREASURY_GROUP_NAME).exists()
+        or ClassRepresentative.objects.filter(
+            currently_valid_representative, representative=profile,
+            representant_type=ClassRepresentative.RepresentantType.TREASURER,
+        ).exists()
+    )
+    if is_pokladnik:
+        local_parts.append(POKLADNICI_MAILING_LIST)
+
     currently_valid = (
         Q(students__parentrelationship__valid_until__isnull=True)
         | Q(students__parentrelationship__valid_until__gte=today)
