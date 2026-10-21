@@ -4,9 +4,21 @@ from django.contrib.auth import get_user_model
 
 from .forms import fold_name
 
+_CYRILLIC_TO_LATIN = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'ґ': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+    'є': 'ie', 'ж': 'zh', 'з': 'z', 'и': 'i', 'і': 'i', 'ї': 'yi', 'й': 'i', 'к': 'k',
+    'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't',
+    'у': 'u', 'ў': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch',
+    'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+}
+
+
+def _transliterate_cyrillic(value: str) -> str:
+    return ''.join(_CYRILLIC_TO_LATIN.get(c, c) for c in value.casefold())
+
 
 def _slug(value: str) -> str:
-    return re.sub(r'[^a-z0-9]', '', fold_name(value))
+    return re.sub(r'[^a-z0-9]', '', fold_name(_transliterate_cyrillic(value)))
 
 
 def generate_username(first_name: str, last_name: str, *, exclude_pk: int | None = None) -> str:
