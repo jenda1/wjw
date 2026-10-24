@@ -1,0 +1,11 @@
+{% with subpages=page.get_children.live %}
+{% if subpages %}
+<ul class="list-unstyled">
+    {% for subpage in subpages %}
+    <li class="mb-1">
+        <a href="{{ subpage.url }}">{{ subpage.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}

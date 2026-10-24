@@ -61,6 +61,7 @@ INSTALLED_APPS_HIJACK = ['hijack', 'hijack.contrib.admin']
 INSTALLED_APPS_WAGTAIL = [
     'doc',
 
+    'wagtail.contrib.table_block',
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
     'wagtail.embeds',

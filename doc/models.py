@@ -9,7 +9,8 @@ from modelcluster.fields import ParentalKey
 from taggit.models import TaggedItemBase
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel
-from wagtail.fields import RichTextField, StreamField
+from wagtail.contrib.table_block.blocks import TableBlock
+from wagtail.fields import StreamField
 from wagtail.models import Page
 
 from main.models import Profile
@@ -20,10 +21,29 @@ class DocPageTag(TaggedItemBase):
     content_object = ParentalKey('DocPage', on_delete=models.CASCADE, related_name='tagged_items')
 
 
+class SubpagesBlock(blocks.StaticBlock):
+    """Blok bez nastavení - při zobrazení stránky automaticky vypíše odkazy na její
+    živé podstránky (v pořadí, jak jsou v adminu zařazené ve stromu stránek)."""
+
+    class Meta:
+        label = "Odkazy na podstránky"
+        icon = "list-ul"
+        template = "doc/blocks/subpages_block.html"
+        admin_text = "Při zobrazení stránky se automaticky vypíší odkazy na všechny živé podstránky - nic se nevybírá ručně."
+
+
+class DocBodyBlock(blocks.StreamBlock):
+    """Obsah obecné stránky - text, tabulky a odkazy na podstránky lze v libovolném pořadí a počtu prostřídat."""
+
+    paragraph = blocks.RichTextBlock(label="Text")
+    table = TableBlock(label="Tabulka")
+    subpages = SubpagesBlock()
+
+
 class DocPage(Page):
     """Obecná obsahová stránka."""
 
-    body = RichTextField(blank=True)
+    body = StreamField(DocBodyBlock(), blank=True, verbose_name="Obsah")
     tags = ClusterTaggableManager(through=DocPageTag, blank=True)
 
     content_panels = Page.content_panels + [
