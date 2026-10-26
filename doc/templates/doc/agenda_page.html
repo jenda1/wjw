@@ -7,7 +7,7 @@
 {% block content %}
 <div class="row my-4">
   <div class="col-12 col-md-10 col-lg-8">
-    <h1 class="mb-2 fw-bold text-dark">{{ page.display_title }}</h1>
+    <h1 class="mb-2 fw-bold text-dark">{{ page.display_title }}{% privacy_badge page %}</h1>
     <p class="text-muted mb-4">
       {{ page.meeting_date }}, {{ page.meeting_time }}{% if page.location %} &ndash; {{ page.location }}{% endif %}
     </p>
