@@ -1,9 +1,11 @@
-from datetime import time
+from datetime import date, time
 
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.formats import date_format
 from django.utils.functional import cached_property
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from taggit.models import TaggedItemBase
@@ -13,8 +15,8 @@ from wagtail.contrib.table_block.blocks import DEFAULT_TABLE_OPTIONS, TableBlock
 from wagtail.fields import StreamField
 from wagtail.models import Page
 
-from main.models import Profile
-from main.permissions import VR_MEMBER_GROUP_NAME
+from main.models import ClassRepresentative, Profile
+from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, VR_MEMBER_GROUP_NAME
 
 
 class DocPageTag(TaggedItemBase):
@@ -101,11 +103,60 @@ def _profile_display(user_id):
     return str(user.profile) if user is not None else None
 
 
+def _currently_valid(today=None):
+    return models.Q(valid_until__isnull=True) | models.Q(valid_until__gte=today or date.today())
+
+
+def _vr_role_display(user_id):
+    """Funkce člena VR pro zobrazení v závorce za jménem - stejná pravidla jako řazení
+    do sekcí v main.views.show_vr (předseda, zástupce třídy/tříd, kolegium)."""
+    user = (
+        get_user_model().objects
+        .filter(pk=user_id, profile__isnull=False)
+        .select_related('profile')
+        .prefetch_related('groups')
+        .first()
+    )
+    if user is None:
+        return ''
+
+    group_names = {group.name for group in user.groups.all()}
+    classes = [
+        rep.school_class
+        for rep in ClassRepresentative.objects.filter(
+            _currently_valid(),
+            representant_type=ClassRepresentative.RepresentantType.VR,
+            representative=user.profile,
+        ).select_related('school_class').order_by('school_class__school_class', 'school_class__variant')
+    ]
+
+    roles = []
+    if CAPO_DI_TUTTI_GROUP_NAME in group_names:
+        roles.append("předseda spolku")
+    roles.extend(f"zástupce {class_collective}" for class_collective in classes)
+    if KOLEGIUM_GROUP_NAME in group_names:
+        roles.append("kolegium")
+    return ", ".join(roles)
+
+
+_HOST_LABEL = mark_safe("<strong>host</strong>")  # noqa: S308 - pevný literál, nic z uživatelského vstupu
+
+
 def person_display(person):
-    """person je jeden blok ze streamu osob (viz People)."""
-    if person.block_type in ('vr_member', 'member'):
-        return _profile_display(person.value) or ''
-    return person.value
+    """person je jeden blok ze streamu osob (viz People). Za jméno se do závorky doplní
+    funkce ve VR (u člena VR), nebo tučně 'host' (u kohokoliv, kdo není z VR)."""
+    if person.block_type == 'vr_member':
+        display = _profile_display(person.value)
+        if not display:
+            return ''
+        role = _vr_role_display(person.value)
+        return format_html("{} ({})", display, role) if role else display
+    if person.block_type == 'member':
+        display = _profile_display(person.value)
+        if not display:
+            return ''
+        return format_html("{} ({})", display, _HOST_LABEL)
+    return format_html("{} ({})", person.value, _HOST_LABEL)
 
 
 class People(blocks.StreamBlock):
@@ -149,9 +200,24 @@ AGENDA_DISPLAY_FIELDS = ('item', 'outcome')
 
 
 def _default_participants():
-    """Výchozí seznam účastníků nového jednání = aktuální členové skupiny VRmember.
-    'id' u jednotlivých bloků se doplní automaticky při prvním uložení."""
-    return [{'type': 'vr_member', 'value': pk} for pk, _ in _vr_member_choices()]
+    """Výchozí seznam účastníků nového jednání = aktuální členové skupiny VRmember -
+    nejprve zástupci jednotlivých tříd (seřazení podle ročníku zastupované třídy),
+    pak zbylí členové VR v abecedním pořadí. 'id' u jednotlivých bloků se doplní
+    automaticky při prvním uložení."""
+    class_rep_pks: list[str] = []
+    for rep in ClassRepresentative.objects.filter(
+        _currently_valid(),
+        representant_type=ClassRepresentative.RepresentantType.VR,
+        representative__user__groups__name=VR_MEMBER_GROUP_NAME,
+    ).select_related('representative__user', 'school_class').order_by(
+        'school_class__school_class', 'school_class__variant'
+    ):
+        pk = str(rep.representative.user_id)
+        if pk not in class_rep_pks:
+            class_rep_pks.append(pk)
+
+    other_pks = [pk for pk, _ in _vr_member_choices() if pk not in class_rep_pks]
+    return [{'type': 'vr_member', 'value': pk} for pk in class_rep_pks + other_pks]
 
 
 class AgendaPage(Page):
