@@ -9,7 +9,7 @@ from modelcluster.fields import ParentalKey
 from taggit.models import TaggedItemBase
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel
-from wagtail.contrib.table_block.blocks import TableBlock
+from wagtail.contrib.table_block.blocks import DEFAULT_TABLE_OPTIONS, TableBlock
 from wagtail.fields import StreamField
 from wagtail.models import Page
 
@@ -36,7 +36,17 @@ class DocBodyBlock(blocks.StreamBlock):
     """Obsah obecné stránky - text, tabulky a odkazy na podstránky lze v libovolném pořadí a počtu prostřídat."""
 
     paragraph = blocks.RichTextBlock(label="Text")
-    table = TableBlock(label="Tabulka")
+    table = TableBlock(
+        label="Tabulka",
+        table_options={
+            "mergeCells": True,
+            "contextMenu": DEFAULT_TABLE_OPTIONS["contextMenu"] + [
+                "---------",
+                "mergeCells",
+                "alignment",
+            ],
+        },
+    )
     subpages = SubpagesBlock()
 
 
