@@ -30,7 +30,7 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 ```
 
 ```text
-# /etc/exim4/conf.d/acl/25_local_mailinglist_senders
+# /etc/exim4/local_mailinglist_senders.acl
 #
 # Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči
 
@@ -47,6 +47,12 @@ defer
   local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
   ratelimit = 5 / 1h / strict / ${sender_address}:${local_part}
+```
+
+```text
+# /etc/exim4/conf.d/main/03_local_check_rcpt_acl_include
+
+CHECK_RCPT_LOCAL_ACL_FILE = /etc/exim4/local_mailinglist_senders.acl
 ```
 
 ```text
