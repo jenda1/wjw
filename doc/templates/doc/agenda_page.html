@@ -19,6 +19,13 @@
     </p>
     {% endif %}
 
+    {% if page.excused %}
+    <p class="text-muted mb-4">
+      Omluveni:
+      {% for participant in page.excused %}{{ participant|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+    {% endif %}
+
     {% if page.numbered_items %}
     <p class="mb-4">
       Zobrazit:

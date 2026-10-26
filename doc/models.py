@@ -169,6 +169,11 @@ class AgendaPage(Page):
         default=_default_participants,
         verbose_name="Seznam účastníků",
     )
+    excused = StreamField(
+        People(),
+        blank=True,
+        verbose_name="Omluveni",
+    )
     items = StreamField(AgendaItemsBlock(), blank=True, verbose_name="Body programu")
 
     def __init__(self, *args, **kwargs):
@@ -213,5 +218,6 @@ class AgendaPage(Page):
         FieldPanel('location'),
         FieldPanel('tags'),
         FieldPanel('participants'),
+        FieldPanel('excused'),
         FieldPanel('items'),
     ]
