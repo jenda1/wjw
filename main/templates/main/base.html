@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load doc_tags %}
 
 {% block menu %}
 <ul class="navbar-nav ms-auto">
@@ -11,7 +12,7 @@
             {% for nastenka_page in nastenka_pages %}
             <li>
                 <a class="dropdown-item" href="{{ nastenka_page.url }}">
-                    <i class="bi bi-info-circle me-2"></i>{{ nastenka_page.display_title|default:nastenka_page.title }}
+                    <i class="bi bi-info-circle me-2"></i>{{ nastenka_page.display_title|default:nastenka_page.title }}{% privacy_badge nastenka_page %}
                 </a>
             </li>
             {% endfor %}
