@@ -18,6 +18,13 @@ def do_person_display(person):
     return person_display(person)
 
 
+@register.filter(name='display_title')
+def do_display_title(page):
+    """Titulek stránky pro výpis odkazů (viz SubpagesBlock) - u typů stránek s vlastním
+    `display_title` (např. AgendaPage dopočítává datum jednání) použije ten, jinak holý title."""
+    return getattr(page, 'display_title', page.title)
+
+
 @register.inclusion_tag('doc/privacy_badge.html')
 def privacy_badge(page):
     """Ikonka u nadpisu stránky, pokud na ní (nebo některém z jejích předků) leží
