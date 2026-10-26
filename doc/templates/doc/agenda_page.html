@@ -41,7 +41,7 @@
       <ol class="mb-0">
         {% for entry in page.numbered_items %}
         {% if not zobrazit or entry.block.value|get_item:zobrazit %}
-        <li>
+        <li value="{{ entry.number }}">
           <a href="#{{ entry.block.id }}">{{ entry.block.value.heading }}</a>
           {% if not zobrazit and entry.block.value.presenter %}
           <span class="text-muted">
