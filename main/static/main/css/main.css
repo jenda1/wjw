@@ -8,12 +8,14 @@
 
 body {
     font-family: 'Nunito', sans-serif;
+    font-weight: 600;
     color: var(--waldorf-dark);
     background-color: #fdfbf7;
 }
 
-h1, h2, h3, .navbar-brand {
-    font-family: 'Playfair Display', serif;
+/* Bootstrap nastavuje vlastní font-weight pro nadpisy a tlačítka,
+   takže se musí přepsat zvlášť, zdědění z body nestačí */
+h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
 }
 
@@ -34,7 +36,6 @@ h1, h2, h3, .navbar-brand {
 }
 .nav-link {
     color: var(--waldorf-dark);
-    font-weight: 600;
     transition: color 0.2s;
 }
 .nav-link:hover, .nav-link.active {
@@ -223,7 +224,6 @@ h1, h2, h3, .navbar-brand {
 .badge-date {
     background-color: var(--waldorf-brown);
     color: var(--waldorf-dark);
-    font-weight: 600;
     margin-bottom: 10px;
     display: inline-block;
     padding: 5px 10px;
