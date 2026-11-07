@@ -19,7 +19,6 @@
                     <thead class="table-light">
                         <tr>
                             <th>Jméno</th>
-                            <th>Datum narození</th>
                             <th>Třída</th>
                         </tr>
                     </thead>
@@ -27,12 +26,11 @@
                         {% for student in students %}
                         <tr>
                             <td>{{ student.last_name }} {{ student.first_name }}</td>
-                            <td>{{ student.birth_date }}</td>
                             <td>{{ student.school_class }}</td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3" class="text-center text-muted fst-italic py-4">
+                            <td colspan="2" class="text-center text-muted fst-italic py-4">
                                 Žádní žáci bez rodiče.
                             </td>
                         </tr>
