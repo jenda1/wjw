@@ -19,6 +19,8 @@ GRANT SELECT ON main_mailinglist_members TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_vrmembers TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_class TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_admins TO "Debian-exim";
+GRANT SELECT ON main_mailinglist_pokladnici TO "Debian-exim";
+GRANT SELECT ON main_mailinglist_info TO "Debian-exim";
 
 ```
 
@@ -32,7 +34,9 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 ```text
 # /etc/exim4/local_mailinglist_senders.acl
 #
-# Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči
+# Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči.
+# info@ (předseda, místopředseda, hospodář/ka) tu záměrně NENÍ v local_parts -
+# je to veřejný kontakt, smí na něj psát i nečlenové.
 
 deny
   message = Na tuto adresu mohou psát jen ověření členové spolku.
@@ -44,7 +48,7 @@ deny
 defer
   message = Na tento mailing list jde z vaší adresy příliš mnoho zpráv, zkuste to prosím později.
   log_message = mailinglist: ratelimit prekrocen pro $sender_address na $local_part@$domain
-  local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
+  local_parts = vr : admins : pokladnici : info : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
   ratelimit = 5 / 1h / strict / ${sender_address}:${local_part}
 ```
@@ -86,6 +90,16 @@ pokladnici_mailinglist:
   local_parts = pokladnici
   skip_syntax_errors
   data = ${lookup pgsql{SELECT email FROM main_mailinglist_pokladnici}}
+  errors_to = postmaster@$domain
+  headers_remove = Sender:From:Reply-To
+  headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
+
+info_mailinglist:
+  driver = redirect
+  domains = SPOLEK_LIST_DOMAIN
+  local_parts = info
+  skip_syntax_errors
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_info}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"

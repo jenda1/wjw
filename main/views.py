@@ -32,6 +32,7 @@ from .models import (
 from .permissions import (
     ADMINS_MAILING_LIST,
     CAPO_DI_TUTTI_GROUP_NAME,
+    INFO_MAILING_LIST,
     KOLEGIUM_GROUP_NAME,
     POKLADNICI_MAILING_LIST,
     SECRETARY_OF_THE_TREASURY_GROUP_NAME,
@@ -58,6 +59,8 @@ def get_user_mailing_lists(profile: Profile) -> list[str]:
         local_parts.append(ADMINS_MAILING_LIST)
     if user.groups.filter(name=VR_MEMBER_GROUP_NAME).exists():
         local_parts.append(VR_MAILING_LIST)
+    if user.groups.filter(name__in=[CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]).exists():
+        local_parts.append(INFO_MAILING_LIST)
 
     today = timezone.localdate()
     currently_valid_representative = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
