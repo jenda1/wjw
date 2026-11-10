@@ -35,6 +35,7 @@ from .permissions import (
     KOLEGIUM_GROUP_NAME,
     POKLADNICI_MAILING_LIST,
     SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+    SOTTO_CAPO_GROUP_NAME,
     VR_MAILING_LIST,
     VR_MEMBER_GROUP_NAME,
     approver_required,
@@ -514,6 +515,7 @@ def show_vr(request: HttpRequest):
         represented_classes[rep.representative_id].append(rep.school_class)
 
     chairmen: list[dict] = []
+    deputy_chairmen: list[dict] = []
     class_representatives: list[dict] = []
     kolegium: list[dict] = []
     others: list[dict] = []
@@ -528,6 +530,8 @@ def show_vr(request: HttpRequest):
         roles = []
         if CAPO_DI_TUTTI_GROUP_NAME in group_names:
             roles.append("Předseda spolku")
+        if SOTTO_CAPO_GROUP_NAME in group_names:
+            roles.append("Místopředseda spolku")
         roles.extend(f"zástupce {class_collective}" for class_collective in classes)
         if KOLEGIUM_GROUP_NAME in group_names:
             roles.append("kolegium")
@@ -536,6 +540,8 @@ def show_vr(request: HttpRequest):
         # Do které sekce člověk spadne, rozhoduje jeho první role v tomhle pořadí.
         if CAPO_DI_TUTTI_GROUP_NAME in group_names:
             chairmen.append(member)
+        elif SOTTO_CAPO_GROUP_NAME in group_names:
+            deputy_chairmen.append(member)
         elif classes:
             # Zástupce víc tříd zařadíme k té z nich, která je v pořadí první.
             class_representatives.append(member | {'sort_key': class_order[classes[0].pk]})
@@ -549,6 +555,7 @@ def show_vr(request: HttpRequest):
 
     sections = [
         {'title': "Předseda spolku", 'members': chairmen},
+        {'title': "Místopředseda spolku", 'members': deputy_chairmen},
         {'title': "Zástupci tříd", 'members': class_representatives},
         {'title': "Kolegium", 'members': kolegium},
         {'title': "Ostatní členové výkonné rady", 'members': others},

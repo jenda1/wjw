@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from main.models import ParentRelationship
-from main.permissions import CAPO_DI_TUTTI_GROUP_NAME
+from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME
 
 from .helpers import create_class_collective, create_profile, create_student, create_user
 
@@ -37,6 +37,22 @@ class AvailableClassesContextProcessorTests(TestCase):
         capo_user.groups.add(group)
 
         self.client.force_login(capo_user)
+        resp = self.client.get(reverse('home'))
+        content = resp.content.decode()
+
+        self.assertIn(f'/show_members/{class_a.pk}', content)
+        self.assertIn(f'/show_members/{class_b.pk}', content)
+
+    def test_sotto_capo_sees_all_classes(self):
+        class_a = create_class_collective(school_class=1)
+        class_b = create_class_collective(school_class=2)
+
+        sotto_user = create_user('sotto1')
+        create_profile(sotto_user)
+        group, _ = Group.objects.get_or_create(name=SOTTO_CAPO_GROUP_NAME)
+        sotto_user.groups.add(group)
+
+        self.client.force_login(sotto_user)
         resp = self.client.get(reverse('home'))
         content = resp.content.decode()
 

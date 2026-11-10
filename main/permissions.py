@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 WELCOMING_TEAM_GROUP_NAME = "WelcomingTeam"
 VR_MEMBER_GROUP_NAME = "VRmember"
 CAPO_DI_TUTTI_GROUP_NAME = "CapoDiTutti"
+SOTTO_CAPO_GROUP_NAME = "SottoCapo"
 SECRETARY_OF_THE_TREASURY_GROUP_NAME = "SecretaryOfTheTreasury"
 KOLEGIUM_GROUP_NAME = "Kolegium"
 WAGTAIL_EDITORS_GROUP_NAME = "Editors"  # vestavěná Wagtail skupina (wagtailcore 0002_initial_data)
@@ -19,11 +20,13 @@ TRIDA_MAILING_LIST = "{school_class}{variant}"
 TRIDA_MAILING_LIST_BY_YEAR = "{year}{variant}"
 
 
-APPROVER_GROUP_NAMES = [WELCOMING_TEAM_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
+APPROVER_GROUP_NAMES = [
+    WELCOMING_TEAM_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+]
 
 
 def can_approve_requests(user) -> bool:
-    """Členové skupiny WelcomingTeam, CapoDiTutti a SecretaryOfTheTreasury (a superuživatelé)
+    """Členové skupiny WelcomingTeam, CapoDiTutti, SottoCapo a SecretaryOfTheTreasury (a superuživatelé)
     mohou schvalovat žádosti (o členství, sloučení účtů, přidání žáka)."""
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=APPROVER_GROUP_NAMES).exists()
@@ -42,11 +45,13 @@ def approver_required(view_func):
     return login_required(wrapper)
 
 
-VIEW_OTHERS_GROUP_NAMES = [VR_MEMBER_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
+VIEW_OTHERS_GROUP_NAMES = [
+    VR_MEMBER_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+]
 
 
 def can_view_others(user) -> bool:
-    """Členové skupiny VRmembers, CapoDiTutti a SecretaryOfTheTreasury (a superuživatelé)
+    """Členové skupiny VRmembers, CapoDiTutti, SottoCapo a SecretaryOfTheTreasury (a superuživatelé)
     mohou videt data o vsech clenech (o členství, sloučení účtů, přidání žáka)."""
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=VIEW_OTHERS_GROUP_NAMES).exists()
@@ -63,11 +68,11 @@ def view_others_required(view_func):
     return login_required(wrapper)
 
 
-ALL_CLASSES_GROUP_NAMES = [CAPO_DI_TUTTI_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
+ALL_CLASSES_GROUP_NAMES = [CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
 
 
 def can_view_all_classes(user) -> bool:
-    """Členové skupiny CapoDiTutti a SecretaryOfTheTreasury (a superuživatelé) vidí
+    """Členové skupiny CapoDiTutti, SottoCapo a SecretaryOfTheTreasury (a superuživatelé) vidí
     kontakty na členy ve všech třídách, ne jen ve třídách svých dětí."""
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=ALL_CLASSES_GROUP_NAMES).exists()

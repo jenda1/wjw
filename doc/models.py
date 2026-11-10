@@ -16,7 +16,7 @@ from wagtail.fields import StreamField
 from wagtail.models import Page
 
 from main.models import ClassRepresentative, Profile
-from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, VR_MEMBER_GROUP_NAME
+from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, VR_MEMBER_GROUP_NAME
 
 
 class DocPageTag(TaggedItemBase):
@@ -133,6 +133,8 @@ def _vr_role_display(user_id):
     roles = []
     if CAPO_DI_TUTTI_GROUP_NAME in group_names:
         roles.append("předseda spolku")
+    if SOTTO_CAPO_GROUP_NAME in group_names:
+        roles.append("místopředseda spolku")
     roles.extend(f"zástupce {class_collective}" for class_collective in classes)
     if KOLEGIUM_GROUP_NAME in group_names:
         roles.append("kolegium")

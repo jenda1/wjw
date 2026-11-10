@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from main.models import ClassRepresentative
-from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, VR_MEMBER_GROUP_NAME
+from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, VR_MEMBER_GROUP_NAME
 
 from .helpers import create_class_collective, create_profile, create_user
 
@@ -29,6 +29,29 @@ class ShowVrViewTests(TestCase):
         self.assertIn('Predseda Karel', content)
         self.assertIn('Předseda spolku', content)
         self.assertIn('capo@example.com', content)
+
+    def test_sotto_capo_listed_as_deputy_chairman_after_chairman(self):
+        capo_user = create_user('capo4', first_name='Karel', last_name='Predseda', email='capo4@example.com')
+        create_profile(capo_user)
+        vr_group, _ = Group.objects.get_or_create(name=VR_MEMBER_GROUP_NAME)
+        capo_group, _ = Group.objects.get_or_create(name=CAPO_DI_TUTTI_GROUP_NAME)
+        capo_user.groups.add(vr_group, capo_group)
+
+        sotto_user = create_user('sotto1', first_name='Milos', last_name='Mistopredseda', email='sotto1@example.com')
+        create_profile(sotto_user)
+        sotto_group, _ = Group.objects.get_or_create(name=SOTTO_CAPO_GROUP_NAME)
+        sotto_user.groups.add(vr_group, sotto_group)
+
+        viewer = create_user('viewer6')
+        create_profile(viewer)
+        self.client.force_login(viewer)
+
+        resp = self.client.get(reverse('show_vr'))
+        content = resp.content.decode()
+        self.assertIn('Mistopredseda Milos', content)
+        self.assertIn('Místopředseda spolku', content)
+        self.assertLess(content.index('Předseda spolku'), content.index('Místopředseda spolku'))
+        self.assertLess(content.index('Predseda Karel'), content.index('Mistopredseda Milos'))
 
     def test_class_representative_shows_class_name(self):
         rep_user = create_user('rep1', first_name='Anna', last_name='Zastupkyne', email='rep@example.com')

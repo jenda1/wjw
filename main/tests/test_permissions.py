@@ -4,6 +4,7 @@ from django.test import TestCase
 from main.permissions import (
     CAPO_DI_TUTTI_GROUP_NAME,
     SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+    SOTTO_CAPO_GROUP_NAME,
     can_approve_requests,
     can_view_others,
 )
@@ -15,6 +16,14 @@ class CapoDiTuttiAndSecretaryPermissionTests(TestCase):
     def test_capo_di_tutti_can_approve_requests_and_view_others(self):
         user = create_user('capo1')
         group, _ = Group.objects.get_or_create(name=CAPO_DI_TUTTI_GROUP_NAME)
+        user.groups.add(group)
+
+        self.assertTrue(can_approve_requests(user))
+        self.assertTrue(can_view_others(user))
+
+    def test_sotto_capo_can_approve_requests_and_view_others(self):
+        user = create_user('sotto1')
+        group, _ = Group.objects.get_or_create(name=SOTTO_CAPO_GROUP_NAME)
         user.groups.add(group)
 
         self.assertTrue(can_approve_requests(user))
