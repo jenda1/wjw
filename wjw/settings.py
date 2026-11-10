@@ -127,6 +127,7 @@ TEMPLATES = [
                 'main.context_processors.available_circles',
                 'main.context_processors.nastenka_pages',
                 'main.context_processors.user_avatar_url',
+                'main.context_processors.info_mailing_list_email',
             ],
         },
     },

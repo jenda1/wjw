@@ -1,3 +1,4 @@
+from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.utils import timezone
 
@@ -11,11 +12,16 @@ from .models import (
     Student,
 )
 from .permissions import (
+    INFO_MAILING_LIST,
     KOLEGIUM_GROUP_NAME,
     can_approve_requests,
     can_view_all_classes,
     can_view_others,
 )
+
+
+def info_mailing_list_email(request):
+    return {'info_mailing_list_email': f"{INFO_MAILING_LIST}@spolek.waldorfjinonice.cz"}
 
 
 def pending_requests_count(request):
