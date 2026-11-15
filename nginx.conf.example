@@ -20,6 +20,9 @@ server {
     ssl_certificate     /path/to/fullchain.pem;
     ssl_certificate_key /path/to/privkey.pem;
 
+    # Výchozí limit nginx (1M) je menší než dokumenty/obrázky nahrávané ve Wagtailu.
+    client_max_body_size 20M;
+
     location / {
         proxy_pass http://127.0.0.1:8000;
 
@@ -31,10 +34,10 @@ server {
     }
 
     location /static {
-        allow all;
+        alias <domain.root>/staticfiles/;
     }
-    
+
     location /media {
-        allow all;
+        alias <domain.root>/media/;
     }
 }

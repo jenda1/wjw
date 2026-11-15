@@ -1,4 +1,3 @@
-from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.utils import timezone
 
