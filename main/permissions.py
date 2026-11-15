@@ -17,6 +17,7 @@ VR_MAILING_LIST = "vr"
 ADMINS_MAILING_LIST = "admins"
 POKLADNICI_MAILING_LIST = "pokladnici"
 INFO_MAILING_LIST = "info"
+UCETNI_MAILING_LIST = "ucetni"
 TRIDA_MAILING_LIST = "{school_class}{variant}"
 TRIDA_MAILING_LIST_BY_YEAR = "{year}{variant}"
 
