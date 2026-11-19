@@ -45,7 +45,9 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 # i nečlenové.
 
 deny
-  message = Na tuto adresu mohou psát jen ověření členové spolku.
+  message = Na tuto adresu mohou psát jen členové spolku.\n\
+Odesílali jste z adresy $sender_address - pokud by měla být vedena jako aktivní člen/ka spolku,\n\
+zkontrolujte si to na https://spolek.waldorfjinonice.cz případně napište na info@spolek.waldorfjinonice.cz.
   log_message = mailinglist: odmitnut neznamy odesilatel $sender_address pro $local_part@$domain
   local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
