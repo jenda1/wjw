@@ -3,7 +3,13 @@ from django.test import TestCase
 from django.urls import reverse
 
 from main.models import ClassRepresentative
-from main.permissions import CAPO_DI_TUTTI_GROUP_NAME, KOLEGIUM_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, VR_MEMBER_GROUP_NAME
+from main.permissions import (
+    CAPO_DI_TUTTI_GROUP_NAME,
+    KOLEGIUM_GROUP_NAME,
+    SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+    SOTTO_CAPO_GROUP_NAME,
+    VR_MEMBER_GROUP_NAME,
+)
 
 from .helpers import create_class_collective, create_profile, create_user
 
@@ -52,6 +58,31 @@ class ShowVrViewTests(TestCase):
         self.assertIn('Místopředseda spolku', content)
         self.assertLess(content.index('Předseda spolku'), content.index('Místopředseda spolku'))
         self.assertLess(content.index('Predseda Karel'), content.index('Mistopredseda Milos'))
+
+    def test_secretary_of_the_treasury_listed_as_treasurer_after_deputy_chairman(self):
+        capo_user = create_user('capo5', first_name='Karel', last_name='Predseda')
+        create_profile(capo_user)
+        vr_group, _ = Group.objects.get_or_create(name=VR_MEMBER_GROUP_NAME)
+        capo_group, _ = Group.objects.get_or_create(name=CAPO_DI_TUTTI_GROUP_NAME)
+        capo_user.groups.add(vr_group, capo_group)
+
+        # Hospodářka nemusí být zároveň VRmember - do výkonné rady patří i tak.
+        treasurer_user = create_user('treasurer1', first_name='Hana', last_name='Hospodarka', email='treasurer1@example.com')
+        create_profile(treasurer_user)
+        treasurer_group, _ = Group.objects.get_or_create(name=SECRETARY_OF_THE_TREASURY_GROUP_NAME)
+        treasurer_user.groups.add(treasurer_group)
+
+        viewer = create_user('viewer7')
+        create_profile(viewer)
+        self.client.force_login(viewer)
+
+        resp = self.client.get(reverse('show_vr'))
+        content = resp.content.decode()
+        self.assertIn('Hospodarka Hana', content)
+        self.assertIn('Hospodář/ka spolku', content)
+        self.assertIn('treasurer1@example.com', content)
+        self.assertLess(content.index('Předseda spolku'), content.index('Hospodář/ka spolku'))
+        self.assertLess(content.index('Predseda Karel'), content.index('Hospodarka Hana'))
 
     def test_class_representative_shows_class_name(self):
         rep_user = create_user('rep1', first_name='Anna', last_name='Zastupkyne', email='rep@example.com')

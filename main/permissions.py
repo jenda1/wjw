@@ -23,7 +23,7 @@ TRIDA_MAILING_LIST_BY_YEAR = "{year}{variant}"
 
 
 APPROVER_GROUP_NAMES = [
-    WELCOMING_TEAM_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME,
+    WELCOMING_TEAM_GROUP_NAME, CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME,
 ]
 
 
@@ -53,8 +53,6 @@ VIEW_OTHERS_GROUP_NAMES = [
 
 
 def can_view_others(user) -> bool:
-    """Členové skupiny VRmembers, CapoDiTutti, SottoCapo a SecretaryOfTheTreasury (a superuživatelé)
-    mohou videt data o vsech clenech (o členství, sloučení účtů, přidání žáka)."""
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=VIEW_OTHERS_GROUP_NAMES).exists()
     )
@@ -74,8 +72,6 @@ ALL_CLASSES_GROUP_NAMES = [CAPO_DI_TUTTI_GROUP_NAME, SOTTO_CAPO_GROUP_NAME, SECR
 
 
 def can_view_all_classes(user) -> bool:
-    """Členové skupiny CapoDiTutti, SottoCapo a SecretaryOfTheTreasury (a superuživatelé) vidí
-    kontakty na členy ve všech třídách, ne jen ve třídách svých dětí."""
     return user.is_authenticated and (
         user.is_superuser or user.groups.filter(name__in=ALL_CLASSES_GROUP_NAMES).exists()
     )
@@ -92,6 +88,5 @@ def view_all_classes_required(view_func):
 
 
 def can_email_vr(user) -> bool:
-    """jen aktivní člen spolku smí psát na vr@... mailing list."""
     profile = getattr(user, 'profile', None)
     return profile is not None and profile.status == profile.ProfileStatus.ACTIVE

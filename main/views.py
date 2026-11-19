@@ -508,7 +508,7 @@ def show_vr(request: HttpRequest):
     currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
 
     vr_profiles = Profile.objects.filter(
-        user__groups__name__in=[VR_MEMBER_GROUP_NAME, KOLEGIUM_GROUP_NAME]
+        user__groups__name__in=[VR_MEMBER_GROUP_NAME, KOLEGIUM_GROUP_NAME, SECRETARY_OF_THE_TREASURY_GROUP_NAME]
     ).select_related('user').prefetch_related('user__groups').distinct().order_by(
         'user__last_name', 'user__first_name'
     )
@@ -523,6 +523,7 @@ def show_vr(request: HttpRequest):
 
     chairmen: list[dict] = []
     deputy_chairmen: list[dict] = []
+    treasurers: list[dict] = []
     class_representatives: list[dict] = []
     kolegium: list[dict] = []
     others: list[dict] = []
@@ -539,6 +540,8 @@ def show_vr(request: HttpRequest):
             roles.append("Předseda spolku")
         if SOTTO_CAPO_GROUP_NAME in group_names:
             roles.append("Místopředseda spolku")
+        if SECRETARY_OF_THE_TREASURY_GROUP_NAME in group_names:
+            roles.append("Hospodář/ka spolku")
         roles.extend(f"zástupce {class_collective}" for class_collective in classes)
         if KOLEGIUM_GROUP_NAME in group_names:
             roles.append("kolegium")
@@ -549,6 +552,8 @@ def show_vr(request: HttpRequest):
             chairmen.append(member)
         elif SOTTO_CAPO_GROUP_NAME in group_names:
             deputy_chairmen.append(member)
+        elif SECRETARY_OF_THE_TREASURY_GROUP_NAME in group_names:
+            treasurers.append(member)
         elif classes:
             # Zástupce víc tříd zařadíme k té z nich, která je v pořadí první.
             class_representatives.append(member | {'sort_key': class_order[classes[0].pk]})
@@ -563,6 +568,7 @@ def show_vr(request: HttpRequest):
     sections = [
         {'title': "Předseda spolku", 'members': chairmen},
         {'title': "Místopředseda spolku", 'members': deputy_chairmen},
+        {'title': "Hospodář/ka spolku", 'members': treasurers},
         {'title': "Zástupci tříd", 'members': class_representatives},
         {'title': "Kolegium", 'members': kolegium},
         {'title': "Ostatní členové výkonné rady", 'members': others},
