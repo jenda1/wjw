@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from main.models import Circle, CircleMembership, ClassRepresentative, ParentRelationship
-from main.permissions import VR_MEMBER_GROUP_NAME
+from main.permissions import SECRETARY_OF_THE_TREASURY_GROUP_NAME, VR_MEMBER_GROUP_NAME
 
 from .helpers import (
     create_class_collective, create_profile, create_student, create_user, create_vr_member,
@@ -65,6 +65,24 @@ class PhoneVisibilityTests(TestCase):
 
         content = self.client.get(reverse('show_vr')).content.decode()
         self.assertIn('Zastupkyne Anna', content)
+        self.assertNotIn(HIDDEN_PHONE, content)
+
+    def test_show_treasurers_hides_phone_when_not_allowed(self):
+        rep_user = create_user('rep2', first_name='Anna', last_name='Pokladnice')
+        rep_profile = create_profile(rep_user, phone_number=HIDDEN_PHONE, phone_visible=False)
+        ClassRepresentative.objects.create(
+            school_class=create_class_collective(), representative=rep_profile,
+            representant_type=ClassRepresentative.RepresentantType.TREASURER,
+        )
+
+        viewer = create_user('viewer4')
+        create_profile(viewer)
+        group, _ = Group.objects.get_or_create(name=SECRETARY_OF_THE_TREASURY_GROUP_NAME)
+        viewer.groups.add(group)
+        self.client.force_login(viewer)
+
+        content = self.client.get(reverse('show_treasurers')).content.decode()
+        self.assertIn('Pokladnice Anna', content)
         self.assertNotIn(HIDDEN_PHONE, content)
 
     def test_show_circle_hides_speakers_phone_when_not_allowed(self):

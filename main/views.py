@@ -43,6 +43,7 @@ from .permissions import (
     approver_required,
     can_email_vr,
     can_view_all_classes,
+    view_all_classes_required,
     view_others_required,
 )
 from .usernames import generate_username
@@ -570,6 +571,23 @@ def show_vr(request: HttpRequest):
     return render(request, 'main/show_vr.html', {
         'sections': [section for section in sections if section['members']],
         'vr_email': f"{VR_MAILING_LIST}@{Site.objects.get_current().domain}" if can_email_vr(request.user) else None,
+    })
+
+
+@view_all_classes_required
+def show_treasurers(request: HttpRequest):
+    today = timezone.localdate()
+    currently_valid = Q(valid_until__isnull=True) | Q(valid_until__gte=today)
+
+    treasurers = ClassRepresentative.objects.filter(
+        currently_valid, representant_type=ClassRepresentative.RepresentantType.TREASURER,
+    ).select_related('representative__user', 'school_class').order_by(
+        'school_class__school_class', 'school_class__variant', 'representative__user__last_name',
+    )
+
+    return render(request, 'main/show_treasurers.html', {
+        'treasurers': treasurers,
+        'pokladnici_email': f"{POKLADNICI_MAILING_LIST}@{Site.objects.get_current().domain}",
     })
 
 

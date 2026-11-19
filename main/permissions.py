@@ -81,6 +81,16 @@ def can_view_all_classes(user) -> bool:
     )
 
 
+def view_all_classes_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not can_view_all_classes(request.user):
+            raise PermissionDenied("Tuto stránku mohou zobrazit jen předseda, místopředseda a hospodář/ka spolku.")
+        return view_func(request, *args, **kwargs)
+
+    return login_required(wrapper)
+
+
 def can_email_vr(user) -> bool:
     """jen aktivní člen spolku smí psát na vr@... mailing list."""
     profile = getattr(user, 'profile', None)

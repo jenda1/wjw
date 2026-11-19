@@ -122,7 +122,7 @@ def available_classes(request):
     else:
         classes = ClassCollective.objects.filter(students__parents=profile).distinct()
 
-    return {'available_classes': classes}
+    return {'available_classes': classes, 'can_view_all_classes': can_view_all_classes(user)}
 
 
 def available_circles(request):

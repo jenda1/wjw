@@ -18,6 +18,7 @@ urlpatterns = [
     path("orphaned_members", views.orphaned_members, name="orphaned_members"),
     path("orphaned_classes", views.orphaned_classes, name="orphaned_classes"),
     path("show_vr", views.show_vr, name="show_vr"),
+    path("show_treasurers", views.show_treasurers, name="show_treasurers"),
     path("show_members/<int:pk>", views.show_members, name="show_members"),
     path("show_circle/<int:pk>", views.show_circle, name="show_circle"),
 ]
