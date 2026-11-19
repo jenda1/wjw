@@ -10,7 +10,16 @@ from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from wagtail.models import Page
 
-from main.permissions import TRIDA_MAILING_LIST, TRIDA_MAILING_LIST_BY_YEAR, VR_MEMBER_GROUP_NAME
+from main.permissions import (
+    ADMINS_MAILING_LIST,
+    INFO_MAILING_LIST,
+    POKLADNICI_MAILING_LIST,
+    TRIDA_MAILING_LIST,
+    TRIDA_MAILING_LIST_BY_YEAR,
+    UCETNI_MAILING_LIST,
+    VR_MAILING_LIST,
+    VR_MEMBER_GROUP_NAME,
+)
 
 import requests
 
@@ -439,3 +448,35 @@ class ProfileStudentRequest(models.Model):
     class Meta:
         verbose_name = "Žádost o přidání žáka"
         verbose_name_plural = "Žádosti o přidání žáka"
+
+
+# Choices pro OtherListMembers.mailing_list - pevné aliasy (main/permissions.py), které
+# exim routery/ACL (viz INSTALL.md) skutečně znají. Třídní aliasy (dynamické, podle
+# ClassCollective) tu záměrně nejsou - nejde o uzavřenou množinu.
+MAILING_LIST_CHOICES = [
+    (VR_MAILING_LIST, f"{VR_MAILING_LIST} (Výkonná rada)"),
+    (ADMINS_MAILING_LIST, f"{ADMINS_MAILING_LIST} (administrátoři)"),
+    (POKLADNICI_MAILING_LIST, f"{POKLADNICI_MAILING_LIST} (třídní pokladníci a hospodář/ka)"),
+    (INFO_MAILING_LIST, f"{INFO_MAILING_LIST} (veřejný kontakt)"),
+    (UCETNI_MAILING_LIST, f"{UCETNI_MAILING_LIST} (hospodář/ka)"),
+]
+
+
+@final
+class OtherListMembers(models.Model):
+    """Externí adresy (bez main.Profile) ručně přidané do mailing listu - viz
+    main_otherlistmembers v INSTALL.md (exim routery/ACL je UNIONují k příjemcům
+    i povoleným odesílatelům daného aliasu)."""
+
+    mailing_list = models.CharField(
+        max_length=20, verbose_name="Mailing list", choices=MAILING_LIST_CHOICES,
+    )
+    email = models.EmailField(verbose_name="E-mail")
+
+    def __str__(self) -> str:
+        return f"{self.email} ({self.mailing_list})"
+
+    @final
+    class Meta:
+        verbose_name = "Externí člen mailing listu"
+        verbose_name_plural = "Externí členové mailing listů"

@@ -22,6 +22,7 @@ GRANT SELECT ON main_mailinglist_admins TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_pokladnici TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_info TO "Debian-exim";
 GRANT SELECT ON main_mailinglist_ucetni TO "Debian-exim";
+GRANT SELECT ON main_otherlistmembers TO "Debian-exim";
 
 ```
 
@@ -35,7 +36,10 @@ pgsql_servers = (/var/run/postgresql/.s.PGSQL.5432)/wjw/Debian-exim/
 ```text
 # /etc/exim4/local_mailinglist_senders.acl
 #
-# Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči.
+# Pravidlo: na aliasy (vr@..., trida-X@...) smí psát jen členovi/rodiči, nebo
+# e-mail ručně přidaný adminem do main.OtherListMembers pro právě tento alias
+# (main_otherlistmembers, viz main/models.py) - typicky externí (nečlenský)
+# dodavatel/kontakt, kterému admin povolil psát jen na konkrétní alias.
 # info@ (předseda, místopředseda, hospodář/ka) a ucetni@ (hospodář/ka) tu
 # záměrně NEJSOU v local_parts - jsou to veřejné kontakty, smí na ně psát
 # i nečlenové.
@@ -45,7 +49,13 @@ deny
   log_message = mailinglist: odmitnut neznamy odesilatel $sender_address pro $local_part@$domain
   local_parts = vr : admins : pokladnici : \N^\d+[a-z]*$\N
   domains = SPOLEK_LIST_DOMAIN
-  condition = ${lookup pgsql{SELECT 1 FROM main_mailinglist_members WHERE lower(trim(email)) = lower(trim('${quote_pgsql:$sender_address}')) LIMIT 1}{no}{yes}}
+  condition = ${lookup pgsql{\
+      SELECT 1 FROM main_mailinglist_members WHERE lower(trim(email)) = lower(trim('${quote_pgsql:$sender_address}'))\
+      UNION\
+      SELECT 1 FROM main_otherlistmembers WHERE mailing_list = '${quote_pgsql:$local_part}'\
+        AND lower(trim(email)) = lower(trim('${quote_pgsql:$sender_address}'))\
+      LIMIT 1\
+    }{no}{yes}}
 
 defer
   message = Na tento mailing list jde z vaší adresy příliš mnoho zpráv, zkuste to prosím později.
@@ -69,7 +79,7 @@ vr_mailinglist:
   domains = SPOLEK_LIST_DOMAIN
   local_parts = vr
   skip_syntax_errors
-  data = ${lookup pgsql{SELECT email FROM main_mailinglist_vrmembers}}
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_vrmembers UNION SELECT email FROM main_otherlistmembers WHERE mailing_list = 'vr'}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
@@ -81,7 +91,7 @@ admins_mailinglist:
   skip_syntax_errors
   # main_mailinglist_admins view (main/migrations/0017) = jen is_superuser=True,
   # nezávisle na main.Profile.
-  data = ${lookup pgsql{SELECT email FROM main_mailinglist_admins}}
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_admins UNION SELECT email FROM main_otherlistmembers WHERE mailing_list = 'admins'}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
@@ -91,7 +101,7 @@ pokladnici_mailinglist:
   domains = SPOLEK_LIST_DOMAIN
   local_parts = pokladnici
   skip_syntax_errors
-  data = ${lookup pgsql{SELECT email FROM main_mailinglist_pokladnici}}
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_pokladnici UNION SELECT email FROM main_otherlistmembers WHERE mailing_list = 'pokladnici'}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
@@ -101,7 +111,7 @@ info_mailinglist:
   domains = SPOLEK_LIST_DOMAIN
   local_parts = info
   skip_syntax_errors
-  data = ${lookup pgsql{SELECT email FROM main_mailinglist_info}}
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_info UNION SELECT email FROM main_otherlistmembers WHERE mailing_list = 'info'}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
@@ -113,7 +123,7 @@ ucetni_mailinglist:
   skip_syntax_errors
   # main_mailinglist_ucetni view (main/migrations/0024) = jen SecretaryOfTheTreasury,
   # na rozdíl od pokladnici@ bez třídních pokladníků.
-  data = ${lookup pgsql{SELECT email FROM main_mailinglist_ucetni}}
+  data = ${lookup pgsql{SELECT email FROM main_mailinglist_ucetni UNION SELECT email FROM main_otherlistmembers WHERE mailing_list = 'ucetni'}}
   errors_to = postmaster@$domain
   headers_remove = Sender:From:Reply-To
   headers_add = "Reply-To: ${address:$h_from:}\nFrom: ${address:$h_from:} (via $local_part mailing listu) <$local_part@$domain>"
@@ -132,6 +142,8 @@ trida_mailinglist:
           WHERE (school_class = $1 OR year = $1) \
           AND ( (variant IS NULL OR variant = '') AND '$2' = '' \
                 OR lower(variant) = '$2' )\
+          UNION \
+          SELECT email FROM main_otherlistmembers WHERE mailing_list = '$1$2'\
         }}}\
       {:fail: neplatny format aliasu tridy}}
   errors_to = postmaster@$domain

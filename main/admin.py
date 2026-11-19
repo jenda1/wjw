@@ -18,6 +18,7 @@ from main.models import (
     CircleMembership,
     ClassCollective,
     ClassRepresentative,
+    OtherListMembers,
     ParentRelationship,
     Profile,
     ProfileMergeRequest,
@@ -356,6 +357,14 @@ class ProfileStudentRequestAdmin(admin.ModelAdmin):
     list_filter = ("action", "status")
     search_fields = ("profile__user__last_name", "first_name", "last_name")
     autocomplete_fields = ["profile", "student_by_name"]
+
+
+@final
+@admin.register(OtherListMembers)
+class OtherListMembersAdmin(admin.ModelAdmin):
+    list_display = ("mailing_list", "email")
+    list_filter = ("mailing_list",)
+    search_fields = ("mailing_list", "email")
 
 
 admin.site.unregister(Group)
