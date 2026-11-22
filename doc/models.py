@@ -159,8 +159,6 @@ def _person_parts(person):
 
 
 def person_display(person):
-    """Jméno osoby a za ním v závorce funkce ve VR (u člena VR), nebo tučně 'host'
-    (u kohokoliv, kdo není z VR) - pro řádkový výpis, např. předkladatelů bodu."""
     name, role, is_guest = _person_parts(person)
     if not name:
         return ''
@@ -170,8 +168,6 @@ def person_display(person):
 
 
 def person_line(person):
-    """Jméno osoby a za čárkou její funkce ve VR - pro výpis po řádcích (Přítomni,
-    Omluveni, Host) podle vzoru zápisu; host je poznat z nadpisu sekce, takže bez štítku."""
     name, role, _ = _person_parts(person)
     return f"{name}, {role}" if name and role else name
 

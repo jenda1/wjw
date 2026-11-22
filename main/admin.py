@@ -207,6 +207,13 @@ class ProfileAdmin(SetupCheckWarningMixin, HijackUserAdminMixin, SimpleHistoryAd
     autocomplete_fields = ["user"]
     readonly_fields = ("created_at", "groups_edit_link")
 
+    def get_inlines(self, request, obj):
+        # Na přidávacím formuláři Profile ještě nemá `user`, takže SocialAccountInline
+        # (který se váže na auth.User) nemá k čemu se připojit - zobrazíme ho až při editaci.
+        if obj is None:
+            return [i for i in self.inlines if i is not SocialAccountInline]
+        return self.inlines
+
     fieldsets = (
         ("Účet", {
             "fields": ("user", "created_at", "groups_edit_link")

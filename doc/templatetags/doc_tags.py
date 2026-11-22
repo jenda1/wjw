@@ -6,8 +6,6 @@ from main.permissions import VR_MEMBER_GROUP_NAME
 
 register = template.Library()
 
-# Lidsky čitelné názvy skupin pro tooltip u ikony soukromí stránky - skupiny bez
-# záznamu zde se zobrazí pod svým technickým jménem (viz main/permissions.py).
 GROUP_DISPLAY_NAMES = {
     VR_MEMBER_GROUP_NAME: "Výkonná rada",
 }
