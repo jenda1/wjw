@@ -1,9 +1,10 @@
-from datetime import date, time
+from datetime import date, datetime, time
 
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.formats import date_format
 from django.utils.functional import cached_property
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from modelcluster.contrib.taggit import ClusterTaggableManager
@@ -144,21 +145,39 @@ def _vr_role_display(user_id):
 _HOST_LABEL = mark_safe("<strong>host</strong>")  # noqa: S308 - pevný literál, nic z uživatelského vstupu
 
 
-def person_display(person):
-    """person je jeden blok ze streamu osob (viz People). Za jméno se do závorky doplní
-    funkce ve VR (u člena VR), nebo tučně 'host' (u kohokoliv, kdo není z VR)."""
+def _person_parts(person):
+    """person je jeden blok ze streamu osob (viz People). Vrací (jméno, funkce ve VR, je_host) -
+    funkce se dopočítá jen u člena VR, kdokoliv mimo VR je host. Neexistující osoba -> ('', '', False)."""
+    if person.block_type == 'other':
+        return person.value, '', True
+    display = _profile_display(person.value)
+    if not display:
+        return '', '', False
     if person.block_type == 'vr_member':
-        display = _profile_display(person.value)
-        if not display:
-            return ''
-        role = _vr_role_display(person.value)
-        return format_html("{} ({})", display, role) if role else display
-    if person.block_type == 'member':
-        display = _profile_display(person.value)
-        if not display:
-            return ''
-        return format_html("{} ({})", display, _HOST_LABEL)
-    return format_html("{} ({})", person.value, _HOST_LABEL)
+        return display, _vr_role_display(person.value), False
+    return display, '', True
+
+
+def person_display(person):
+    """Jméno osoby a za ním v závorce funkce ve VR (u člena VR), nebo tučně 'host'
+    (u kohokoliv, kdo není z VR) - pro řádkový výpis, např. předkladatelů bodu."""
+    name, role, is_guest = _person_parts(person)
+    if not name:
+        return ''
+    if is_guest:
+        return format_html("{} ({})", name, _HOST_LABEL)
+    return format_html("{} ({})", name, role) if role else name
+
+
+def person_line(person):
+    """Jméno osoby a za čárkou její funkce ve VR - pro výpis po řádcích (Přítomni,
+    Omluveni, Host) podle vzoru zápisu; host je poznat z nadpisu sekce, takže bez štítku."""
+    name, role, _ = _person_parts(person)
+    return f"{name}, {role}" if name and role else name
+
+
+def is_guest(person):
+    return person.block_type != 'vr_member'
 
 
 class People(blocks.StreamBlock):
@@ -242,6 +261,11 @@ class AgendaPage(Page):
         blank=True,
         verbose_name="Omluveni",
     )
+    recorder = StreamField(
+        People(max_num=1),
+        blank=True,
+        verbose_name="Zapisovatel",
+    )
     items = StreamField(AgendaItemsBlock(), blank=True, verbose_name="Body programu")
 
     def __init__(self, *args, **kwargs):
@@ -257,9 +281,42 @@ class AgendaPage(Page):
         return f"{title} ({date_format(self.meeting_date, 'j.n.Y')})"
 
     @property
+    def is_held(self):
+        """Jednání už proběhlo (začátek jednání je v minulosti)."""
+        if not self.meeting_date:
+            return False
+        start = datetime.combine(self.meeting_date, self.meeting_time or time(0, 0))
+        return timezone.make_aware(start) <= timezone.now()
+
+    @property
+    def has_minutes(self):
+        """Proběhlé jednání, u kterého je u některého bodu vyplněná debata nebo výstup -
+        stránka se pak zobrazuje jako zápis, jinak jako program."""
+        return self.is_held and any(
+            block.value.get('discussion') or block.value.get('outcome') for block in self.items
+        )
+
+    def _kind_title(self, title):
+        """'Jednání VR' -> 'Program jednání VR' / 'Zápis z jednání VR'. Titulek, který
+        nezačíná slovem 'jednání', se ponechá a jen se před něj doplní typ dokumentu."""
+        prefix = "Zápis z jednání" if self.has_minutes else "Program jednání"
+        if title[:7].lower() == "jednání":
+            return f"{prefix}{title[7:]}"
+        return f"{prefix}: {title}"
+
+    @property
     def display_title(self):
-        """Titulek doplněný o datum jednání, použitý na frontendu místo holého page.title."""
-        return self._display_title(self.title)
+        """Titulek doplněný o typ dokumentu (program/zápis) a datum jednání, použitý
+        na frontendu místo holého page.title."""
+        return self._display_title(self._kind_title(self.title))
+
+    @cached_property
+    def present_members(self):
+        return [person for person in self.participants if not is_guest(person)]
+
+    @cached_property
+    def guests(self):
+        return [person for person in self.participants if is_guest(person)]
 
     @cached_property
     def numbered_items(self):
@@ -287,5 +344,6 @@ class AgendaPage(Page):
         FieldPanel('tags'),
         FieldPanel('participants'),
         FieldPanel('excused'),
+        FieldPanel('recorder'),
         FieldPanel('items'),
     ]

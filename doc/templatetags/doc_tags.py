@@ -1,7 +1,7 @@
 from django import template
 from wagtail.models import BaseViewRestriction
 
-from doc.models import person_display
+from doc.models import person_display, person_line
 from main.permissions import VR_MEMBER_GROUP_NAME
 
 register = template.Library()
@@ -16,6 +16,11 @@ GROUP_DISPLAY_NAMES = {
 @register.filter(name='person_display')
 def do_person_display(person):
     return person_display(person)
+
+
+@register.filter(name='person_line')
+def do_person_line(person):
+    return person_line(person)
 
 
 @register.filter(name='display_title')

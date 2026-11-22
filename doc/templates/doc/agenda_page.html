@@ -12,19 +12,27 @@
       {{ page.meeting_date }}, {{ page.meeting_time }}{% if page.location %} &ndash; {{ page.location }}{% endif %}
     </p>
 
-    {% if page.participants %}
-    <p class="text-muted mb-4">
-      Účastníci:
-      {% for participant in page.participants %}{{ participant|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
-    </p>
-    {% endif %}
+    <dl class="mb-4 agenda-people">
+      {% if page.present_members %}
+      <dt class="mt-3">{% if page.has_minutes %}Přítomni{% else %}Účastníci{% endif %}:</dt>
+      {% for person in page.present_members %}<dd class="mb-0">{{ person|person_line }}</dd>{% endfor %}
+      {% endif %}
 
-    {% if page.excused %}
-    <p class="text-muted mb-4">
-      Omluveni:
-      {% for participant in page.excused %}{{ participant|person_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
-    </p>
-    {% endif %}
+      {% if page.excused %}
+      <dt class="mt-3">Omluveni:</dt>
+      {% for person in page.excused %}<dd class="mb-0">{{ person|person_line }}</dd>{% endfor %}
+      {% endif %}
+
+      {% if page.guests %}
+      <dt class="mt-3">Host{% if page.guests|length > 1 %}é{% endif %}:</dt>
+      {% for person in page.guests %}<dd class="mb-0">{{ person|person_line }}</dd>{% endfor %}
+      {% endif %}
+
+      {% if page.recorder %}
+      <dt class="mt-3">Zapisovatel:</dt>
+      {% for person in page.recorder %}<dd class="mb-0">{{ person|person_line }}</dd>{% endfor %}
+      {% endif %}
+    </dl>
 
     {% if page.numbered_items %}
     <p class="mb-4">
