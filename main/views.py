@@ -576,6 +576,8 @@ def show_vr(request: HttpRequest):
 
     return render(request, 'main/show_vr.html', {
         'sections': [section for section in sections if section['members']],
+        # Telefony vidí jen schválení členové spolku - i u těch, kdo zveřejnění povolili.
+        'show_phones': is_member(getattr(request.user, 'profile', None)),
         'vr_email': f"{VR_MAILING_LIST}@{Site.objects.get_current().domain}" if can_email_vr(request.user) else None,
     })
 

@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import Circle, CircleMembership, ClassRepresentative, ParentRelationship
+from main.models import Circle, CircleMembership, ClassRepresentative, ParentRelationship, Profile
 from main.permissions import SECRETARY_OF_THE_TREASURY_GROUP_NAME, VR_MEMBER_GROUP_NAME
 
 from .helpers import (
@@ -65,6 +65,40 @@ class PhoneVisibilityTests(TestCase):
 
         content = self.client.get(reverse('show_vr')).content.decode()
         self.assertIn('Zastupkyne Anna', content)
+        self.assertNotIn(HIDDEN_PHONE, content)
+
+    def _vr_rep_with_public_phone(self):
+        rep_user = create_user('rep3', first_name='Anna', last_name='Verejna')
+        create_profile(rep_user, phone_number=HIDDEN_PHONE, phone_visible=True)
+        vr_group, _ = Group.objects.get_or_create(name=VR_MEMBER_GROUP_NAME)
+        rep_user.groups.add(vr_group)
+
+    def test_show_vr_shows_public_phone_to_member(self):
+        self._vr_rep_with_public_phone()
+        viewer = create_user('viewer5')
+        create_profile(viewer)
+        self.client.force_login(viewer)
+
+        content = self.client.get(reverse('show_vr')).content.decode()
+        self.assertIn(HIDDEN_PHONE, content)
+
+    def test_show_vr_hides_public_phone_from_non_member(self):
+        self._vr_rep_with_public_phone()
+        for username, status in (
+            ('viewer6', Profile.ProfileStatus.PENDING),
+            ('viewer7', Profile.ProfileStatus.CANCELLED),
+        ):
+            with self.subTest(status=status):
+                viewer = create_user(username)
+                create_profile(viewer, status=status)
+                self.client.force_login(viewer)
+                content = self.client.get(reverse('show_vr')).content.decode()
+                self.assertIn('Verejna Anna', content)
+                self.assertNotIn(HIDDEN_PHONE, content)
+
+        self.client.force_login(create_user('viewer8'))  # bez profilu
+        content = self.client.get(reverse('show_vr')).content.decode()
+        self.assertIn('Verejna Anna', content)
         self.assertNotIn(HIDDEN_PHONE, content)
 
     def test_show_treasurers_hides_phone_when_not_allowed(self):

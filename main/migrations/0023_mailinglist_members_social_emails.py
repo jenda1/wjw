@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('main', '0022_mailinglist_info_view'),
-        ('socialaccount', '0001_initial'),
+        ('socialaccount', '0006_alter_socialaccount_extra_data'),
     ]
 
     operations = [
